@@ -1,3 +1,11 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const AV = require('leancloud-storage');
+const path = require('path'); // 添加这一行
+
+// 初始化 Express 应用
+const app = express();
+
 // LeanCloud 配置  
 AV.init({  
     appId: "PeXHg9gv4y7OXBT718FEmrZj-gzGzoHsz",  // 替换为您的 LeanCloud 应用 ID  
@@ -6,215 +14,157 @@ AV.init({
  //   masterKey: 'NN9e44P2DDaULOUxhvurUl7b' // 使用 Master Key  
 });  
 
-// Register function  
-function register() {  
-    const email = document.getElementById('email').value;  
-    const password = document.getElementById('password').value;  
-    const name = document.getElementById('name').value;  
-    const employeeId = document.getElementById('employeeId').value;  
-
-    const user = new AV.User();  
-    user.setUsername(email);  
-    user.setPassword(password);  
-    user.setEmail(email);  
-    user.set('name', name);  
-    user.set('employeeId', employeeId);  
-
-    user.signUp().then(() => {  
-        alert('注册成功！');  
-        document.getElementById('auth').style.display = 'none';  
-        document.getElementById('booking').style.display = 'block';  
-    }).catch(error => {  
-        alert(error.message);  
-    });  
-}
+// 将当前目录设为静态文件目录
+app.use(express.static(__dirname));
 
 
-// Login function  
-function login() {  
-    const email = document.getElementById('email').value;  
-    const password = document.getElementById('password').value;  
-
-    AV.User.logIn(email, password).then(() => {  
-        alert('登录成功！');  
-        document.getElementById('auth').style.display = 'none';  
-        document.getElementById('booking').style.display = 'block';  
-    }).catch(error => {  
-        alert(error.message);  
-    });  
-}
+// 处理根路径请求，发送 HTML 文件
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 
-// 删除用户功能  
-function deleteUser() {  
-    const email = document.getElementById('email').value;  
-    const password = document.getElementById('password').value;  
+// 中间件
+app.use(bodyParser.json());
 
-    // 登录验证  
-    AV.User.logIn(email, password).then(user => {  
-        // 登录成功，确认删除  
-        const confirmDelete = confirm("确定要删除您的账户吗？操作不可撤销！");  
-        if (confirmDelete) {  
-            user.destroy().then(() => {  
-                alert('账户已成功删除！');  
-                // 清除本地界面或重定向至主页  
-                document.getElementById('auth').reset();  
-            }).catch(error => {  
-                alert('删除账户失败：' + error.message);  
-            });  
-        } else {  
-            alert('已取消删除操作。');  
-        }  
-    }).catch(error => {  
-        alert('登录失败：' + error.message);  
-    });  
-}  
+// 密码重置相关路由
+// 发送验证码
+app.post('/api/send-verification-code', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        // 验证邮箱格式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: '邮箱格式不正确' });
+        }
 
+        try {
+            // 在LeanCloud中查询用户
+            const query = new AV.Query('_User');
+            query.equalTo('email', email);
+            const user = await query.first();
 
-// Book classroom function  
-function bookClassroom() {  
-    const dateInput = document.getElementById('date').value;  
-    const period = document.getElementById('period').value;  
-    const classroom = document.getElementById('classroom').value;  
-    const user = AV.User.current();  
+            if (!user) {
+                return res.status(404).json({ error: '未找到该邮箱对应的用户' });
+            }
 
-    if (!user) {  
-        alert('请先登录！');  
-        return;  
-    }  
+            // 发送密码重置邮件
+            await AV.User.requestPasswordReset(email);
 
-    const selectedDate = new Date(dateInput);  
-    const now = new Date();  
-    
-    if (isNaN(selectedDate)) {  
-        alert('请选择一个有效的日期！');  
-        return;  
-    }  
-    
-    if (selectedDate < now.setHours(0, 0, 0, 0)) {  
-        alert('不能预定历史日期，请选择一个正确日期！');  
-        return;  
-    }  
+            // 返回部分隐藏的邮箱
+            const maskedEmail = email.replace(/(?<=.{3}).(?=[^@]*@)/g, '*');
+            
+            res.json({ 
+                success: true, 
+                maskedEmail 
+            });
+        } catch (error) {
+            console.error('发送重置邮件错误:', error);
+            res.status(500).json({ 
+                error: error.message || '发送重置邮件失败' 
+            });
+        }
+    } catch (error) {
+        console.error('处理发送验证码错误:', error);
+        res.status(500).json({ error: '处理失败' });
+    }
+});
 
-    const Booking = AV.Object.extend('Booking');  
-    const query = new AV.Query('Booking');  
-    query.equalTo('date', dateInput);  
-    query.equalTo('period', period);  
-    query.equalTo('classroom', classroom);  
+// 重新发送验证码
+app.post('/api/resend-verification-code', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        // 验证邮箱格式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: '邮箱格式不正确' });
+        }
 
-    query.first().then(existingBooking => {  
-        if (existingBooking) {  
-            alert('当前日期节次该房间已被预定，请重新选择！');  
-        } else {  
-            const booking = new Booking();  
-            booking.set('userId', user.id);  
-            booking.set('name', user.get('name'));  // 存储用户姓名  
-            booking.set('employeeId', user.get('employeeId'));  // 存储员工 ID  
-            booking.set('date', dateInput);  
-            booking.set('period', period);  
-            booking.set('classroom', classroom);  
+        try {
+            // 在LeanCloud中查询用户
+            const query = new AV.Query('_User');
+            query.equalTo('email', email);
+            const user = await query.first();
 
-            booking.save().then(() => {  
-                alert('房间预定成功！');  
-            }).catch(error => {  
-                alert(error.message);  
-            });  
-        }  
-    }).catch(error => {  
-        alert('检查房间预定冲突时出错：' + error.message);  
-    });  
-}
+            if (!user) {
+                return res.status(404).json({ error: '未找到该邮箱对应的用户' });
+            }
 
-// 查看预定情况
-function checknow() {  
-    const bookingTableBody = document.getElementById('booking-entries').querySelector('tbody');  
-    if (!bookingTableBody) {  
-        console.error('Element not found: #booking-entries tbody');  
-        return;  
-    }  
-    bookingTableBody.innerHTML = ''; // 清空当前表格内容  
+            // 重新发送密码重置邮件
+            await AV.User.requestPasswordReset(email);
 
-    const now = new Date();  
-    now.setHours(0, 0, 0, 0); // 设定为当天的零点以避免时间误差  
-    const query = new AV.Query('Booking');
-    
-    query.limit(1000); // 增加结果数量上限
-    query.ascending('date'); // 确保按日期排序
+            res.json({ success: true });
+        } catch (error) {
+            console.error('重新发送重置邮件错误:', error);
+            res.status(500).json({ 
+                error: error.message || '重新发送重置邮件失败' 
+            });
+        }
+    } catch (error) {
+        console.error('处理重新发送验证码错误:', error);
+        res.status(500).json({ error: '处理失败' });
+    }
+});
 
+// 重置密码（通过邮件链接）
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        
+        // 验证邮箱格式
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: '邮箱格式不正确' });
+        }
+        
+        // 验证密码
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: '密码长度必须至少为6个字符' });
+        }
+        
+        try {
+            // 在LeanCloud中查询用户
+            const query = new AV.Query('_User');
+            query.equalTo('email', email);
+            const user = await query.first();
 
-    query.greaterThanOrEqualTo('date', now.toISOString().split('T')[0]);  
-    query.find().then(results => {  
-        if (results.length === 0) {  
-            alert('没有找到相关预定数据。');  
-            return;  
-        }  
-        const bookings = results.map(booking => {  
-            const attributes = booking.attributes;  
-            return {  
-                id: booking.id,  
-                ...attributes  
-            };  
-        });  
+            if (!user) {
+                return res.status(404).json({ error: '用户未找到' });
+            }
 
-        bookings.sort((a, b) => new Date(a.date) - new Date(b.date));  
-
-        let currentDisplayDate = '';  
-        bookings.forEach(booking => {  
-            console.log('Processing booking:', booking);  
-            const formattedDate = new Date(booking.date).toISOString().split('T')[0]; // 格式化日期  
-
-            if (formattedDate !== currentDisplayDate) {  
-                currentDisplayDate = formattedDate;  
-                const dateRow = document.createElement('tr');  
-                dateRow.className = 'highlight';  
-                dateRow.innerHTML = `<td colspan="7">${formattedDate} (${getWeekday(booking.date)})</td>`;  
-                bookingTableBody.appendChild(dateRow);  
-            }  
-
-            const row = document.createElement('tr');  
-            row.innerHTML = `  
-                <td>${formattedDate}</td>  
-                <td>${getWeekday(booking.date)}</td>  
-                <td>${booking.period}</td>  
-                <td>${booking.classroom}</td>  
-                <td>${booking.name}</td>  <!-- 显示用户姓名 -->  
-                <td>${booking.employeeId}</td>  <!-- 显示员工 ID -->  
-                <td><button onclick="deleteBooking('${booking.id}')">删除</button></td>  
-            `;  
-            bookingTableBody.appendChild(row);  
-        });  
-    }).catch(error => {  
-        alert('获取预定信息失败：' + error.message);  
-    });  
-}  
+            // 直接更新密码
+            user.set('password', newPassword);
+            await user.save(null, { useMasterKey: true });
+            
+            res.json({ 
+                success: true, 
+                message: '密码重置成功' 
+            });
+        } catch (error) {
+            console.error('重置密码错误:', error);
+            res.status(500).json({ 
+                error: error.message || '重置密码失败' 
+            });
+        }
+    } catch (error) {
+        console.error('处理重置密码错误:', error);
+        res.status(500).json({ error: '处理失败' });
+    }
+});
 
 
-// 删除预定  
-function deleteBooking(bookingId) {  
-    const user = AV.User.current();  
-    if (!user) {  
-        alert('请先登录！');  
-        return;  
-    }  
+// 启动服务器
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`服务器运行在端口 ${PORT}`);
+});
 
-    const booking = AV.Object.createWithoutData('Booking', bookingId);  
-    booking.fetch().then(() => {  
-        if (booking.get('userId') === user.id) {  
-            return booking.destroy().then(() => {  
-                alert('预定删除成功！');  
-                checknow();  
-            });  
-        } else {  
-            alert('你没有权限删除此预定！');  
-        }  
-    }).catch(error => {  
-        alert('删除失败：' + error.message);  
-    });  
-}  
 
-// 辅助函数：获取日期的星期几  
-function getWeekday(dateString) {  
-    const date = new Date(dateString);  
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];  
-    return weekdays[date.getUTCDay()];  
-}  
+
+
+
+
+
+
