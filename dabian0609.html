@@ -1,623 +1,771 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>本科毕业设计成绩录入系统</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本科毕业设计成绩录入系统</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- LeanCloud SDK -->
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+
+<style>
+.fade-in { animation: fadeIn 0.3s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 加载动画样式 */
+.loading { 
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- 登录页面 -->
-    <div id="loginPage" class="min-h-screen flex items-center justify-center">
-        <div class="bg-white p-8 rounded-lg shadow-md w-96">
-            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">智科—毕业设计成绩录入系统</h1>
-            <form id="loginForm">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">答辩组</label>
-                    <select id="groupSelect" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">请选择答辩组</option>
-                        <option value="group1">第一答辩组</option>
-                        <option value="group2">第二答辩组</option>
-                        <option value="group3">第三答辩组</option>
-                        <option value="admin">管理员</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
-                    <input type="text" id="username" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入用户名">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
-                    <input type="password" id="password" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入密码">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-200">登录</button>
-            </form>
-            <div class="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                <p class="font-semibold mb-2">测试账号：</p>
-                <div class="space-y-1">
-                    <p><strong>管理员：</strong> 用户名: admin, 密码: ******</p>
-                    <p><strong>答辩秘书：</strong> 用户名: expert1, 密码: 123456</p>
-                    <p><strong>专家：</strong> 用户名: expert2~expert5, 密码: 123456</p>
-                </div>
-                <button id="resetDataBtn" class="mt-3 text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200" hidden>重置系统数据</button>
-            </div>
-        </div>
-    </div>
+<!-- 登录页面 -->
+<div id="loginPage" class="min-h-screen flex items-center justify-center">
+<div class="bg-white p-8 rounded-lg shadow-md w-96">
+<h1 class="text-2xl font-bold text-center mb-6 text-blue-600">智科—毕业设计成绩录入系统</h1>
 
-    <!-- 主系统页面 -->
-    <div id="mainPage" class="hidden">
-        <!-- 导航栏 -->
-        <nav class="bg-blue-600 text-white p-4">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="text-xl font-bold">毕业设计成绩录入系统</h1>
-                <div class="flex items-center space-x-4">
-                    <span id="userInfo"></span>
-                    <span id="permissionInfo" class="text-sm bg-blue-700 px-2 py-1 rounded"></span>
-                    <button id="logoutBtn" class="bg-blue-700 px-3 py-1 rounded hover:bg-blue-800">退出</button>
-                </div>
-            </div>
-        </nav>
+<form id="loginForm">
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-2">答辩组</label>
+<select id="groupSelect" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+<option value="">请选择答辩组</option>
+<option value="group1">第一答辩组</option>
+<option value="group2">第二答辩组</option>
+<option value="group3">第三答辩组</option>
+<option value="admin">管理员</option>
+</select>
+</div>
+<div class="mb-4">
+<label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+<input type="text" id="username" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入用户名">
+</div>
+<div class="mb-6">
+<label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+<input type="password" id="password" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="请输入密码">
+</div>
+<button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+<span id="loginBtnText">登录</span>
+<div id="loginLoading" class="loading ml-2 hidden"></div>
+</button>
+</form>
+<div class="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded">
+<p class="font-semibold mb-2">测试账号：</p>
+<div class="space-y-1">
+<p><strong>管理员：</strong> 用户名: admin, 密码: ******</p>
+<p><strong>答辩秘书：</strong> 用户名: expert1, 密码: 123456</p>
+<p><strong>专家：</strong> 用户名: expert2~expert5, 密码: 123456</p>
+</div>
+<button id="initDataBtn" class="mt-3 text-xs bg-green-100 text-green-600 px-2 py-1 rounded hover:bg-green-200" hidden>初始化云端数据</button>
+</div>
+</div>
+</div>
 
-        <!-- 主内容 -->
-        <div class="container mx-auto p-4">
-            <!-- 管理员答辩组选择 -->
-            <div id="adminGroupSelector" class="bg-white p-4 rounded-lg shadow-md mb-6 hidden">
-                <div class="flex items-center space-x-4">
-                    <label class="text-sm font-medium text-gray-700">选择答辩组：</label>
-                    <select id="adminGroupSelect" class="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="group1">第一答辩组</option>
-                        <option value="group2">第二答辩组</option>
-                        <option value="group3">第三答辩组</option>
-                    </select>
-                    <button id="switchGroupBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">切换</button>
-                </div>
-            </div>
+<!-- 主系统页面 -->
+<div id="mainPage" class="hidden">
+<!-- 导航栏 -->
+<nav class="bg-blue-600 text-white p-4">
+<div class="container mx-auto flex justify-between items-center">
+<h1 class="text-xl font-bold">毕业设计成绩录入系统</h1>
+<div class="flex items-center space-x-4">
+<span id="userInfo"></span>
+<span id="permissionInfo" class="text-sm bg-blue-700 px-2 py-1 rounded"></span>
+<button id="logoutBtn" class="bg-blue-700 px-3 py-1 rounded hover:bg-blue-800">退出</button>
+</div>
+</div>
+</nav>
 
-            <!-- 操作按钮区 -->
-            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-                <div class="flex flex-wrap gap-4">
-                    <input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
-                    <button id="importBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200">
-                        📁 导入Excel文件
-                    </button>
-                    <button id="exportBtn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-200">
-                        📊 导出成绩表
-                    </button>
-                    <button id="refreshBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition duration-200">
-                        🔄 刷新数据
-                    </button>
-                </div>
-            </div>
+<!-- 主内容 -->
+<div class="container mx-auto p-4">
+<!-- 管理员答辩组选择 -->
+<div id="adminGroupSelector" class="bg-white p-4 rounded-lg shadow-md mb-6 hidden">
+<div class="flex items-center space-x-4">
+<label class="text-sm font-medium text-gray-700">选择答辩组：</label>
+<select id="adminGroupSelect" class="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+<option value="group1">第一答辩组</option>
+<option value="group2">第二答辩组</option>
+<option value="group3">第三答辩组</option>
+</select>
+<button id="switchGroupBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">切换</button>
+</div>
+</div>
 
-            <!-- 成绩表格 -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full table-auto">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学号</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">论文题目</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">开题成绩</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指导教师成绩</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评阅教师成绩</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家1</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家2</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家3</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家4</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家5</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">答辩成绩</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">毕业设计成绩</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">成绩等级</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gradeTableBody" class="bg-white divide-y divide-gray-200">
-                            <!-- 动态生成 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- 操作按钮区 -->
+<div class="bg-white p-4 rounded-lg shadow-md mb-6">
+<div class="flex flex-wrap gap-4">
+<input type="file" id="fileInput" accept=".xlsx,.xls" class="hidden">
+<button id="importBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200">
+📁 导入 Excel 文件
+</button>
+<button id="exportBtn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition duration-200">
+📊 导出成绩表
+</button>
+<button id="refreshBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition duration-200 flex items-center">
+<span>🔄 刷新数据</span>
+<div id="refreshLoading" class="loading ml-2 hidden"></div>
+</button>
+</div>
+</div>
 
-    <!-- 成绩录入模态框 -->
-    <div id="gradeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-96">
-            <h3 id="modalTitle" class="text-lg font-medium text-gray-900 mb-4">录入成绩</h3>
-            <div id="modalContent">
-                <!-- 动态生成 -->
-            </div>
-            <div class="mt-6 flex justify-end space-x-3">
-                <button id="cancelModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300">取消</button>
-                <button id="saveGrade" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">保存</button>
-            </div>
-        </div>
-    </div>
+<!-- 成绩表格 -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full table-auto">
+<thead class="bg-gray-50">
+<tr>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学号</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">论文题目</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">开题成绩</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">指导教师成绩</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">评阅教师成绩</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家 1</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家 2</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家 3</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家 4</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">专家 5</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">答辩成绩</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">毕业设计成绩</th>
+<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">成绩等级</th>
+</tr>
+</thead>
+<tbody id="gradeTableBody" class="bg-white divide-y divide-gray-200">
+<!-- 动态生成 -->
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
 
-    <script>
-        // 全局变量
-        let currentUser = null;
-        let currentGroup = null;
-        let studentsData = [];
-        let isGroupLeader = false;
-        let isAdmin = false;
-        let currentEditType = 'expert'; // 'expert' | 'proposal' | 'supervisor' | 'reviewer'
-        let currentEditIndex = -1;
-        let currentStudentIndex = -1;
+<!-- 成绩录入模态框 -->
+<div id="gradeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+<div class="bg-white p-6 rounded-lg shadow-xl w-96">
+<h3 id="modalTitle" class="text-lg font-medium text-gray-900 mb-4">录入成绩</h3>
+<div id="modalContent">
+<!-- 动态生成 -->
+</div>
+<div class="mt-6 flex justify-end space-x-3">
+<button id="cancelModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300">取消</button>
+<button id="saveGrade" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 flex items-center">
+<span id="saveBtnText">保存</span>
+<div id="saveLoading" class="loading ml-2 hidden"></div>
+</button>
+</div>
+</div>
+</div>
 
-        // 初始化系统
-        function initSystem() {
-            // 初始化测试数据
-            initTestData();
+<script>
+// ==================== LeanCloud 配置 ====================
+// 请替换为您自己的 LeanCloud 应用配置
+const LEANCLOUD_CONFIG = {
+appId: 'Gi7s7RAi1epWNVtj0X9EAqxe-gzGzoHsz', // 替换为您的应用 ID
+appKey: 'wMXylXbeOH82GkuprhkdAon4', // 替换为您的应用 Key
+serverURL: 'https://avoscloud.com' // 替换为您的服务器地址
+};
+
+// 初始化 LeanCloud
+AV.init(LEANCLOUD_CONFIG);
+
+// ==================== 全局变量 ====================
+let currentUser = null;
+let currentGroup = null;
+let studentsData = [];
+let usersData = {};
+let isGroupLeader = false;
+let isAdmin = false;
+let currentEditType = 'expert'; // 'expert' | 'proposal' | 'supervisor' | 'reviewer'
+let currentEditIndex = -1;
+let currentStudentIndex = -1;
+
+// ==================== LeanCloud 数据操作函数 ====================
+
+// 保存数据到云端
+async function saveToCloud(key, data) {
+    const ConfigObject = AV.Object.extend('GradeConfig');
+    const query = new AV.Query('GradeConfig');
+    query.equalTo('key', key);
+    
+    try {
+        const existing = await query.first();
+        if (existing) {
+            existing.set('data', data);
+            await existing.save();
+        } else {
+            const configObject = new ConfigObject();
+            configObject.set('key', key);
+            configObject.set('data', data);
+            await configObject.save();
+        }
+    } catch (error) {
+        console.error('保存数据失败:', error);
+        throw error;
+    }
+}
+
+// 从云端获取数据
+async function getFromCloud(key) {
+    const query = new AV.Query('GradeConfig');
+    query.equalTo('key', key);
+    
+    try {
+        const result = await query.first();
+        return result ? result.get('data') : null;
+    } catch (error) {
+        console.error('获取数据失败:', error);
+        throw error;
+    }
+}
+
+// 初始化云端数据
+async function initCloudData() {
+    try {
+        showLoading('initDataBtn');
+        
+        // 初始化用户数据
+        const users = {
+            admin: {
+                admin: { password: 'admin123', name: '系统管理员', isAdmin: true }
+            },
+            group1: {
+                expert1: { password: '123456', name: '专家 1（答辩秘书）', isLeader: true },
+                expert2: { password: '123456', name: '专家 2', isLeader: false },
+                expert3: { password: '123456', name: '专家 3', isLeader: false },
+                expert4: { password: '123456', name: '专家 4', isLeader: false },
+                expert5: { password: '123456', name: '专家 5', isLeader: false }
+            },
+            group2: {
+                expert1: { password: '123456', name: '专家 1（答辩秘书）', isLeader: true },
+                expert2: { password: '123456', name: '专家 2', isLeader: false },
+                expert3: { password: '123456', name: '专家 3', isLeader: false },
+                expert4: { password: '123456', name: '专家 4', isLeader: false },
+                expert5: { password: '123456', name: '专家 5', isLeader: false }
+            },
+            group3: {
+                expert1: { password: '123456', name: '专家 1（答辩秘书）', isLeader: true },
+                expert2: { password: '123456', name: '专家 2', isLeader: false },
+                expert3: { password: '123456', name: '专家 3', isLeader: false },
+                expert4: { password: '123456', name: '专家 4', isLeader: false },
+                expert5: { password: '123456', name: '专家 5', isLeader: false }
+            }
+        };
+
+        // 保存用户数据到云端
+        await saveToCloud('users', users);
+
+        // 初始化各组学生数据（空数据，用对象包裹数组）
+        for (let group of ['group1', 'group2', 'group3']) {
+            await saveToCloud(`students_${group}`, {list: []});
+        }
+
+        alert('云端数据初始化成功！');
+    } catch (error) {
+        console.error('初始化数据失败:', error);
+        alert('初始化数据失败：' + error.message);
+    } finally {
+        hideLoading('initDataBtn');
+    }
+}
+
+// ==================== 加载状态函数 ====================
+
+// 显示加载状态
+function showLoading(elementId) {
+    const element = document.getElementById(elementId);
+    if (elementId === 'loginBtn') {
+        document.getElementById('loginBtnText').textContent = '登录中...';
+        document.getElementById('loginLoading').classList.remove('hidden');
+    } else if (elementId === 'refreshBtn') {
+        document.getElementById('refreshLoading').classList.remove('hidden');
+    } else if (elementId === 'saveGrade') {
+        document.getElementById('saveBtnText').textContent = '保存中...';
+        document.getElementById('saveLoading').classList.remove('hidden');
+    } else if (elementId === 'initDataBtn') {
+        element.textContent = '初始化中...';
+        element.disabled = true;
+    }
+}
+
+// 隐藏加载状态
+function hideLoading(elementId) {
+    const element = document.getElementById(elementId);
+    if (elementId === 'loginBtn') {
+        document.getElementById('loginBtnText').textContent = '登录';
+        document.getElementById('loginLoading').classList.add('hidden');
+    } else if (elementId === 'refreshBtn') {
+        document.getElementById('refreshLoading').classList.add('hidden');
+    } else if (elementId === 'saveGrade') {
+        document.getElementById('saveBtnText').textContent = '保存';
+        document.getElementById('saveLoading').classList.add('hidden');
+    } else if (elementId === 'initDataBtn') {
+        element.textContent = '初始化云端数据';
+        element.disabled = false;
+    }
+}
+
+// ==================== 系统初始化 ====================
+
+// 初始化系统
+function initSystem() {
+    // 绑定事件
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+    document.getElementById('fileInput').addEventListener('change', handleFileImport);
+    document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+    document.getElementById('refreshBtn').addEventListener('click', loadGradeData);
+    document.getElementById('cancelModal').addEventListener('click', closeModal);
+    document.getElementById('saveGrade').addEventListener('click', saveGrade);
+    document.getElementById('switchGroupBtn').addEventListener('click', switchGroup);
+    document.getElementById('initDataBtn').addEventListener('click', initCloudData);
+}
+
+// ==================== 登录和权限管理 ====================
+
+// 登录处理
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const group = document.getElementById('groupSelect').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
+    if (!group || !username || !password) {
+        alert('请填写完整信息');
+        return;
+    }
+    
+    try {
+        showLoading('loginBtn');
+        
+        // 从云端获取用户数据
+        usersData = await getFromCloud('users');
+        
+        if (!usersData) {
+            alert('系统数据未初始化，请先点击"初始化云端数据"按钮');
+            return;
+        }
+        
+        if (usersData[group] && usersData[group][username] && usersData[group][username].password === password) {
+            currentUser = username;
+            currentGroup = group;
+            isGroupLeader = usersData[group][username].isLeader || false;
+            isAdmin = usersData[group][username].isAdmin || false;
             
-            // 绑定事件
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
-            document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
-            document.getElementById('fileInput').addEventListener('change', handleFileImport);
-            document.getElementById('exportBtn').addEventListener('click', exportToExcel);
-            document.getElementById('refreshBtn').addEventListener('click', loadGradeData);
-            document.getElementById('cancelModal').addEventListener('click', closeModal);
-            document.getElementById('saveGrade').addEventListener('click', saveGrade);
-            document.getElementById('switchGroupBtn').addEventListener('click', switchGroup);
-            document.getElementById('resetDataBtn').addEventListener('click', resetSystemData);
-        }
-
-        // 重置系统数据
-        function resetSystemData() {
-            if (confirm('确定要重置所有系统数据吗？这将清除所有用户账号和成绩数据！')) {
-                // 清除所有相关的localStorage数据
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('gradeSystem_')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                
-                // 重新初始化数据
-                initTestData();
-                alert('系统数据已重置！请重新登录。');
-                location.reload();
-            }
-        }
-
-        // 计算成绩等级
-        function getGradeLevel(score) {
-            const numScore = parseFloat(score);
-            if (numScore >= 90) return '优';
-            if (numScore >= 80) return '良';
-            if (numScore >= 70) return '中';
-            if (numScore >= 60) return '及格';
-            return '不及格';
-        }
-
-        // 获取等级对应的样式类
-        function getGradeLevelClass(level) {
-            switch(level) {
-                case '优': return 'text-red-600 font-bold';
-                case '良': return 'text-green-600 font-semibold';
-                case '中': return 'text-blue-600';
-                case '及格': return 'text-yellow-600';
-                case '不及格': return 'text-gray-500';
-                default: return 'text-gray-500';
-            }
-        }
-
-        // 初始化测试数据
-        function initTestData() {
-            // 强制重新初始化用户数据
-            const users = {
-                admin: {
-                    admin: { password: 'admin123', name: '系统管理员', isAdmin: true }
-                },
-                group1: {
-                    expert1: { password: '123456', name: '专家1（答辩秘书）', isLeader: true },
-                    expert2: { password: '123456', name: '专家2', isLeader: false },
-                    expert3: { password: '123456', name: '专家3', isLeader: false },
-                    expert4: { password: '123456', name: '专家4', isLeader: false },
-                    expert5: { password: '123456', name: '专家5', isLeader: false }
-                },
-                group2: {
-                    expert1: { password: '123456', name: '专家1（答辩秘书）', isLeader: true },
-                    expert2: { password: '123456', name: '专家2', isLeader: false },
-                    expert3: { password: '123456', name: '专家3', isLeader: false },
-                    expert4: { password: '123456', name: '专家4', isLeader: false },
-                    expert5: { password: '123456', name: '专家5', isLeader: false }
-                },
-                group3: {
-                    expert1: { password: '123456', name: '专家1（答辩秘书）', isLeader: true },
-                    expert2: { password: '123456', name: '专家2', isLeader: false },
-                    expert3: { password: '123456', name: '专家3', isLeader: false },
-                    expert4: { password: '123456', name: '专家4', isLeader: false },
-                    expert5: { password: '123456', name: '专家5', isLeader: false }
-                }
-            };
-            localStorage.setItem('gradeSystem_users', JSON.stringify(users));
-
-            // 初始化示例学生数据
-            ['group1', 'group2', 'group3'].forEach(group => {
-                if (!localStorage.getItem(`gradeSystem_students_${group}`)) {
-                    const sampleData = [
-                    ];
-                    localStorage.setItem(`gradeSystem_students_${group}`, JSON.stringify(sampleData));
-                }
-            });
-        }
-
-        // 登录处理
-        function handleLogin(e) {
-            e.preventDefault();
-            const group = document.getElementById('groupSelect').value;
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            console.log('登录尝试:', { group, username, password }); // 调试信息
-
-            if (!group || !username || !password) {
-                alert('请填写完整信息');
-                return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('gradeSystem_users') || '{}');
-            console.log('用户数据:', users); // 调试信息
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
             
-            if (users[group] && users[group][username] && users[group][username].password === password) {
-                currentUser = username;
-                currentGroup = group;
-                isGroupLeader = users[group][username].isLeader || false;
-                isAdmin = users[group][username].isAdmin || false;
-                
-                console.log('登录成功:', { currentUser, currentGroup, isGroupLeader, isAdmin }); // 调试信息
-                
-                document.getElementById('loginPage').classList.add('hidden');
-                document.getElementById('mainPage').classList.remove('hidden');
-                
-                // 设置用户信息显示
-                let groupName = '';
-                if (isAdmin) {
-                    groupName = '系统管理员';
-                    document.getElementById('adminGroupSelector').classList.remove('hidden');
-                    currentGroup = 'group1'; // 默认显示第一答辩组
-                } else {
-                    groupName = group === 'group1' ? '第一答辩组' : group === 'group2' ? '第二答辩组' : '第三答辩组';
-                }
-                
-                document.getElementById('userInfo').textContent = `${users[group][username].name} (${groupName})`;
-                
-                // 设置权限信息显示
-                let permissionText = '';
-                if (isAdmin) {
-                    permissionText = '管理员权限';
-                } else if (isGroupLeader) {
-                    permissionText = '答辩秘书权限';
-                } else {
-                    permissionText = '专家权限';
-                }
-                document.getElementById('permissionInfo').textContent = permissionText;
-                
-                loadGradeData();
+            // 设置用户信息显示
+            let groupName = '';
+            if (isAdmin) {
+                groupName = '系统管理员';
+                document.getElementById('adminGroupSelector').classList.remove('hidden');
+                currentGroup = 'group1'; // 默认显示第一答辩组
             } else {
-                console.log('登录失败，用户信息不匹配'); // 调试信息
-                alert('用户名或密码错误，请检查输入信息！\n\n管理员账号：\n用户名: admin\n密码: ******');
-            }
-        }
-
-        // 切换答辩组（管理员功能）
-        function switchGroup() {
-            if (!isAdmin) return;
-            
-            const selectedGroup = document.getElementById('adminGroupSelect').value;
-            currentGroup = selectedGroup;
-            loadGradeData();
-        }
-
-        // 退出登录
-        function handleLogout() {
-            currentUser = null;
-            currentGroup = null;
-            isGroupLeader = false;
-            isAdmin = false;
-            document.getElementById('loginPage').classList.remove('hidden');
-            document.getElementById('mainPage').classList.add('hidden');
-            document.getElementById('adminGroupSelector').classList.add('hidden');
-            document.getElementById('loginForm').reset();
-        }
-
-        // 加载成绩数据
-        function loadGradeData() {
-            const key = `gradeSystem_students_${currentGroup}`;
-            studentsData = JSON.parse(localStorage.getItem(key) || '[]');
-            renderGradeTable();
-        }
-
-        // 渲染成绩表格
-        function renderGradeTable() {
-            const tbody = document.getElementById('gradeTableBody');
-            tbody.innerHTML = '';
-
-            studentsData.forEach((student, index) => {
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
-                
-                // 计算答辩成绩和总成绩
-                const expertGrades = student.expertGrades || [0, 0, 0, 0, 0];
-                const validGrades = expertGrades.filter(g => g > 0);
-                const defenseGrade = validGrades.length > 0 ? (validGrades.reduce((a, b) => a + b, 0) / validGrades.length).toFixed(1) : 0;
-                const totalGrade = (
-                    student.proposalGrade * 0.1 +
-                    student.supervisorGrade * 0.3 +
-                    student.reviewerGrade * 0.2 +
-                    parseFloat(defenseGrade) * 0.4
-                ).toFixed(1);
-                
-                // 计算成绩等级
-                const gradeLevel = getGradeLevel(totalGrade);
-                const levelClass = getGradeLevelClass(gradeLevel);
-
-                // 判断是否可以编辑基础成绩（组长或管理员权限）
-                const canEditBasicGrades = isGroupLeader || isAdmin;
-
-                row.innerHTML = `
-                    <td class="px-4 py-3 text-sm text-gray-900">${student.studentId}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${student.name}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="${student.title}">${student.title}</td>
-                    <td class="px-4 py-3 text-sm">
-                        ${canEditBasicGrades ? 
-                            `<button onclick="openBasicGradeModal(${index}, 'proposal')" 
-                                class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
-                                ${student.proposalGrade}
-                            </button>` : 
-                            `<span class="text-gray-900">${student.proposalGrade}</span>`
-                        }
-                    </td>
-                    <td class="px-4 py-3 text-sm">
-                        ${canEditBasicGrades ? 
-                            `<button onclick="openBasicGradeModal(${index}, 'supervisor')" 
-                                class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
-                                ${student.supervisorGrade}
-                            </button>` : 
-                            `<span class="text-gray-900">${student.supervisorGrade}</span>`
-                        }
-                    </td>
-                    <td class="px-4 py-3 text-sm">
-                        ${canEditBasicGrades ? 
-                            `<button onclick="openBasicGradeModal(${index}, 'reviewer')" 
-                                class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
-                                ${student.reviewerGrade}
-                            </button>` : 
-                            `<span class="text-gray-900">${student.reviewerGrade}</span>`
-                        }
-                    </td>
-                    ${expertGrades.map((grade, i) => `
-                        <td class="px-4 py-3 text-sm">
-                            <button onclick="openExpertGradeModal(${index}, ${i})" 
-                                class="w-16 px-2 py-1 text-center border rounded ${grade > 0 ? 'bg-green-100 border-green-300' : 'bg-gray-100 border-gray-300'} hover:bg-blue-100">
-                                ${grade || '-'}
-                            </button>
-                        </td>
-                    `).join('')}
-                    <td class="px-4 py-3 text-sm font-medium text-blue-600">${defenseGrade}</td>
-                    <td class="px-4 py-3 text-sm font-bold text-green-600">${totalGrade}</td>
-                    <td class="px-4 py-3 text-sm ${levelClass}">${gradeLevel}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 打开基础成绩录入模态框（开题、指导教师、评阅教师成绩）
-        function openBasicGradeModal(studentIndex, gradeType) {
-            const student = studentsData[studentIndex];
-            currentEditType = gradeType;
-            currentStudentIndex = studentIndex;
-            
-            const gradeTypeNames = {
-                'proposal': '开题成绩',
-                'supervisor': '指导教师成绩',
-                'reviewer': '评阅教师成绩'
-            };
-            
-            const currentGrade = gradeType === 'proposal' ? student.proposalGrade :
-                                gradeType === 'supervisor' ? student.supervisorGrade :
-                                student.reviewerGrade;
-            
-            const modal = document.getElementById('gradeModal');
-            const title = document.getElementById('modalTitle');
-            const content = document.getElementById('modalContent');
-            
-            title.textContent = `修改${gradeTypeNames[gradeType]}`;
-            
-            content.innerHTML = `
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600">学号：${student.studentId}</p>
-                    <p class="text-sm text-gray-600">姓名：${student.name}</p>
-                    <p class="text-sm text-gray-600">成绩类型：${gradeTypeNames[gradeType]}</p>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">${gradeTypeNames[gradeType]}（0-100分）</label>
-                    <input type="number" id="gradeInput" min="0" max="100" 
-                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                        value="${currentGrade}" placeholder="请输入成绩">
-                </div>
-            `;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.getElementById('gradeInput').focus();
-        }
-
-        // 打开专家答辩成绩录入模态框
-        function openExpertGradeModal(studentIndex, expertIndex) {
-            const student = studentsData[studentIndex];
-            const expertNumber = expertIndex + 1;
-            const currentExpertIndex = parseInt(currentUser.replace('expert', '')) - 1;
-            
-            // 检查权限：只能录入自己的成绩，或者组长/管理员可以修改所有成绩
-            if (!isGroupLeader && !isAdmin && expertIndex !== currentExpertIndex) {
-                alert('您只能录入自己的答辩成绩');
-                return;
-            }
-
-            currentEditType = 'expert';
-            currentStudentIndex = studentIndex;
-            currentEditIndex = expertIndex;
-
-            const modal = document.getElementById('gradeModal');
-            const title = document.getElementById('modalTitle');
-            const content = document.getElementById('modalContent');
-            
-            title.textContent = '录入答辩成绩';
-            
-            content.innerHTML = `
-                <div class="mb-4">
-                    <p class="text-sm text-gray-600">学号：${student.studentId}</p>
-                    <p class="text-sm text-gray-600">姓名：${student.name}</p>
-                    <p class="text-sm text-gray-600">专家：专家${expertNumber}</p>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">答辩成绩（0-100分）</label>
-                    <input type="number" id="gradeInput" min="0" max="100" 
-                        class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                        value="${student.expertGrades[expertIndex] || ''}" placeholder="请输入成绩">
-                </div>
-            `;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.getElementById('gradeInput').focus();
-        }
-
-        // 关闭模态框
-        function closeModal() {
-            const modal = document.getElementById('gradeModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // 保存成绩
-        function saveGrade() {
-            const grade = parseFloat(document.getElementById('gradeInput').value);
-            
-            if (isNaN(grade) || grade < 0 || grade > 100) {
-                alert('请输入有效的成绩（0-100分）');
-                return;
+                groupName = group === 'group1' ? '第一答辩组' : group === 'group2' ? '第二答辩组' : '第三答辩组';
             }
             
-            if (currentEditType === 'expert') {
-                studentsData[currentStudentIndex].expertGrades[currentEditIndex] = grade;
-            } else if (currentEditType === 'proposal') {
-                studentsData[currentStudentIndex].proposalGrade = grade;
-            } else if (currentEditType === 'supervisor') {
-                studentsData[currentStudentIndex].supervisorGrade = grade;
-            } else if (currentEditType === 'reviewer') {
-                studentsData[currentStudentIndex].reviewerGrade = grade;
+            document.getElementById('userInfo').textContent = `${usersData[group][username].name} (${groupName})`;
+            
+            // 设置权限信息显示
+            let permissionText = '';
+            if (isAdmin) {
+                permissionText = '管理员权限';
+            } else if (isGroupLeader) {
+                permissionText = '答辩秘书权限';
+            } else {
+                permissionText = '专家权限';
             }
+            document.getElementById('permissionInfo').textContent = permissionText;
             
-            // 保存到localStorage
-            const key = `gradeSystem_students_${currentGroup}`;
-            localStorage.setItem(key, JSON.stringify(studentsData));
-            
-            renderGradeTable();
-            closeModal();
-            
-            alert('成绩保存成功！');
+            await loadGradeData();
+        } else {
+            alert('用户名或密码错误！');
         }
+    } catch (error) {
+        console.error('登录失败:', error);
+        alert('登录失败：' + error.message);
+    } finally {
+        hideLoading('loginBtn');
+    }
+}
 
-        // 处理文件导入
-        function handleFileImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+// 切换答辩组（管理员功能）
+async function switchGroup() {
+    if (!isAdmin) return;
+    const selectedGroup = document.getElementById('adminGroupSelect').value;
+    currentGroup = selectedGroup;
+    await loadGradeData();
+}
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    // 转换数据格式
-                    const importedData = jsonData.map(row => ({
-                        studentId: row['学号'] || row['StudentId'] || '',
-                        name: row['姓名'] || row['Name'] || '',
-                        title: row['论文题目'] || row['Title'] || '',
-                        proposalGrade: parseFloat(row['开题成绩'] || row['ProposalGrade'] || 0),
-                        supervisorGrade: parseFloat(row['指导教师成绩'] || row['SupervisorGrade'] || 0),
-                        reviewerGrade: parseFloat(row['评阅教师成绩'] || row['ReviewerGrade'] || 0),
-                        expertGrades: [0, 0, 0, 0, 0]
-                    }));
-                    
-                    if (importedData.length > 0) {
-                        studentsData = importedData;
-                        const key = `gradeSystem_students_${currentGroup}`;
-                        localStorage.setItem(key, JSON.stringify(studentsData));
-                        renderGradeTable();
-                        alert(`成功导入 ${importedData.length} 条学生记录！`);
-                    } else {
-                        alert('未能读取到有效数据，请检查Excel文件格式');
-                    }
-                } catch (err) {
-                    alert('文件读取失败，请确认文件格式正确');
-                    console.error(err);
+// 退出登录
+function handleLogout() {
+    currentUser = null;
+    currentGroup = null;
+    isGroupLeader = false;
+    isAdmin = false;
+    studentsData = [];
+    usersData = {};
+    document.getElementById('loginPage').classList.remove('hidden');
+    document.getElementById('mainPage').classList.add('hidden');
+    document.getElementById('adminGroupSelector').classList.add('hidden');
+    document.getElementById('loginForm').reset();
+}
+
+// ==================== 数据加载和保存 ====================
+
+// 加载成绩数据
+async function loadGradeData() {
+    try {
+        showLoading('refreshBtn');
+        const key = `students_${currentGroup}`;
+        const obj = await getFromCloud(key);
+        // 重要：确保解包数组，防止 forEach 错误
+        studentsData = (obj && Array.isArray(obj.list)) ? obj.list : [];
+        renderGradeTable();
+    } catch (error) {
+        console.error('加载数据失败:', error);
+        alert('加载数据失败：' + error.message);
+    } finally {
+        hideLoading('refreshBtn');
+    }
+}
+
+// 保存学生数据到云端
+async function saveStudentsData() {
+    try {
+        const key = `students_${currentGroup}`;
+        await saveToCloud(key, {list: studentsData}); // 用对象包裹数组
+    } catch (error) {
+        console.error('保存学生数据失败:', error);
+        throw error;
+    }
+}
+
+// ==================== 成绩计算和渲染 ====================
+
+// 计算成绩等级
+function getGradeLevel(score) {
+    const numScore = parseFloat(score);
+    if (numScore >= 90) return '优';
+    if (numScore >= 80) return '良';
+    if (numScore >= 70) return '中';
+    if (numScore >= 60) return '及格';
+    return '不及格';
+}
+
+// 获取等级对应的样式类
+function getGradeLevelClass(level) {
+    switch(level) {
+        case '优': return 'text-red-600 font-bold';
+        case '良': return 'text-green-600 font-semibold';
+        case '中': return 'text-blue-600';
+        case '及格': return 'text-yellow-600';
+        case '不及格': return 'text-gray-500';
+        default: return 'text-gray-500';
+    }
+}
+
+// 渲染成绩表格
+function renderGradeTable() {
+    const tbody = document.getElementById('gradeTableBody');
+    tbody.innerHTML = '';
+    
+    studentsData.forEach((student, index) => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        
+        // 计算答辩成绩和总成绩
+        const expertGrades = student.expertGrades || [0, 0, 0, 0, 0];
+        const validGrades = expertGrades.filter(g => g > 0);
+        const defenseGrade = validGrades.length > 0 ? (validGrades.reduce((a, b) => a + b, 0) / validGrades.length).toFixed(1) : 0;
+        const totalGrade = (
+            student.proposalGrade * 0.1 +
+            student.supervisorGrade * 0.3 +
+            student.reviewerGrade * 0.2 +
+            parseFloat(defenseGrade) * 0.4
+        ).toFixed(1);
+        
+        // 计算成绩等级
+        const gradeLevel = getGradeLevel(totalGrade);
+        const levelClass = getGradeLevelClass(gradeLevel);
+        
+        // 判断是否可以编辑基础成绩（组长或管理员权限）
+        const canEditBasicGrades = isGroupLeader || isAdmin;
+        
+        row.innerHTML = `
+            <td class="px-4 py-3 text-sm text-gray-900">${student.studentId}</td>
+            <td class="px-4 py-3 text-sm text-gray-900">${student.name}</td>
+            <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="${student.title}">${student.title}</td>
+            <td class="px-4 py-3 text-sm">
+                ${canEditBasicGrades ?
+                    `<button onclick="openBasicGradeModal(${index}, 'proposal')" 
+                    class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
+                        ${student.proposalGrade}
+                    </button>` :
+                    `<span class="text-gray-900">${student.proposalGrade}</span>`
                 }
-            };
-            reader.readAsArrayBuffer(file);
+            </td>
+            <td class="px-4 py-3 text-sm">
+                ${canEditBasicGrades ?
+                    `<button onclick="openBasicGradeModal(${index}, 'supervisor')" 
+                    class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
+                        ${student.supervisorGrade}
+                    </button>` :
+                    `<span class="text-gray-900">${student.supervisorGrade}</span>`
+                }
+            </td>
+            <td class="px-4 py-3 text-sm">
+                ${canEditBasicGrades ?
+                    `<button onclick="openBasicGradeModal(${index}, 'reviewer')" 
+                    class="w-16 px-2 py-1 text-center border rounded bg-yellow-100 border-yellow-300 hover:bg-yellow-200">
+                        ${student.reviewerGrade}
+                    </button>` :
+                    `<span class="text-gray-900">${student.reviewerGrade}</span>`
+                }
+            </td>
+            ${expertGrades.map((grade, i) => `
+                <td class="px-4 py-3 text-sm">
+                    <button onclick="openExpertGradeModal(${index}, ${i})" 
+                    class="w-16 px-2 py-1 text-center border rounded ${grade > 0 ? 'bg-green-100 border-green-300' : 'bg-gray-100 border-gray-300'} hover:bg-blue-100">
+                        ${grade || '-'}
+                    </button>
+                </td>
+            `).join('')}
+            <td class="px-4 py-3 text-sm font-medium text-blue-600">${defenseGrade}</td>
+            <td class="px-4 py-3 text-sm font-bold text-green-600">${totalGrade}</td>
+            <td class="px-4 py-3 text-sm ${levelClass}">${gradeLevel}</td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+// ==================== 成绩录入模态框 ====================
+
+// 打开基础成绩录入模态框（开题、指导教师、评阅教师成绩）
+function openBasicGradeModal(studentIndex, gradeType) {
+    const student = studentsData[studentIndex];
+    currentEditType = gradeType;
+    currentStudentIndex = studentIndex;
+    
+    const gradeTypeNames = {
+        'proposal': '开题成绩',
+        'supervisor': '指导教师成绩',
+        'reviewer': '评阅教师成绩'
+    };
+    
+    const currentGrade = gradeType === 'proposal' ? student.proposalGrade :
+                        gradeType === 'supervisor' ? student.supervisorGrade :
+                        student.reviewerGrade;
+    
+    const modal = document.getElementById('gradeModal');
+    const title = document.getElementById('modalTitle');
+    const content = document.getElementById('modalContent');
+    
+    title.textContent = `修改${gradeTypeNames[gradeType]}`;
+    content.innerHTML = `
+        <div class="mb-4">
+            <p class="text-sm text-gray-600">学号：${student.studentId}</p>
+            <p class="text-sm text-gray-600">姓名：${student.name}</p>
+            <p class="text-sm text-gray-600">成绩类型：${gradeTypeNames[gradeType]}</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">${gradeTypeNames[gradeType]}（0-100 分）</label>
+            <input type="number" id="gradeInput" min="0" max="100" 
+            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" 
+            value="${currentGrade}" placeholder="请输入成绩">
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('gradeInput').focus();
+}
+
+// 打开专家答辩成绩录入模态框
+function openExpertGradeModal(studentIndex, expertIndex) {
+    const student = studentsData[studentIndex];
+    const expertNumber = expertIndex + 1;
+    const currentExpertIndex = parseInt(currentUser.replace('expert', '')) - 1;
+    
+    // 检查权限：只能录入自己的成绩，或者组长/管理员可以修改所有成绩
+    if (!isGroupLeader && !isAdmin && expertIndex !== currentExpertIndex) {
+        alert('您只能录入自己的答辩成绩');
+        return;
+    }
+    
+    currentEditType = 'expert';
+    currentStudentIndex = studentIndex;
+    currentEditIndex = expertIndex;
+    
+    const modal = document.getElementById('gradeModal');
+    const title = document.getElementById('modalTitle');
+    const content = document.getElementById('modalContent');
+    
+    title.textContent = '录入答辩成绩';
+    content.innerHTML = `
+        <div class="mb-4">
+            <p class="text-sm text-gray-600">学号：${student.studentId}</p>
+            <p class="text-sm text-gray-600">姓名：${student.name}</p>
+            <p class="text-sm text-gray-600">专家：专家${expertNumber}</p>
+        </div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">答辩成绩（0-100 分）</label>
+            <input type="number" id="gradeInput" min="0" max="100" 
+            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500" 
+            value="${student.expertGrades[expertIndex] || ''}" placeholder="请输入成绩">
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.getElementById('gradeInput').focus();
+}
+
+// 关闭模态框
+function closeModal() {
+    const modal = document.getElementById('gradeModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// 保存成绩
+async function saveGrade() {
+    const grade = parseFloat(document.getElementById('gradeInput').value);
+    
+    if (isNaN(grade) || grade < 0 || grade > 100) {
+        alert('请输入有效的成绩（0-100 分）');
+        return;
+    }
+    
+    try {
+        showLoading('saveGrade');
+        
+        if (currentEditType === 'expert') {
+            studentsData[currentStudentIndex].expertGrades[currentEditIndex] = grade;
+        } else if (currentEditType === 'proposal') {
+            studentsData[currentStudentIndex].proposalGrade = grade;
+        } else if (currentEditType === 'supervisor') {
+            studentsData[currentStudentIndex].supervisorGrade = grade;
+        } else if (currentEditType === 'reviewer') {
+            studentsData[currentStudentIndex].reviewerGrade = grade;
         }
+        
+        // 保存到云端
+        await saveStudentsData();
+        
+        renderGradeTable();
+        closeModal();
+        alert('成绩保存成功！');
+    } catch (error) {
+        console.error('保存成绩失败:', error);
+        alert('保存成绩失败：' + error.message);
+    } finally {
+        hideLoading('saveGrade');
+    }
+}
 
-        // 导出到Excel
-        function exportToExcel() {
-            if (studentsData.length === 0) {
-                alert('暂无数据可导出');
-                return;
-            }
+// ==================== 文件导入导出 ====================
 
-            const exportData = studentsData.map(student => {
-                const expertGrades = student.expertGrades || [0, 0, 0, 0, 0];
-                const validGrades = expertGrades.filter(g => g > 0);
-                const defenseGrade = validGrades.length > 0 ? (validGrades.reduce((a, b) => a + b, 0) / validGrades.length).toFixed(1) : 0;
-                const totalGrade = (
-                    student.proposalGrade * 0.1 +
-                    student.supervisorGrade * 0.3 +
-                    student.reviewerGrade * 0.2 +
-                    parseFloat(defenseGrade) * 0.4
-                ).toFixed(1);
-                
-                const gradeLevel = getGradeLevel(totalGrade);
-
-                return {
-                    '学号': student.studentId,
-                    '姓名': student.name,
-                    '论文题目': student.title,
-                    '开题成绩': student.proposalGrade,
-                    '指导教师成绩': student.supervisorGrade,
-                    '评阅教师成绩': student.reviewerGrade,
-                    '答辩专家1成绩': expertGrades[0] || '',
-                    '答辩专家2成绩': expertGrades[1] || '',
-                    '答辩专家3成绩': expertGrades[2] || '',
-                    '答辩专家4成绩': expertGrades[3] || '',
-                    '答辩专家5成绩': expertGrades[4] || '',
-                    '答辩成绩': defenseGrade,
-                    '毕业设计成绩': totalGrade,
-                    '成绩等级': gradeLevel
-                };
-            });
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, '成绩表');
+// 处理文件导入
+async function handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
-            const groupName = currentGroup === 'group1' ? '第一答辩组' : currentGroup === 'group2' ? '第二答辩组' : '第三答辩组';
-            const fileName = `${groupName}_毕业设计成绩_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, fileName);
+            // 转换数据格式
+            const importedData = jsonData.map(row => ({
+                studentId: row['学号'] || row['StudentId'] || '',
+                name: row['姓名'] || row['Name'] || '',
+                title: row['论文题目'] || row['Title'] || '',
+                proposalGrade: parseFloat(row['开题成绩'] || row['ProposalGrade'] || 0),
+                supervisorGrade: parseFloat(row['指导教师成绩'] || row['SupervisorGrade'] || 0),
+                reviewerGrade: parseFloat(row['评阅教师成绩'] || row['ReviewerGrade'] || 0),
+                expertGrades: [0, 0, 0, 0, 0]
+            }));
+            
+            if (importedData.length > 0) {
+                studentsData = importedData;
+                await saveStudentsData();
+                renderGradeTable();
+                alert(`成功导入 ${importedData.length} 条学生记录！`);
+            } else {
+                alert('未能读取到有效数据，请检查 Excel 文件格式');
+            }
+        } catch (err) {
+            alert('文件读取失败，请确认文件格式正确');
+            console.error(err);
         }
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
 
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initSystem);
-    </script>
+// 导出到 Excel
+function exportToExcel() {
+    if (studentsData.length === 0) {
+        alert('暂无数据可导出');
+        return;
+    }
+    
+    const exportData = studentsData.map(student => {
+        const expertGrades = student.expertGrades || [0, 0, 0, 0, 0];
+        const validGrades = expertGrades.filter(g => g > 0);
+        const defenseGrade = validGrades.length > 0 ? (validGrades.reduce((a, b) => a + b, 0) / validGrades.length).toFixed(1) : 0;
+        const totalGrade = (
+            student.proposalGrade * 0.1 +
+            student.supervisorGrade * 0.3 +
+            student.reviewerGrade * 0.2 +
+            parseFloat(defenseGrade) * 0.4
+        ).toFixed(1);
+        const gradeLevel = getGradeLevel(totalGrade);
+        
+        return {
+            '学号': student.studentId,
+            '姓名': student.name,
+            '论文题目': student.title,
+            '开题成绩': student.proposalGrade,
+            '指导教师成绩': student.supervisorGrade,
+            '评阅教师成绩': student.reviewerGrade,
+            '答辩专家 1 成绩': expertGrades[0] || '',
+            '答辩专家 2 成绩': expertGrades[1] || '',
+            '答辩专家 3 成绩': expertGrades[2] || '',
+            '答辩专家 4 成绩': expertGrades[3] || '',
+            '答辩专家 5 成绩': expertGrades[4] || '',
+            '答辩成绩': defenseGrade,
+            '毕业设计成绩': totalGrade,
+            '成绩等级': gradeLevel
+        };
+    });
+    
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '成绩表');
+    
+    const groupName = currentGroup === 'group1' ? '第一答辩组' : currentGroup === 'group2' ? '第二答辩组' : '第三答辩组';
+    const fileName = `${groupName}_毕业设计成绩_${new Date().toISOString().split('T')[0]}.xlsx`;
+    
+    XLSX.writeFile(wb, fileName);
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', initSystem);
+</script>
 </body>
 </html>
