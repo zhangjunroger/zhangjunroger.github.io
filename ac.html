@@ -1,0 +1,1159 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>考试座位安排系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-blue-50 to-blue-100 min-h-screen p-8">
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-bold text-blue-700 mb-8 text-center">考试座位安排系统</h1>
+
+    <!-- 实时考试信息面板 -->
+    <div id="examTimePanel" class="hidden bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4 border-blue-500">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">当前时间</h3>
+                <div id="currentTime" class="text-2xl font-mono text-blue-600"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">考试倒计时</h3>
+                <div id="countdown" class="text-2xl font-mono text-red-600"></div>
+                <div id="examStatus" class="text-sm text-gray-600 mt-1"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">语音设置</h3>
+                <div class="space-y-2">
+                    <button id="voiceToggle" onclick="toggleVoice()" class="w-full px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">
+                        🔊 语音开启
+                    </button>
+                    <select id="voiceSelect" class="w-full p-1 border rounded text-sm" onchange="changeVoice()">
+                        <option value="">选择语音...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">语音测试</h3>
+                <div class="space-y-2">
+                    <button onclick="testVoice()" class="w-full px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">
+                        🎵 测试语音
+                    </button>
+                    <div id="voiceStatus" class="text-xs text-gray-600">语音提示已启用</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 左侧：配置面板 -->
+        <div class="bg-white rounded-lg shadow p-6 space-y-6">
+            <!-- 考试课程选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">考试课程</label>
+                <select id="courseSelect" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                    <option value="">-- 请选择课程 --</option>
+                </select>
+            </div>
+
+            <!-- 学生班级选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">学生班级</label>
+                
+                <!-- 第一个班级 -->
+                <div class="mb-3">
+                    <select id="classSelect1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                        <option value="">-- 请选择第一个班级 --</option>
+                    </select>
+                    <p class="text-sm text-gray-600 mt-1">班级1人数：<span id="studentCount1">0</span> 人</p>
+                </div>
+                
+                <!-- 第二个班级（可选） -->
+                <div class="mb-3">
+                    <select id="classSelect2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-400">
+                        <option value="">-- 第二个班级（可选） --</option>
+                    </select>
+                    <p class="text-sm text-gray-600 mt-1">班级2人数：<span id="studentCount2">0</span> 人</p>
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded-lg text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-blue-800">总人数：<span id="totalStudentCount">0</span> 人</span>
+                        <button onclick="clearClasses()" class="text-blue-600 hover:text-blue-800 text-xs">清空选择</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 考场选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">考场</label>
+                <select id="roomSelect" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                    <option value="">-- 请选择考场 --</option>
+                </select>
+            </div>
+
+            <!-- 当前考场行列显示和编辑 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">行数</label>
+                    <input id="rowInput" type="number" min="1"
+                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">列数</label>
+                    <input id="colInput" type="number" min="1"
+                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                </div>
+            </div>
+
+            <!-- 显示方式 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">座位显示方式</label>
+                <div class="space-y-1">
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="last3" checked class="mr-2">学号后3位
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="last5" class="mr-2">学号后5位
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="name" class="mr-2">姓名
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="seq" class="mr-2">序号
+                    </label>
+                </div>
+            </div>
+
+            <!-- 双班级混合选项 -->
+            <div id="mixingOptions" class="hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-1">双班级排座方式</label>
+                <div class="space-y-1">
+                    <label class="flex items-center">
+                        <input type="radio" name="mixMode" value="random" checked class="mr-2">随机混合
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="mixMode" value="alternate" class="mr-2">交替排列
+                        <span class="ml-1 text-xs text-gray-500">(座位间交替)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="mixMode" value="separate" class="mr-2">左右分区排列
+                        <span class="ml-1 text-xs text-gray-500">(左边班级1，右边班级2)</span>
+                    </label>
+                </div>
+            </div>
+
+            <button onclick="generateSeating()"
+                    class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                生成座位表
+            </button>
+
+            <!-- 导出按钮 -->
+            <div id="exportButtons" class="hidden space-y-2">
+                <button onclick="exportToExcel()" 
+                        class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    导出Excel
+                </button>
+                <button onclick="printSeating()" 
+                        class="w-full py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    打印座位表
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧：预览 -->
+        <div class="bg-white rounded-lg shadow p-6 lg:col-span-2">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">座位安排预览</h2>
+            <div id="examInfo" class="mb-4 p-4 bg-gray-50 rounded-lg"></div>
+            <div id="seatingChart" class="overflow-auto"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ---------- 完整预设数据 ---------- */
+
+// 预设课程
+const courses = [
+    {
+        id: 'auto-control',
+        name: '自动控制原理',
+        time: '2025-06-23 17:33-10:15',
+        duration: '21分钟'
+    }
+];
+
+// 预设班级和完整学生信息
+const studentClasses = [
+    {
+        id: 'ai2023130101',
+        name: '智能科学与技术2023级01班',
+        students: [
+            {id: '230502115', name: '孙雨佳'}, {id: '230502121', name: '卢柏妍'}, {id: '230503113', name: '张清宇'},
+            {id: '231301101', name: '吴秉霖'}, {id: '231301102', name: '吴彭远'}, {id: '231301103', name: '王语聪'},
+            {id: '231301104', name: '满依杭'}, {id: '231301105', name: '黄俊茗'}, {id: '231301106', name: '张磊'},
+            {id: '231301107', name: '葛峻'}, {id: '231301108', name: '黄子林'}, {id: '231301109', name: '李佳毅'},
+            {id: '231301112', name: '殷崇赫'}, {id: '231301113', name: '黄煊儒'}, {id: '231301114', name: '陈建菘'},
+            {id: '231301115', name: '刘进超'}, {id: '231301116', name: '黄文凯'}, {id: '231301117', name: '杨锐'},
+            {id: '231301118', name: '杨佳琦'}, {id: '231301119', name: '白秋萍'}, {id: '231301120', name: '凌文卓'},
+            {id: '231301121', name: '赵梓晗'}, {id: '231301122', name: '颜莹'}, {id: '231301123', name: '王慧鑫'},
+            {id: '211301301', name: '孙华阳'}, {id: '211301309', name: '陆涛'}, {id: '211301311', name: '胡崇周'},
+            {id: '221301112', name: '杨冀龙'}, {id: '221301122', name: '谭西敏'}, {id: '221301202', name: '马硕'},
+            {id: '221301206', name: '冯垚'}, {id: '221301215', name: '赵佳乐'}, {id: '221301218', name: '徐铭珠'},
+            {id: '221301304', name: '张钰琪'}, {id: '221301307', name: '莫宇杰'}
+        ]
+    },
+    {
+        id: 'ai2023130102',
+        name: '智能科学与技术2023级02班',
+        students: [
+            {id: '230501230', name: '袁佳'}, {id: '231002216', name: '徐筠舒'}, {id: '231301201', name: '李葉泽'},
+            {id: '231301202', name: '张龙坤'}, {id: '231301203', name: '马肇北'}, {id: '231301204', name: '秦硕'},
+            {id: '231301205', name: '富鹏博'}, {id: '231301206', name: '王昱懿'}, {id: '231301207', name: '李宇宸'},
+            {id: '231301208', name: '贾春旺'}, {id: '231301209', name: '陈鹏博'}, {id: '231301210', name: '邵子朗'},
+            {id: '231301211', name: '郑优'}, {id: '231301212', name: '陈松燚'}, {id: '231301213', name: '祝欣宏'},
+            {id: '231301214', name: '刘俊熙'}, {id: '231301215', name: '周驰伟'}, {id: '231301217', name: '赵一霖'},
+            {id: '231301218', name: '杜翘楚'}, {id: '231301219', name: '柴小喆'}, {id: '231301220', name: '张傲雪'},
+            {id: '231301221', name: '吕航'}, {id: '231301222', name: '邬嘉誉'}, {id: '231301223', name: '黄婷'}
+        ]
+    },
+    {
+        id: 'ai2023130103',
+        name: '智能科学与技术2023级03班',
+        students: [
+            {id: '231301301', name: '刘志翔'}, {id: '231301302', name: '李韫丞'}, {id: '231301303', name: '马仕博'},
+            {id: '231301304', name: '娄嘉'}, {id: '231301305', name: '陶剑南'}, {id: '231301306', name: '顾志成'},
+            {id: '231301307', name: '吴大周'}, {id: '231301308', name: '梁天阳'}, {id: '231301309', name: '王景皓'},
+            {id: '231301310', name: '张忠恩'}, {id: '231301311', name: '向延浩'}, {id: '231301312', name: '段家昌'},
+            {id: '231301313', name: '克然·哈别克'}, {id: '231301314', name: '努力扎提·努力买买提'}, {id: '231301315', name: '翟佳俊'},
+            {id: '231301316', name: '阿卜杜瓦日斯·巴拉提尼亚孜'}, {id: '231301317', name: '王云菲'}, {id: '231301318', name: '隋新仪'},
+            {id: '231301319', name: '霍林怡'}, {id: '231301320', name: '姜圣洁'}, {id: '231301321', name: '王妍丹'},
+            {id: '231301322', name: '安凤娇'}, {id: '231301323', name: '李欣瑶'}
+        ]
+    },
+    {
+        id: 'ai2023130301',
+        name: '工业智能2023级01班',
+        students: [
+            {id: '221303221', name: '陈柏霖'}, {id: '231303101', name: '及鹤竣'}, {id: '231303102', name: '吴略锟'},
+            {id: '231303103', name: '赵禹程'}, {id: '231303104', name: '陈阳'}, {id: '231303105', name: '李响'},
+            {id: '231303106', name: '宋海楠'}, {id: '231303107', name: '强昱晴'}, {id: '231303108', name: '王东时'},
+            {id: '231303109', name: '李凯平'}, {id: '231303111', name: '吴从飞'}, {id: '231303112', name: '周克熙'},
+            {id: '231303113', name: '赵宇晨'}, {id: '231303114', name: '戴陈'}, {id: '231303115', name: '陈济培'},
+            {id: '231303116', name: '刘烨'}, {id: '231303117', name: '严榕耀'}, {id: '231303118', name: '吴星磊'},
+            {id: '231303119', name: '林兴丹'}, {id: '231303120', name: '莫子煊'}, {id: '231303121', name: '熊浩然'},
+            {id: '231303122', name: '陈厚儒'}, {id: '231303123', name: '吴龙'}, {id: '231303124', name: '张诗茹'},
+            {id: '231303126', name: '赵婉伊'}, {id: '231303127', name: '王佳蕊'}, {id: '231303128', name: '房文静'},
+            {id: '231303129', name: '吴扬俪'}, {id: '231303130', name: '向双红'}, {id: '211303104', name: '王宏宇'},
+            {id: '211303109', name: '刘岩松'}, {id: '211303207', name: '刘世博'}, {id: '211303230', name: '陈丽云'},
+            {id: '221303121', name: '李高志'}, {id: '221303123', name: '秦一'}, {id: '221303130', name: '梅玉兰'},
+            {id: '221303203', name: '张宇航'}, {id: '221303217', name: '何泽斌'}, {id: '221303218', name: '雷耀天'}
+        ]
+    },    
+    {
+        id: 'ai2023130302',
+        name: '工业智能2023级02班',
+        students: [
+            {id: '211303214', name: '董建序'}, {id: '230502223', name: '王文静'}, {id: '230801215', name: '王文博'},
+            {id: '231303201', name: '白宇'}, {id: '231303202', name: '胡韶华'}, {id: '231303203', name: '王承辉'},
+            {id: '231303204', name: '薛博文'}, {id: '231303205', name: '王健翔'}, {id: '231303206', name: '陈英同'},
+            {id: '231303207', name: '袁侨亨'}, {id: '231303208', name: '葛世坤'}, {id: '231303209', name: '韩佳讯'},
+            {id: '231303210', name: '王柄然'}, {id: '231303211', name: '常宝安'}, {id: '231303212', name: '王彬'},
+            {id: '231303213', name: '廖海涛'}, {id: '231303214', name: '蔡志鹏'}, {id: '231303215', name: '高焕东'},
+            {id: '231303216', name: '邱盅淇'}, {id: '231303217', name: '江小川'}, {id: '231303218', name: '冯愉'},
+            {id: '231303219', name: '江宇航'}, {id: '231303220', name: '马志凌'}, {id: '231303221', name: '李扬'},
+            {id: '231303222', name: '陈肸'}, {id: '231303223', name: '李开峰'}, {id: '231303224', name: '鲁兴超'},
+            {id: '231303225', name: '侯玉涵'}, {id: '231303226', name: '李劲染'}, {id: '231303227', name: '刘潇雯'},
+            {id: '231303229', name: '裴悦然'}, {id: '231303230', name: '向鹏铮'}
+        ]
+    }   
+];
+
+// 预设考场
+const rooms = [
+    {id: 'B104', name: '教学楼B104', rows: 8, cols: 5},
+    {id: 'B105', name: '教学楼B105', rows: 7, cols: 5},
+    {id: 'B106', name: '教学楼B106', rows: 7, cols: 5},
+    {id: 'B109', name: '教学楼B109', rows: 12, cols: 6}    
+];
+
+let currentStudents1 = [];
+let currentStudents2 = [];
+let currentSeating = null;
+
+// 时间和语音相关变量
+let examTimer = null;
+let voiceEnabled = true;
+let voiceAlerts = [30, 20, 10, 5]; // 提醒时间点（分钟）
+let alertedTimes = new Set(); // 已提醒的时间点
+let availableVoices = [];
+let selectedVoice = null;
+
+/* ---------- 初始化 ---------- */
+function init() {
+    refreshCourseSelect();
+    refreshClassSelect();
+    refreshRoomSelect();
+    startRealTimeClock();
+    loadVoices();
+}
+
+// 加载可用语音
+function loadVoices() {
+    if ('speechSynthesis' in window) {
+        // 等待语音加载完成
+        const loadVoicesTimer = setInterval(() => {
+            availableVoices = speechSynthesis.getVoices();
+            if (availableVoices.length > 0) {
+                clearInterval(loadVoicesTimer);
+                populateVoiceSelect();
+            }
+        }, 100);
+        
+        // 监听语音变化事件
+        speechSynthesis.onvoiceschanged = () => {
+            availableVoices = speechSynthesis.getVoices();
+            populateVoiceSelect();
+        };
+    }
+}
+
+// 填充语音选择框
+function populateVoiceSelect() {
+    const voiceSelect = document.getElementById('voiceSelect');
+    voiceSelect.innerHTML = '<option value="">选择语音...</option>';
+    
+    // 优先显示中文语音
+    const chineseVoices = availableVoices.filter(voice => 
+        voice.lang.includes('zh') || voice.lang.includes('CN')
+    );
+    
+    const otherVoices = availableVoices.filter(voice => 
+        !voice.lang.includes('zh') && !voice.lang.includes('CN')
+    );
+    
+    // 添加中文语音
+    if (chineseVoices.length > 0) {
+        const chineseGroup = document.createElement('optgroup');
+        chineseGroup.label = '中文语音';
+        chineseVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.default) option.textContent += ' [默认]';
+            chineseGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(chineseGroup);
+        
+        // 默认选择第一个中文语音
+        selectedVoice = chineseVoices[0];
+        voiceSelect.value = '0';
+    }
+    
+    // 添加其他语音
+    if (otherVoices.length > 0) {
+        const otherGroup = document.createElement('optgroup');
+        otherGroup.label = '其他语音';
+        otherVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = chineseVoices.length + index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.default && !selectedVoice) option.textContent += ' [默认]';
+            otherGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(otherGroup);
+        
+        // 如果没有中文语音，选择默认语音
+        if (!selectedVoice) {
+            const defaultVoice = otherVoices.find(voice => voice.default) || otherVoices[0];
+            selectedVoice = defaultVoice;
+            voiceSelect.value = chineseVoices.length + otherVoices.indexOf(defaultVoice);
+        }
+    }
+}
+
+// 更改语音
+function changeVoice() {
+    const voiceSelect = document.getElementById('voiceSelect');
+    const voiceIndex = parseInt(voiceSelect.value);
+    
+    if (!isNaN(voiceIndex) && voiceIndex >= 0 && voiceIndex < availableVoices.length) {
+        selectedVoice = availableVoices[voiceIndex];
+        console.log('选择语音:', selectedVoice.name);
+    }
+}
+
+// 测试语音
+function testVoice() {
+    if (!selectedVoice) {
+        alert('请先选择一个语音');
+        return;
+    }
+    
+    const testText = '这是语音测试，距离自动控制原理考试结束还有30分钟';
+    const utterance = new SpeechSynthesisUtterance(testText);
+    utterance.voice = selectedVoice;
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    speechSynthesis.speak(utterance);
+}
+
+init();
+
+/* ---------- 实时时钟和考试倒计时 ---------- */
+function startRealTimeClock() {
+    setInterval(updateClock, 1000);
+    updateClock();
+}
+
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    document.getElementById('currentTime').textContent = timeString;
+    
+    // 更新考试倒计时
+    if (currentSeating && currentSeating.course) {
+        updateExamCountdown(now);
+    }
+}
+
+function updateExamCountdown(now) {
+    const course = currentSeating.course;
+    const examTime = parseExamTime(course.time);
+    
+    if (!examTime) return;
+    
+    const timeDiff = examTime.getTime() - now.getTime();
+    const countdownEl = document.getElementById('countdown');
+    const statusEl = document.getElementById('examStatus');
+    
+    if (timeDiff > 0) {
+        // 考试还未开始
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        
+        countdownEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        statusEl.textContent = '距离考试开始';
+        countdownEl.className = 'text-2xl font-mono text-orange-600';
+    } else {
+        // 考试已开始或结束
+        const examDuration = parseInt(course.duration);
+        const examEndTime = new Date(examTime.getTime() + examDuration * 60 * 1000);
+        const endTimeDiff = examEndTime.getTime() - now.getTime();
+        
+        if (endTimeDiff > 0) {
+            // 考试进行中
+            const minutes = Math.floor(endTimeDiff / (1000 * 60));
+            const seconds = Math.floor((endTimeDiff % (1000 * 60)) / 1000);
+            
+            countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            statusEl.textContent = '距离考试结束';
+            countdownEl.className = 'text-2xl font-mono text-red-600';
+            
+            // 检查语音提醒
+            checkVoiceAlerts(minutes, course.name);
+        } else {
+            // 考试已结束
+            countdownEl.textContent = '00:00';
+            statusEl.textContent = '考试已结束';
+            countdownEl.className = 'text-2xl font-mono text-gray-500';
+        }
+    }
+}
+
+function parseExamTime(timeString) {
+    // 解析时间格式：2025-01-20 14:00-15:35
+    const match = timeString.match(/(\d{4}-\d{2}-\d{2})\s+(\d{2}):(\d{2})-/);
+    if (match) {
+        const [, date, hour, minute] = match;
+        return new Date(`${date}T${hour}:${minute}:00`);
+    }
+    return null;
+}
+
+function checkVoiceAlerts(remainingMinutes, courseName) {
+    for (const alertTime of voiceAlerts) {
+        if (remainingMinutes === alertTime && !alertedTimes.has(alertTime) && voiceEnabled) {
+            speakAlert(courseName, alertTime);
+            alertedTimes.add(alertTime);
+        }
+    }
+}
+
+function speakAlert(courseName, minutes) {
+    if ('speechSynthesis' in window && selectedVoice) {
+        const utterance = new SpeechSynthesisUtterance(
+            `距离${courseName}考试结束还有${minutes}分钟`
+        );
+        utterance.voice = selectedVoice;
+        utterance.rate = 0.8;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        speechSynthesis.speak(utterance);
+    }
+}
+
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const button = document.getElementById('voiceToggle');
+    const status = document.getElementById('voiceStatus');
+    
+    if (voiceEnabled) {
+        button.textContent = '🔊 语音开启';
+        button.className = 'w-full px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm';
+        status.textContent = '语音提示已启用';
+    } else {
+        button.textContent = '🔇 语音关闭';
+        button.className = 'w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm';
+        status.textContent = '语音提示已关闭';
+    }
+}
+
+/* ---------- 课程管理 ---------- */
+function refreshCourseSelect() {
+    const sel = document.getElementById('courseSelect');
+    sel.innerHTML = '<option value="">-- 请选择课程 --</option>';
+    courses.forEach(c => {
+        sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+}
+
+/* ---------- 班级管理 ---------- */
+function refreshClassSelect() {
+    const sel1 = document.getElementById('classSelect1');
+    const sel2 = document.getElementById('classSelect2');
+    
+    const options = '<option value="">-- 请选择班级 --</option>' + 
+        studentClasses.map(c => `<option value="${c.id}">${c.name} (${c.students.length}人)</option>`).join('');
+    
+    sel1.innerHTML = options.replace('-- 请选择班级 --', '-- 请选择第一个班级 --');
+    sel2.innerHTML = options.replace('-- 请选择班级 --', '-- 第二个班级（可选） --');
+}
+
+// 班级1选择事件
+document.getElementById('classSelect1').addEventListener('change', function(e) {
+    const classData = studentClasses.find(c => c.id === e.target.value);
+    if (classData) {
+        currentStudents1 = [...classData.students];
+        document.getElementById('studentCount1').textContent = currentStudents1.length;
+    } else {
+        currentStudents1 = [];
+        document.getElementById('studentCount1').textContent = '0';
+    }
+    updateTotalCount();
+    updateMixingOptions();
+});
+
+// 班级2选择事件
+document.getElementById('classSelect2').addEventListener('change', function(e) {
+    const classData = studentClasses.find(c => c.id === e.target.value);
+    if (classData) {
+        currentStudents2 = [...classData.students];
+        document.getElementById('studentCount2').textContent = currentStudents2.length;
+    } else {
+        currentStudents2 = [];
+        document.getElementById('studentCount2').textContent = '0';
+    }
+    updateTotalCount();
+    updateMixingOptions();
+});
+
+function updateTotalCount() {
+    const total = currentStudents1.length + currentStudents2.length;
+    document.getElementById('totalStudentCount').textContent = total;
+}
+
+function updateMixingOptions() {
+    const mixingOptions = document.getElementById('mixingOptions');
+    if (currentStudents2.length > 0) {
+        mixingOptions.classList.remove('hidden');
+    } else {
+        mixingOptions.classList.add('hidden');
+    }
+}
+
+function clearClasses() {
+    document.getElementById('classSelect1').value = '';
+    document.getElementById('classSelect2').value = '';
+    currentStudents1 = [];
+    currentStudents2 = [];
+    document.getElementById('studentCount1').textContent = '0';
+    document.getElementById('studentCount2').textContent = '0';
+    updateTotalCount();
+    updateMixingOptions();
+}
+
+/* ---------- 考场管理 ---------- */
+function refreshRoomSelect() {
+    const sel = document.getElementById('roomSelect');
+    sel.innerHTML = '<option value="">-- 请选择考场 --</option>';
+    rooms.forEach(r => {
+        sel.innerHTML += `<option value="${r.id}">${r.name} (${r.rows}×${r.cols}=${r.rows*r.cols}座)</option>`;
+    });
+}
+
+document.getElementById('roomSelect').addEventListener('change', function(e) {
+    const room = rooms.find(r => r.id === e.target.value);
+    if (room) {
+        document.getElementById('rowInput').value = room.rows;
+        document.getElementById('colInput').value = room.cols;
+    } else {
+        document.getElementById('rowInput').value = '';
+        document.getElementById('colInput').value = '';
+    }
+});
+
+/* ---------- 生成座位 ---------- */
+function generateSeating() {
+    const courseId = document.getElementById('courseSelect').value;
+    const classId1 = document.getElementById('classSelect1').value;
+    const classId2 = document.getElementById('classSelect2').value;
+    const roomId = document.getElementById('roomSelect').value;
+    
+    if (!courseId) {
+        alert('请选择考试课程');
+        return;
+    }
+    if (!classId1) {
+        alert('请至少选择一个班级');
+        return;
+    }
+    if (!roomId) {
+        alert('请选择考场');
+        return;
+    }
+    
+    const rows = parseInt(document.getElementById('rowInput').value);
+    const cols = parseInt(document.getElementById('colInput').value);
+    
+    if (!rows || !cols) {
+        alert('请设置行列数');
+        return;
+    }
+    
+    const totalSeats = rows * cols;
+    const totalStudents = currentStudents1.length + currentStudents2.length;
+    
+    if (totalStudents > totalSeats) {
+        alert(`学生人数(${totalStudents})超过座位数(${totalSeats})！请选择更大的考场或调整座位布局。`);
+        return;
+    }
+    
+    // 生成座位矩阵
+    let matrix = [];
+    const mixMode = document.querySelector('input[name="mixMode"]:checked')?.value || 'random';
+    
+    if (currentStudents2.length > 0) {
+        // 双班级模式
+        matrix = generateTwoClassSeating(currentStudents1, currentStudents2, rows, cols, mixMode);
+    } else {
+        // 单班级模式
+        matrix = generateSingleClassSeating(currentStudents1, rows, cols);
+    }
+    
+    // 获取相关信息
+    const course = courses.find(c => c.id === courseId);
+    const studentClass1 = studentClasses.find(c => c.id === classId1);
+    const studentClass2 = classId2 ? studentClasses.find(c => c.id === classId2) : null;
+    const room = rooms.find(r => r.id === roomId);
+    const showMode = document.querySelector('input[name="showMode"]:checked').value;
+    
+    // 保存当前排座数据
+    currentSeating = {
+        course: course,
+        class1: studentClass1,
+        class2: studentClass2,
+        room: room,
+        matrix: matrix,
+        showMode: showMode,
+        mixMode: mixMode
+    };
+    
+    // 显示考试信息面板
+    document.getElementById('examTimePanel').classList.remove('hidden');
+    
+    // 重置语音提醒状态
+    alertedTimes.clear();
+    
+    // 显示考试信息
+    displayExamInfo(course, studentClass1, studentClass2, room);
+    
+    // 渲染座位表
+    renderSeatingChart(matrix, showMode);
+    
+    // 显示导出按钮
+    document.getElementById('exportButtons').classList.remove('hidden');
+}
+
+function generateSingleClassSeating(students, rows, cols) {
+    const allStudents = [...students].map(s => ({...s, classIndex: 1}));
+    
+    // 随机打乱
+    for (let i = allStudents.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allStudents[i], allStudents[j]] = [allStudents[j], allStudents[i]];
+    }
+    
+    // 生成座位矩阵
+    const matrix = [];
+    let studentIndex = 0;
+    
+    for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+            if (studentIndex < allStudents.length) {
+                row.push(allStudents[studentIndex++]);
+            } else {
+                row.push(null);
+            }
+        }
+        matrix.push(row);
+    }
+    
+    return matrix;
+}
+
+function generateTwoClassSeating(students1, students2, rows, cols, mixMode) {
+    const matrix = [];
+    
+    // 初始化空矩阵
+    for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let c = 0; c < cols; c++) {
+            row.push(null);
+        }
+        matrix.push(row);
+    }
+    
+    // 为学生添加班级标识
+    const marked1 = students1.map(s => ({...s, classIndex: 1}));
+    const marked2 = students2.map(s => ({...s, classIndex: 2}));
+    
+    let allStudents = [];
+    
+    switch(mixMode) {
+        case 'random':
+            // 随机混合
+            allStudents = [...marked1, ...marked2];
+            for (let i = allStudents.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allStudents[i], allStudents[j]] = [allStudents[j], allStudents[i]];
+            }
+            
+            // 填充座位
+            let studentIndex = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (studentIndex < allStudents.length) {
+                        matrix[r][c] = allStudents[studentIndex++];
+                    }
+                }
+            }
+            break;
+            
+        case 'alternate':
+            // 修复交替排列逻辑 - 真正的座位间交替
+            const shuffled1 = [...marked1];
+            const shuffled2 = [...marked2];
+            
+            // 随机打乱各自班级
+            for (let i = shuffled1.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled1[i], shuffled1[j]] = [shuffled1[j], shuffled1[i]];
+            }
+            
+            for (let i = shuffled2.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled2[i], shuffled2[j]] = [shuffled2[j], shuffled2[i]];
+            }
+            
+            let index1 = 0, index2 = 0;
+            let useClass1 = true; // 交替标志
+            
+            // 按座位位置交替分配
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (useClass1 && index1 < shuffled1.length) {
+                        matrix[r][c] = shuffled1[index1++];
+                    } else if (!useClass1 && index2 < shuffled2.length) {
+                        matrix[r][c] = shuffled2[index2++];
+                    } else if (index1 < shuffled1.length) {
+                        matrix[r][c] = shuffled1[index1++];
+                    } else if (index2 < shuffled2.length) {
+                        matrix[r][c] = shuffled2[index2++];
+                    }
+                    useClass1 = !useClass1; // 切换班级
+                }
+            }
+            break;
+            
+        case 'separate':
+            // 左右分区排列
+            const leftCols = Math.ceil(cols / 2); // 左边列数
+            const rightCols = cols - leftCols;    // 右边列数
+            
+            // 随机打乱各自班级
+            const shuffled1_sep = [...marked1];
+            const shuffled2_sep = [...marked2];
+            
+            for (let i = shuffled1_sep.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled1_sep[i], shuffled1_sep[j]] = [shuffled1_sep[j], shuffled1_sep[i]];
+            }
+            
+            for (let i = shuffled2_sep.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled2_sep[i], shuffled2_sep[j]] = [shuffled2_sep[j], shuffled2_sep[i]];
+            }
+            
+            // 填充左边区域（班级1）
+            let index1_sep = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < leftCols; c++) {
+                    if (index1_sep < shuffled1_sep.length) {
+                        matrix[r][c] = shuffled1_sep[index1_sep++];
+                    }
+                }
+            }
+            
+            // 填充右边区域（班级2）
+            let index2_sep = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = leftCols; c < cols; c++) {
+                    if (index2_sep < shuffled2_sep.length) {
+                        matrix[r][c] = shuffled2_sep[index2_sep++];
+                    }
+                }
+            }
+            break;
+    }
+    
+    return matrix;
+}
+
+function displayExamInfo(course, studentClass1, studentClass2, room) {
+    const totalSeats = room.rows * room.cols;
+    const totalStudents = currentStudents1.length + currentStudents2.length;
+    const emptySeats = totalSeats - totalStudents;
+    
+    let classInfo = `<div><strong>参考班级：</strong>${studentClass1.name} (${currentStudents1.length}人)`;
+    if (studentClass2) {
+        classInfo += ` + ${studentClass2.name} (${currentStudents2.length}人)`;
+    }
+    classInfo += '</div>';
+    
+    document.getElementById('examInfo').innerHTML = `
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><strong>考试课程：</strong>${course.name}</div>
+            ${classInfo}
+            <div><strong>考试时间：</strong>${course.time}</div>
+            <div><strong>考试时长：</strong>${course.duration}</div>
+            <div><strong>考场：</strong>${room.name}</div>
+            <div><strong>座位布局：</strong>${room.rows}行×${room.cols}列</div>
+            <div><strong>总座位数：</strong>${totalSeats} 个</div>
+            <div><strong>参考人数：</strong>${totalStudents} 人</div>
+            <div class="col-span-2"><strong>空余座位：</strong>${emptySeats} 个 <span class="text-gray-500">(座位利用率：${(totalStudents/totalSeats*100).toFixed(1)}%)</span></div>
+        </div>
+    `;
+}
+
+function renderSeatingChart(matrix, showMode) {
+    let html = '<div class="text-center mb-4">';
+    html += '<h3 class="text-lg font-semibold mb-2">座位安排图</h3>';
+    html += '<div class="text-sm text-gray-600 mb-4">讲台方向 ↑</div>';
+    
+    // 如果是左右分区模式，显示分区标识
+    if (currentSeating && currentSeating.mixMode === 'separate' && currentSeating.class2) {
+        const leftCols = Math.ceil(matrix[0].length / 2);
+        html += '<div class="flex justify-center gap-8 mb-2 text-sm">';
+        html += `<div class="flex items-center gap-1"><div class="w-4 h-4 bg-green-100 border border-gray-400"></div><span>左区：${currentSeating.class1.name}</span></div>`;
+        html += `<div class="flex items-center gap-1"><div class="w-4 h-4 bg-purple-100 border border-gray-400"></div><span>右区：${currentSeating.class2.name}</span></div>`;
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    html += '<table class="mx-auto border-collapse seat-table">';
+    
+    // 添加列号
+    html += '<tr><th class="seat-header"></th>';
+    for (let c = 0; c < matrix[0].length; c++) {
+        html += `<th class="seat-header">${c + 1}</th>`;
+    }
+    html += '</tr>';
+    
+    // 添加座位
+    matrix.forEach((row, r) => {
+        html += '<tr>';
+        html += `<th class="seat-header">${r + 1}</th>`;
+        row.forEach((student, c) => {
+            if (student) {
+                let display = '';
+                switch(showMode) {
+                    case 'last3':
+                        display = student.id.slice(-3);
+                        break;
+                    case 'last5':
+                        display = student.id.slice(-5);
+                        break;
+                    case 'name':
+                        display = student.name;
+                        break;
+                    case 'seq':
+                        display = (r * matrix[0].length + c + 1).toString().padStart(3, '0');
+                        break;
+                }
+                
+                // 根据班级设置不同背景色
+                let bgColor = 'seat-class1';
+                let classLabel = '班级1';
+                
+                if (student.classIndex === 2) {
+                    bgColor = 'seat-class2';
+                    classLabel = '班级2';
+                }
+                
+                html += `<td class="seat-cell ${bgColor}" 
+                         title="座位：${r + 1}-${c + 1}&#10;学号：${student.id}&#10;姓名：${student.name}&#10;班级：${classLabel}">${display}</td>`;
+            } else {
+                html += '<td class="seat-cell seat-empty"></td>';
+            }
+        });
+        html += '</tr>';
+    });
+    html += '</table>';
+    
+    // 添加说明
+    html += '<div class="mt-4 text-center text-sm text-gray-600">';
+    html += '<div class="inline-flex items-center gap-4">';
+    html += '<div class="flex items-center gap-1"><div class="legend-box seat-class1"></div><span>班级1学生</span></div>';
+    if (currentStudents2.length > 0) {
+        html += '<div class="flex items-center gap-1"><div class="legend-box seat-class2"></div><span>班级2学生</span></div>';
+    }
+    html += '<div class="flex items-center gap-1"><div class="legend-box seat-empty"></div><span>空余座位</span></div>';
+    html += '</div>';
+    html += '<div class="mt-2">鼠标悬停在座位上可查看详细信息</div>';
+    html += '</div>';
+    
+    document.getElementById('seatingChart').innerHTML = html;
+}
+
+/* ---------- 导出功能 ---------- */
+function exportToExcel() {
+    if (!currentSeating) return;
+    
+    // 创建导出数据
+    const data = [
+        [`${currentSeating.course.name} 座位安排表`]
+    ];
+    
+    let classInfo = `班级：${currentSeating.class1.name}`;
+    if (currentSeating.class2) {
+        classInfo += ` + ${currentSeating.class2.name}`;
+    }
+    data.push([classInfo]);
+    
+    data.push([`考试时间：${currentSeating.course.time}`]);
+    data.push([`考场：${currentSeating.room.name}`]);
+    data.push([`座位布局：${currentSeating.room.rows}行×${currentSeating.room.cols}列`]);
+    data.push([]);
+    data.push(['座位号', '学号', '姓名', '班级', '显示内容']);
+    
+    currentSeating.matrix.forEach((row, r) => {
+        row.forEach((student, c) => {
+            if (student) {
+                let display = '';
+                switch(currentSeating.showMode) {
+                    case 'last3': display = student.id.slice(-3); break;
+                    case 'last5': display = student.id.slice(-5); break;
+                    case 'name': display = student.name; break;
+                    case 'seq': display = (r * currentSeating.matrix[0].length + c + 1).toString(); break;
+                }
+                
+                const className = student.classIndex === 1 ? currentSeating.class1.name : currentSeating.class2?.name || '';
+                
+                data.push([
+                    `${r + 1}-${c + 1}`,
+                    student.id,
+                    student.name,
+                    className,
+                    display
+                ]);
+            }
+        });
+    });
+    
+    // 创建并下载CSV文件
+    const csvContent = data.map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    
+    let fileName = `${currentSeating.course.name}_${currentSeating.class1.name}`;
+    if (currentSeating.class2) {
+        fileName += `+${currentSeating.class2.name}`;
+    }
+    fileName += `_座位表_${new Date().toLocaleDateString()}.csv`;
+    
+    link.download = fileName;
+    link.click();
+}
+
+function printSeating() {
+    const printWindow = window.open('', '_blank');
+    const printContent = document.getElementById('seatingChart').innerHTML;
+    const examInfo = document.getElementById('examInfo').innerHTML;
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>座位安排表</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .seat-table { border-collapse: collapse; margin: 0 auto; }
+                .seat-header { 
+                    padding: 6px 8px; 
+                    text-align: center; 
+                    font-size: 12px; 
+                    color: #666;
+                    border: none;
+                    width: 50px;
+                }
+                .seat-cell { 
+                    border: 2px solid #333; 
+                    padding: 12px 8px; 
+                    text-align: center; 
+                    font-weight: bold;
+                    font-size: 14px;
+                    width: 70px;
+                    height: 50px;
+                    vertical-align: middle;
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+                .seat-class1 { background-color: #dcfce7; }
+                .seat-class2 { background-color: #e9d5ff; }
+                .seat-empty { background-color: #f9fafb; }
+                .exam-info { margin-bottom: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px; }
+                .exam-info div { margin: 5px 0; }
+                @page { margin: 1cm; }
+            </style>
+        </head>
+        <body>
+            <div class="exam-info">${examInfo}</div>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+}
+</script>
+
+<style>
+/* 自定义座位表样式 */
+.seat-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.seat-header {
+    padding: 6px 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    border: none;
+    width: 50px;
+}
+
+.seat-cell {
+    border: 2px solid #374151;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    width: 70px;
+    height: 50px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.2;
+}
+
+.seat-class1 {
+    background-color: #dcfce7;
+}
+
+.seat-class1:hover {
+    background-color: #bbf7d0;
+    transform: scale(1.05);
+}
+
+.seat-class2 {
+    background-color: #e9d5ff;
+}
+
+.seat-class2:hover {
+    background-color: #ddd6fe;
+    transform: scale(1.05);
+}
+
+.seat-empty {
+    background-color: #f9fafb;
+}
+
+.legend-box {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #374151;
+}
+
+@media print {
+    body {
+        background: white;
+    }
+    .grid {
+        display: block;
+    }
+    .lg\\:col-span-2 {
+        width: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .seat-cell {
+        page-break-inside: avoid;
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .seat-cell {
+        width: 60px;
+        height: 45px;
+        padding: 8px 4px;
+        font-size: 12px;
+    }
+    
+    .seat-header {
+        font-size: 10px;
+        width: 40px;
+    }
+}
+</style>
+</body>
+</html>
