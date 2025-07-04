@@ -1647,7 +1647,7 @@ function getCurrentWeek() {
     const weekNumber = Math.floor(diffDays / 7) + 1;
     
     // 限制在合理范围内（一般学期不超过20周）
-    return Math.min(weekNumber, 26);
+    return Math.min(weekNumber, 20);
 }
 
 // 初始化当前周
@@ -1814,7 +1814,7 @@ currentWeek = getCurrentWeek();
         function loadVisualizationData() {  
             const query = new AV.Query('Booking');  
             query.limit(1000);  
-            query.ascending('date');  
+            query.descending('date');  
 
             query.find().then(results => {  
                 allBookingsData = results.map(booking => ({  
@@ -2353,7 +2353,7 @@ function deleteBookingFromDetails(bookingId) {
             const query = new AV.Query('Booking');
             
             query.limit(1000); // 增加结果数量上限
-            query.ascending('date'); // 确保按日期排序
+            query.descending('date'); // 确保按日期排序
 
             // 获取当前用户
             const currentUser = AV.User.current();
@@ -2373,7 +2373,7 @@ function deleteBookingFromDetails(bookingId) {
                     };  
                 });  
 
-                bookings.sort((a, b) => new Date(b.date) - new Date(a.date));  
+                bookings.sort((a, b) => new Date(a.date) - new Date(b.date));  
 
                 let currentDisplayDate = '';  
                 bookings.forEach(booking => {  
