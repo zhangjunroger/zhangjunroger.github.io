@@ -2372,7 +2372,7 @@ function deleteBookingFromDetails(bookingId) {
                     };  
                 });  
 
-                bookings.sort((a, b) => new Date(b.date) - new Date(a.date));  
+                bookings.sort((a, b) => new Date(a.date) - new Date(b.date));  
 
                 let currentDisplayDate = '';  
                 bookings.forEach(booking => {  
