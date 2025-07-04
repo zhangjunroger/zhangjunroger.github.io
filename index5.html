@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>  
 <html lang="zh-CN">  
 <head>  
@@ -2373,7 +2372,7 @@ function deleteBookingFromDetails(bookingId) {
                     };  
                 });  
 
-                bookings.sort((a, b) => new Date(a.date) - new Date(b.date));  
+                bookings.sort((a, b) => new Date(b.date) - new Date(a.date));  
 
                 let currentDisplayDate = '';  
                 bookings.forEach(booking => {  
