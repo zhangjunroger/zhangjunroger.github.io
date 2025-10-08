@@ -138,7 +138,41 @@
                 top: 5rem !important;
                 font-size: 0.9rem;
             }
-        }   
+        } 
+        
+    /* 视频和 canvas 容器 */
+    .video-container {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    /* 视频元素 */
+    #video {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 8px;
+    }
+
+    /* Canvas 叠加层 */
+    #faceCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* 允许点击穿透 */
+    }
+
+    /* 隐藏类 */
+    .hidden {
+        display: none !important;
+    }        
+
+
 
     </style>  
 </head>  
@@ -416,13 +450,33 @@
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">🎓 学生签到</h2>  
 
                 <!-- Video for face recognition -->  
-                <div class="mb-4 video-container">  
-                    <video id="video" width="640" height="480" autoplay class="border rounded-lg bg-black hidden"></video>  
-                    <canvas id="faceCanvas" width="640" height="480" class="hidden"></canvas>  
-                    <div id="videoPlaceholder" class="bg-gray-200 rounded-lg h-80 flex items-center justify-center">  
-                        <p class="text-gray-500 text-center px-4">点击"打开相机"开始人脸识别<br/><small class="text-xs">请确保光线充足，正对摄像头</small></p>  
-                    </div>  
-                </div>  
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold mb-3">📷 人脸识别签到</h3>
+                    
+                    <!-- 视频容器 -->
+                    <div class="video-container flex justify-center items-center" >
+                        <video 
+                        id="video" 
+                        autoplay 
+                        playsinline 
+                        muted
+                        class="hidden mx-auto block w-full max-w-2xl rounded-lg shadow-lg"
+                    ></video>
+                        
+                        <canvas 
+                            id="faceCanvas" 
+                            class="hidden"
+                        ></canvas>
+                    </div>
+                    
+                    <!-- 占位符 -->
+                    <div id="videoPlaceholder" class="bg-gray-200 rounded-lg p-8 text-center">
+                        <p class="text-gray-600">📷 点击下方按钮打开相机</p>
+                    </div>
+                    
+                    <!-- 识别状态 -->
+                    <div id="recognitionStatus" class="hidden mt-4 p-4 bg-blue-50 rounded-lg text-center"></div>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">  
                     <button onclick="openCamera()" id="cameraBtn" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700">📷 打开相机（人脸识别）</button>  
@@ -2953,34 +3007,106 @@
 
 
 
-        // Open camera for face recognition
+        // Open camera for face recognition (移动端优化版)
         async function openCamera() {
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('📱 打开相机 - 移动端优化版');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
+            // 1. 检查模型加载
             if (!faceModelsLoaded) {
                 alert('人脸识别模型加载中，请稍候...');
                 return;
             }
 
+            // 2. 检查人脸数据
             if (labeledDescriptors.length === 0) {
                 alert('❌ 系统中还没有学生人脸数据！\n\n请先在教师端添加学生照片信息');
                 return;
             }
 
             try {
-                recognitionSuccess = false; // 重置识别成功标志
+                recognitionSuccess = false;
                 document.getElementById('cameraBtn').disabled = true;
                 document.getElementById('cameraBtn').textContent = '正在打开相机...';
 
-                videoStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'user',
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    } 
-                });
+                // 3. 检查浏览器支持
+                console.log('检查浏览器支持...');
+                console.log('  User Agent:', navigator.userAgent);
+                console.log('  Protocol:', location.protocol);
                 
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('您的浏览器不支持相机功能\n\n请使用最新版 Chrome、Safari 或 Firefox');
+                }
+
+                // 4. 检查 HTTPS（重要！）
+                const isLocalhost = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+                if (location.protocol === 'http:' && !isLocalhost) {
+                    throw new Error('相机功能需要 HTTPS 连接\n\n请使用 HTTPS 访问页面');
+                }
+
+                // 5. 请求相机权限（移动端优化的约束条件）
+                console.log('请求相机权限...');
+                const constraints = {
+                    video: {
+                        facingMode: 'user', // 前置摄像头
+                        width: { ideal: 640, max: 1280 },
+                        height: { ideal: 480, max: 720 }
+                    },
+                    audio: false
+                };
+                
+                console.log('约束条件:', constraints);
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+                console.log('✅ 相机权限已授予');
+                console.log('视频轨道:', videoStream.getVideoTracks().length);
+
+                // 6. 配置 video 元素（移动端关键！）
                 const video = document.getElementById('video');
                 const canvas = document.getElementById('faceCanvas');
+                
+                // 🔥 移动端必须设置这些属性！
+                video.setAttribute('autoplay', '');
+                video.setAttribute('playsinline', ''); // iOS Safari 必需
+                video.setAttribute('muted', '');
+                video.muted = true; // 静音（避免自动播放限制）
+                
                 video.srcObject = videoStream;
+                
+                // 7. 等待视频加载
+                console.log('等待视频加载...');
+                await new Promise((resolve, reject) => {
+                    video.onloadedmetadata = () => {
+                        console.log('✅ 视频元数据已加载');
+                        console.log('视频尺寸:', video.videoWidth, 'x', video.videoHeight);
+                        resolve();
+                    };
+                    
+                    video.onerror = (e) => {
+                        console.error('❌ 视频加载错误:', e);
+                        reject(new Error('视频加载失败'));
+                    };
+                    
+                    // 超时处理
+                    setTimeout(() => {
+                        reject(new Error('视频加载超时'));
+                    }, 10000);
+                });
+
+                // 8. 播放视频（移动端可能需要手动播放）
+                console.log('播放视频...');
+                try {
+                    await video.play();
+                    console.log('✅ 视频播放成功');
+                } catch (playError) {
+                    console.warn('自动播放失败，尝试用户交互播放:', playError);
+                    // 移动端可能需要用户交互才能播放
+                    video.play().catch(e => {
+                        console.error('播放失败:', e);
+                    });
+                }
+
+                // 9. 显示界面
                 video.classList.remove('hidden');
                 canvas.classList.remove('hidden');
                 document.getElementById('videoPlaceholder').classList.add('hidden');
@@ -2992,14 +3118,86 @@
                 document.getElementById('cameraBtn').onclick = stopCamera;
                 document.getElementById('cameraBtn').disabled = false;
 
-                // Start face detection after video loaded
-                video.addEventListener('loadeddata', () => {
-                    faceDetectionRunning = true;
-                    detectFaceLoop();
-                });
+                // 10. 开始人脸检测（确保视频正在播放）
+                const startDetection = () => {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        console.log('✅ 开始人脸检测');
+                        faceDetectionRunning = true;
+                        detectFaceLoop();
+                    } else {
+                        console.log('等待视频数据...');
+                        setTimeout(startDetection, 100);
+                    }
+                };
+                
+                startDetection();
+                
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.log('✅ 相机启动成功');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
             } catch (error) {
-                console.error('相机错误:', error);
-                alert('❌ 无法打开相机：' + error.message + '\n\n请确保：\n✓ 已授予摄像头权限\n✓ 没有其他程序占用摄像头\n✓ 使用HTTPS访问（localhost除外）');
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                console.error('❌ 相机启动失败:', error);
+                console.error('错误名称:', error.name);
+                console.error('错误信息:', error.message);
+                console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                
+                // 详细的错误提示
+                let errorMessage = '❌ 无法打开相机\n\n';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMessage += '原因：相机权限被拒绝\n\n';
+                    errorMessage += '📱 解决方法：\n';
+                    errorMessage += '1. 点击地址栏的 🔒 或 ⓘ 图标\n';
+                    errorMessage += '2. 找到"相机"权限\n';
+                    errorMessage += '3. 改为"允许"\n';
+                    errorMessage += '4. 刷新页面重试\n\n';
+                    errorMessage += '💡 或在系统设置中允许浏览器访问相机';
+                    
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage += '原因：未找到相机设备\n\n';
+                    errorMessage += '📱 请检查：\n';
+                    errorMessage += '1. 设备是否有前置摄像头\n';
+                    errorMessage += '2. 摄像头是否正常工作';
+                    
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage += '原因：相机被占用\n\n';
+                    errorMessage += '📱 请尝试：\n';
+                    errorMessage += '1. 关闭其他使用相机的应用\n';
+                    errorMessage += '2. 刷新页面重试\n';
+                    errorMessage += '3. 重启浏览器';
+                    
+                } else if (error.name === 'SecurityError' || error.message.includes('HTTPS')) {
+                    errorMessage += '原因：安全限制\n\n';
+                    errorMessage += '📱 相机功能需要 HTTPS 连接\n\n';
+                    errorMessage += '当前连接：' + location.protocol + '\n';
+                    errorMessage += '请使用 HTTPS 访问页面';
+                    
+                } else if (error.name === 'OverconstrainedError') {
+                    errorMessage += '原因：相机不支持请求的参数\n\n';
+                    errorMessage += '📱 请尝试刷新页面重试';
+                    
+                } else {
+                    errorMessage += '错误详情：\n' + error.message + '\n\n';
+                    errorMessage += '📱 请尝试：\n';
+                    errorMessage += '1. 刷新页面\n';
+                    errorMessage += '2. 重启浏览器\n';
+                    errorMessage += '3. 检查系统相机权限';
+                }
+                
+                // 检测特殊浏览器
+                const ua = navigator.userAgent.toLowerCase();
+                if (ua.includes('micromessenger')) {
+                    errorMessage += '\n\n⚠️ 检测到微信浏览器\n';
+                    errorMessage += '建议：点击右上角"..."选择"在浏览器中打开"';
+                } else if (ua.includes('qq/') || ua.includes('mqqbrowser')) {
+                    errorMessage += '\n\n⚠️ 检测到QQ浏览器\n';
+                    errorMessage += '建议：点击右上角选择"在浏览器中打开"';
+                }
+                
+                alert(errorMessage);
+                
                 document.getElementById('cameraBtn').disabled = false;
                 document.getElementById('cameraBtn').textContent = '📷 打开相机（人脸识别）';
             }
@@ -3068,7 +3266,7 @@
                         }
                     } else {
                         // 创建人脸匹配器（阈值0.65，距离小于此值视为匹配）
-                        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.65);
+                        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.7);
                         const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
 
                         // 调试输出
