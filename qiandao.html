@@ -3365,7 +3365,7 @@
                                     statusElement.innerHTML = 
                                         `<p class="text-orange-600 font-semibold">
                                             ⚠️ 检测到人脸但相似度略低
-                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.65</span>)
+                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.70</span>)
                                             <br/>💡 建议：调整角度、光线，或手动填写信息
                                         </p>`;
                                 } else if (minDistance < 1.0) {
@@ -3373,7 +3373,7 @@
                                     statusElement.innerHTML = 
                                         `<p class="text-orange-600 font-semibold">
                                             ⚠️ 检测到人脸但未找到匹配
-                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.65</span>)
+                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.70</span>)
                                             <br/>✓ 确保已录入照片 ✓ 正对摄像头 ✓ 光线充足
                                         </p>`;
                                 } else {
