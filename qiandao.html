@@ -172,7 +172,152 @@
         display: none !important;
     }        
 
+/* 班级折叠样式 */
+.class-group {
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
 
+.class-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(to right, #f3f4f6, #e5e7eb);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.class-header:hover {
+    background: linear-gradient(to right, #e5e7eb, #d1d5db);
+}
+
+.class-header.collapsed {
+    border-bottom: none;
+}
+
+.class-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.class-arrow {
+    transition: transform 0.3s;
+    font-size: 12px;
+}
+
+.class-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+.class-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.class-students {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s;
+}
+
+.class-students.collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
+.student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid #f3f4f6;
+    transition: background 0.2s;
+}
+
+.student-item:hover {
+    background: #fef3c7;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+.student-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.student-id {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.badge-error {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-sm {
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
 
     </style>  
 </head>  
@@ -180,7 +325,7 @@
     <div class="container mx-auto p-4 max-w-6xl">  
         <!-- Header -->  
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">  
-            <h1 class="text-3xl font-bold text-center text-indigo-600">📚 大学生课堂签到系统</h1>  
+            <h1 class="text-3xl font-bold text-center text-indigo-600">📚 课堂签到系统</h1>  
             <div class="flex justify-center gap-4 mt-4">  
                 <button onclick="switchRole('teacher')" id="teacherTab" class="px-6 py-2 rounded-lg tab-active">教师端</button>  
                 <button onclick="switchRole('student')" id="studentTab" class="px-6 py-2 rounded-lg bg-gray-200">学生端</button>  
@@ -284,16 +429,16 @@
                 <div class="mb-4">  
                     <label class="block mb-2 font-semibold">批量导入照片（文件名格式：学号-姓名-班级.jpg）</label>  
                     <input type="file" id="batchPhotos" accept="image/*" multiple class="border rounded px-4 py-2 w-full">  
-                    <p class="text-sm text-gray-500 mt-1">示例：202301001-张三-计算机2023级1班.jpg</p>  
+                    <p class="text-sm text-gray-500 mt-1">示例：251301100-张三-智能科学与技术2501班.jpg</p>  
                 </div>  
 
                 <button onclick="addStudent()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 mr-2">➕ 添加学生</button>  
                 <button onclick="batchImport()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">📦 批量导入</button>  
 
-                <div class="mt-6">  
-                    <h3 class="font-bold mb-2">已添加学生列表（共 <span id="studentCount">0</span> 人）</h3>  
-                    <div id="studentList" class="max-h-60 overflow-y-auto border rounded p-4 bg-gray-50"></div>  
-                </div>  
+                <div class="mt-6">
+                    <h3 class="font-bold mb-2">已添加学生列表（共<span id="studentCount">0</span> 人）</h3>
+                    <div id="studentList" class="max-h-96 overflow-y-auto border rounded p-4 bg-gray-50"></div>
+                </div> 
             </div>  
 
             <!-- Create Check-in Session -->  
@@ -833,28 +978,208 @@
             console.log(`已加载 ${labeledDescriptors.length} 个学生的人脸数据`);  
         }  
 
-        // Update student list display  
-        function updateStudentList() {  
-            const list = document.getElementById('studentList');  
-            const count = document.getElementById('studentCount');  
-            count.textContent = students.length;  
-            
-            if (students.length === 0) {  
-                list.innerHTML = '<p class="text-gray-500 text-center py-4">暂无学生数据</p>';  
-                return;  
-            }  
-            
-            list.innerHTML = students.map((s, i) => `  
-                <div class="flex justify-between items-center p-2 border-b hover:bg-gray-100">  
-                    <div class="flex items-center gap-3">  
-                        ${s.photoUrl ? `<img src="${s.photoUrl}" class="w-10 h-10 rounded-full object-cover"/>` : '<div class="w-10 h-10 rounded-full bg-gray-300"></div>'}  
-                        <span>${s.className} - ${s.studentId} - ${s.name}</span>  
-                        ${s.faceDescriptor ? '<span class="text-green-600 text-xs bg-green-50 px-2 py-1 rounded">✓ 已录入人脸</span>' : '<span class="text-red-600 text-xs bg-red-50 px-2 py-1 rounded">✗ 无人脸数据</span>'}  
-                    </div>  
-                    <button onclick="deleteStudent(${i})" class="text-red-600 hover:text-red-800 px-3 py-1 rounded hover:bg-red-50">删除</button>  
-                </div>  
-            `).join('');  
-        }  
+// Update student list display - 按班级分组显示
+function updateStudentList() {
+    const list = document.getElementById('studentList');
+    const count = document.getElementById('studentCount');
+    
+    count.textContent = students.length;
+    
+    if (students.length === 0) {
+        list.innerHTML = '<p class="text-gray-500 text-center py-4">暂无学生数据</p>';
+        return;
+    }
+    
+    // 按班级分组
+    const groupedByClass = {};
+    students.forEach((student, index) => {
+        const className = student.className || '未分类';
+        if (!groupedByClass[className]) {
+            groupedByClass[className] = [];
+        }
+        groupedByClass[className].push({ ...student, originalIndex: index });
+    });
+    
+    // 按班级名称排序
+    const sortedClasses = Object.keys(groupedByClass).sort((a, b) => 
+        a.localeCompare(b, 'zh-CN')
+    );
+    
+    let html = '';
+    
+    sortedClasses.forEach(className => {
+        const classStudents = groupedByClass[className];
+        const studentCount = classStudents.length;
+        const hasPhotoCount = classStudents.filter(s => s.faceDescriptor).length;
+        
+        html += `
+            <div class="class-group">
+                <!-- 班级头部 -->
+                <div class="class-header" onclick="toggleClass('${className}')">
+                    <div class="class-title">
+                        <span class="class-arrow" id="arrow-${className}">▼</span>
+                        <span>📚 ${className}</span>
+                        <span class="text-sm text-gray-600">(${studentCount} 人)</span>
+                    </div>
+                    <div class="class-actions" onclick="event.stopPropagation()">
+                        <span class="text-xs text-green-600">✓${hasPhotoCount} 人已录入</span>
+                        <button 
+                            onclick="deleteClass('${className}')" 
+                            class="btn-sm btn-warning"
+                            title="删除整个班级"
+                        >
+                            🗑️ 删除班级
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 学生列表 -->
+                <div class="class-students" id="students-${className}">
+                    ${classStudents.map(student => `
+                        <div class="student-item">
+                            <div class="student-info">
+                                ${student.photoUrl 
+                                    ? `<img src="${student.photoUrl}" class="student-avatar" alt="${student.name}"/>` 
+                                    : '<div class="student-avatar" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center;">👤</div>'
+                                }
+                                <div class="student-details">
+                                    <span class="student-name">${student.name}</span>
+                                    <span class="student-id">学号：${student.studentId}</span>
+                                </div>
+                                ${student.faceDescriptor 
+                                    ? '<span class="badge badge-success">✓ 已录入人脸</span>' 
+                                    : '<span class="badge badge-error">✗ 无人脸数据</span>'
+                                }
+                            </div>
+                            <button 
+                                onclick="deleteStudent(${student.originalIndex})" 
+                                class="btn-sm btn-danger"
+                                title="删除该学生"
+                            >
+                                删除
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    list.innerHTML = html;
+    console.log(`✅学生列表已更新，共 ${sortedClasses.length} 个班级，${students.length} 名学生`);
+}
+
+// Toggle class expansion
+function toggleClass(className) {
+    const studentsDiv = document.getElementById(`students-${className}`);
+    const arrow = document.getElementById(`arrow-${className}`);
+    
+    if (!studentsDiv || !arrow) return;
+    
+    if (studentsDiv.classList.contains('collapsed')) {
+        // 展开
+        studentsDiv.classList.remove('collapsed');
+        arrow.classList.remove('collapsed');
+        console.log(`📂 展开班级: ${className}`);
+    } else {
+        // 折叠
+        studentsDiv.classList.add('collapsed');
+        arrow.classList.add('collapsed');
+        console.log(`📁 折叠班级: ${className}`);
+    }
+}
+
+// Delete entire class (删除整个班级)
+async function deleteClass(className) {
+    // 找到该班级的所有学生
+    const classStudents = students.filter(s => s.className === className);
+    
+    if (classStudents.length === 0) {
+        alert('该班级没有学生');
+        return;
+    }
+    
+    if (!confirm(`⚠️ 确定要删除整个班级吗？\n\n班级：${className}\n学生数：${classStudents.length} 人\n\n此操作将：\n✓ 删除所有学生记录\n✓ 删除所有学生照片\n✓ 无法恢复\n\n建议先导出数据备份！`)) {
+        return;
+    }
+    
+    try {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`🗑️ 开始删除班级: ${className}`);
+        console.log(`📊 学生数量: ${classStudents.length}`);
+        
+        let successCount = 0;
+        let failedCount = 0;
+        let fileDeleteCount = 0;
+        
+        // 逐个删除学生
+        for (const student of classStudents) {
+            try {
+                console.log(`\n处理学生: ${student.name} (${student.studentId})`);
+                
+                // 1. 查询学生记录
+                const query = new AV.Query('Student');
+                query.equalTo('studentId', student.studentId);
+                const result = await query.first();
+                
+                if (result) {
+                    // 2. 删除照片文件
+                    const photoUrl = result.get('photoUrl');
+                    if (photoUrl && typeof photoUrl === 'string') {
+                        try {
+                            const urlParts = photoUrl.split('.com/');
+                            const encodedKey = urlParts[1];
+                            const decodedKey = decodeURIComponent(encodedKey);
+                            
+                            const fileQuery = new AV.Query('_File');
+                            fileQuery.equalTo('key', decodedKey);
+                            const fileObj = await fileQuery.first();
+                            
+                            if (fileObj) {
+                                await fileObj.destroy();
+                                fileDeleteCount++;
+                                console.log(`  ✅ 照片已删除`);
+                            }
+                        } catch (fileError) {
+                            console.warn(`  ⚠️ 照片删除失败:`, fileError.message);
+                        }
+                    }
+                    
+                    // 3. 删除学生记录
+                    await result.destroy();
+                    successCount++;
+                    console.log(`  ✅ 学生记录已删除`);
+                }
+                
+            } catch (error) {
+                console.error(`  ❌ 删除失败:`, error);
+                failedCount++;
+            }
+        }
+        
+        // 4. 更新本地数据
+        students = students.filter(s => s.className !== className);
+        updateStudentList();
+        loadClassList();
+        updateLabeledDescriptors();
+        
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('✅ 班级删除完成');
+        console.log(`成功: ${successCount} 人`);
+        console.log(`失败: ${failedCount} 人`);
+        console.log(`照片: ${fileDeleteCount} 个`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        alert(`✅ 班级删除完成！\n\n班级：${className}\n成功删除：${successCount} 人\n删除照片：${fileDeleteCount} 个${failedCount > 0 ? `\n失败：${failedCount} 人` : ''}`);
+        
+    } catch (error) {
+        console.error('❌ 删除班级失败:', error);
+        alert('删除班级失败：' + error.message);
+    }
+}
+
+
+
 
         // Delete student (解码 key 后查询)
         async function deleteStudent(index) {
