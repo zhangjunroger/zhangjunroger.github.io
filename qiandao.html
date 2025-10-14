@@ -319,6 +319,122 @@
     background: #d97706;
 }
 
+/* 🔥 班级选择卡片样式 */
+.class-checkbox-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.class-checkbox-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.class-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.class-checkbox-label:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+}
+
+.class-checkbox-card input[type="checkbox"]:checked + .class-checkbox-label {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.class-checkbox-icon {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.class-checkbox-card input[type="checkbox"]:checked + .class-checkbox-label .class-checkbox-icon {
+    background: white;
+    border-color: white;
+}
+
+.class-checkbox-card input[type="checkbox"]:checked + .class-checkbox-label .class-checkbox-icon::after {
+    content: '✓';
+    color: #3b82f6;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 已选标签样式 */
+.selected-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    animation: tagAppear 0.3s ease;
+}
+
+.selected-tag .remove-tag {
+    cursor: pointer;
+    font-weight: bold;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.selected-tag .remove-tag:hover {
+    opacity: 1;
+}
+
+@keyframes tagAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* 定时任务动画 */
+.scheduled-task {
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: #3b82f6;
+    }
+    50% {
+        border-color: #60a5fa;
+    }
+}
+
     </style>  
 </head>  
 <body class="bg-gray-100">  
@@ -414,7 +530,18 @@
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">👥 学生信息管理</h2>  
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">  
-                    <input type="text" id="studentClass" placeholder="班级" class="border rounded px-4 py-2">  
+                    <!-- 🔥 既可以下拉选择，也可以手动输入 -->
+                    <input 
+                    type="text" 
+                    id="studentClass" 
+                    list="classDatalist" 
+                    placeholder="输入或选择班级" 
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    autocomplete="off"
+                    >
+                    <datalist id="classDatalist">
+                        <!-- JavaScript 动态生成选项 -->
+                    </datalist>
                     <input type="text" id="studentId" placeholder="学号" class="border rounded px-4 py-2">  
                     <input type="text" id="studentName" placeholder="姓名" class="border rounded px-4 py-2">  
                 </div>  
@@ -447,13 +574,68 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">  
                     <input type="text" id="courseName" placeholder="课程名称" class="border rounded px-4 py-2">  
-                    <input type="text" id="courseSession" placeholder="课程节次（如：第3-4节）" class="border rounded px-4 py-2">  
-                    <div class="md:col-span-2">  
-                        <select id="selectClass" class="border rounded px-4 py-2 w-full">  
-                            <option value="" disabled>请选择一个或多个班级（按住Ctrl/Cmd可多选）</option>  
-                        </select>  
-                    </div>  
-                    <input type="number" id="checkInDuration" placeholder="签到时长（分钟）" class="border rounded px-4 py-2" value="10">  
+                    <input type="text" id="courseSession" placeholder="课程时间与节次（如：20251014-56）" class="border rounded px-4 py-2">  
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">选择班级（可多选）</label>
+                        
+                        <!-- 🔥 手动输入班级 -->
+                        <div class="flex gap-2 mb-3">
+                            <input 
+                                type="text" 
+                                id="customClassInput" 
+                                placeholder="输入自定义班级名称"
+                                class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                onkeypress="if(event.key==='Enter') addCustomClass()"
+                            >
+                            <button 
+                                type="button"
+                                onclick="addCustomClass()" 
+                                class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                            >
+                                ➕ 添加
+                            </button>
+                        </div>
+                        
+                        <!-- 🔥 复选框卡片式多选 -->
+                        <div id="selectClass" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50">
+                            <!-- JavaScript 动态生成班级复选框 -->
+                        </div>
+                        
+                        <!-- 已选择的班级标签显示 -->
+                        <div id="selectedClassesTags" class="mt-3 flex flex-wrap gap-2 hidden">
+                            <!-- JavaScript 动态生成已选标签 -->
+                        </div>
+                        
+                        <p class="text-xs text-gray-500 mt-2">
+                            💡 可从列表勾选或手动输入，已选 <span id="selectedCount" class="font-bold text-blue-600">0</span> 个班级
+                        </p>
+                    </div>
+
+                    <input type="number" id="checkInDuration" placeholder="签到时长（分钟）" class="border rounded px-4 py-2" value="3"> 
+                    
+                    <!-- 🔥 新增：发布时间选择 -->
+                    <div class="md:col-span-2 border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">📅 发布时间设置</label>
+                        
+                        <div class="flex gap-2 items-center mb-2">
+                            <input type="radio" id="publishNow" name="publishTime" value="now" checked onchange="togglePublishTimeInput()">
+                            <label for="publishNow" class="text-sm">立即发布</label>
+                            
+                            <input type="radio" id="publishScheduled" name="publishTime" value="scheduled" onchange="togglePublishTimeInput()">
+                            <label for="publishScheduled" class="text-sm">定时发布</label>
+                        </div>
+                        
+                        <div id="scheduledTimeInput" class="hidden">
+                            <input 
+                                type="datetime-local" 
+                                id="publishDateTime" 
+                                class="border rounded px-4 py-2 w-full"
+                            >
+                            <p class="text-xs text-gray-500 mt-1">💡 到设定时间后将自动开始签到</p>
+                        </div>
+                    </div>                    
+
                 </div>  
 
                 <button onclick="startCheckIn()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 w-full">🚀 开始签到</button>  
@@ -691,11 +873,82 @@
         let currentCheckInSession = null;  
         let checkedInStudents = [];  
         let faceModelsLoaded = false;  
-        let videoStream = null;  
+        let videoStream = null;
+        let activeSessions = [];  
         let faceDetectionRunning = false;  
         let labeledDescriptors = [];  
         let recognitionSuccess = false; // 识别成功标志  
 
+
+        // 🔥 新增：多帧验证机制
+        let recentMatches = [];  // 记录最近的匹配结果
+        const CONSECUTIVE_FRAMES = 3;  // 需要连续匹配的帧数
+        const MIN_CONFIDENCE = 0.5;  // 最低置信度（55%）
+
+        // 🔥活体检测相关变量
+        let livenessActions = [];          // 需要完成的动作['blink', 'mouth', 'nod']
+        let livenessProgress = {};         // 各动作完成情况
+        let livenessCheckPassed = false;   // 活体检测是否全部通过
+
+        // 眨眼检测
+        let blinkCount = 0;
+        let lastEyeState = 'open';
+        let eyeClosedFrames = 0;
+
+        // 眨眼检测（动态阈值版）
+        let baselineEAR = null;        // 睁眼基准值
+        let earSamples = [];           // EAR采样值
+        const SAMPLE_SIZE = 10;        // 采样数量
+
+        // 张嘴检测
+        let mouthOpenCount = 0;
+        let lastMouthState = 'closed';
+
+        // 点头检测
+        let headPositions = [];
+        let nodCount = 0;
+
+
+        // 🔥 新增：固定的班级列表
+        let FIXED_CLASSES = [
+            '智能科学2501班',
+            '智能科学2502班',
+            '智能科学2401班',
+            '智能科学2402班',
+            '智能科学2301班',
+            '智能科学2302班',
+            '智能科学2303班',
+            '智能科学2201班',
+            '智能科学2202班',
+            '智能科学2203班'
+        ];
+
+
+// ==================== 切换发布时间输入框 ====================
+function togglePublishTimeInput() {
+    const publishNow = document.getElementById('publishNow').checked;
+    const scheduledInput = document.getElementById('scheduledTimeInput');
+    
+    if (publishNow) {
+        scheduledInput.classList.add('hidden');
+    } else {
+        scheduledInput.classList.remove('hidden');
+        
+    // ✅ 正确：使用本地时间（北京时间）
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 5);
+
+    // 转换为本地时间字符串格式 (YYYY-MM-DDTHH:mm)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+
+    const localDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('publishDateTime').value = localDateTime;
+    }
+}
 
         // Load Face-api models with better error handling  
         async function loadFaceModels() {  
@@ -720,9 +973,11 @@
         // Initialize on page load  
         window.onload = async function() {  
             console.log('🚀 系统初始化中...');  
-            loadFaceModels(); // 异步加载人脸模型  
+            loadFaceModels(); // 异步加载人脸模型
             await loadStudentsFromCloud(); // 等待学生数据加载  
-            loadClassList(); // 加载班级列表  
+            loadClassList(); // 加载班级列表
+            // 🔥 新增：初始化班级下拉列表
+            initClassSelect();    
             updateHistoryCount(); // 更新历史记录计数  
             await checkActiveSession(); // 检查活动会话  
             console.log('✅ 系统初始化完成');  
@@ -1291,169 +1546,484 @@ async function deleteClass(className) {
         }  
 
         // Load class list for dropdown - 改为多选支持  
-        function loadClassList() {  
-            const select = document.getElementById('selectClass');  
-            
-            if (!select) {  
-                console.error('❌ 找不到班级选择器元素');  
-                return;  
-            }  
-            
-            if (students.length === 0) {  
-                console.warn('⚠️ 暂无学生数据，班级列表为空');  
-                select.innerHTML = '<option value="" disabled>暂无班级（请先添加学生）</option>';  
-                select.removeAttribute('multiple');  
-                return;  
-            }  
-            
-            const classes = [...new Set(students.map(s => s.className).filter(c => c))].sort();  
-            
-            if (classes.length === 0) {  
-                console.warn('⚠️ 学生数据中没有班级信息');  
-                select.innerHTML = '<option value="" disabled>暂无班级（学生数据缺少班级）</option>';  
-                select.removeAttribute('multiple');  
-                return;  
-            }  
-            
-            // 设置为多选模式  
-            select.setAttribute('multiple', 'multiple');  
-            select.setAttribute('size', Math.min(classes.length + 1, 5)); // 显示最多5行  
-            select.style.height = 'auto';  
-            
-            select.innerHTML = '<option value="" disabled>请选择一个或多个班级（按住Ctrl/Cmd可多选）</option>' +   
-                classes.map(c => `<option value="${c}">${c}</option>`).join('');  
-            
-            console.log(`✅ 加载了 ${classes.length} 个班级:`, classes);  
-        }  
+// ==================== 加载班级列表（卡片式复选框）====================
+function loadClassList() {
+    const classSelection = document.getElementById('selectClass') || document.getElementById('classSelection');
+    
+    if (!classSelection) {
+        console.error('❌ 找不到班级选择器元素');
+        return;
+    }
+    
+    // 🔥 使用固定的班级列表
+    if (!FIXED_CLASSES || FIXED_CLASSES.length === 0) {
+        console.warn('⚠️ 未定义班级列表');
+        classSelection.innerHTML = '<div class="text-center text-gray-500 py-4">暂无班级（请在代码中设置 FIXED_CLASSES）</div>';
+        return;
+    }
+    
+    // 🔥 清空并生成复选框卡片
+    classSelection.innerHTML = '';
+    
+    FIXED_CLASSES.forEach((className, index) => {
+        const checkboxCard = document.createElement('div');
+        checkboxCard.className = 'class-checkbox-card';
+        
+        const checkboxId = `class-checkbox-${index}`;
+        
+        checkboxCard.innerHTML = `
+            <input 
+                type="checkbox" 
+                id="${checkboxId}" 
+                value="${className}"
+                onchange="updateSelectedClasses()"
+            >
+            <label for="${checkboxId}" class="class-checkbox-label">
+                <span class="class-checkbox-icon"></span>
+                <span class="flex-1">${className}</span>
+            </label>
+        `;
+        
+        classSelection.appendChild(checkboxCard);
+    });
+    
+    console.log(`✅ 加载了 ${FIXED_CLASSES.length} 个班级（卡片式选择）:`, FIXED_CLASSES);
+}
 
-        // ==================== 开始签到（完整版）====================
-        async function startCheckIn() {
-            try {
-                console.log('🚀 准备开始签到...');
+// ==================== 更新已选班级显示 ====================
+function updateSelectedClasses() {
+    const checkboxes = document.querySelectorAll('#selectClass input[type="checkbox"], #classSelection input[type="checkbox"]');
+    const selectedClasses = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+    
+    const tagsContainer = document.getElementById('selectedClassesTags');
+    if (!tagsContainer) return;
+    
+    // 获取现有的自定义标签（不在复选框中的）
+    const existingTags = Array.from(tagsContainer.querySelectorAll('.selected-tag'));
+    const customClasses = existingTags
+        .map(tag => tag.getAttribute('data-class'))
+        .filter(className => {
+            // 保留不在复选框列表中的自定义班级
+            return !Array.from(checkboxes).some(cb => cb.value === className);
+        });
+    
+    // 合并复选框选中的和自定义的班级
+    const allClasses = [...selectedClasses, ...customClasses];
+    
+    if (allClasses.length === 0) {
+        tagsContainer.classList.add('hidden');
+        tagsContainer.innerHTML = '';
+        updateClassCount();
+        return;
+    }
+    
+    tagsContainer.classList.remove('hidden');
+    tagsContainer.innerHTML = allClasses.map(className => {
+        const isFromCheckbox = selectedClasses.includes(className);
+        return `
+            <span class="selected-tag" data-class="${className}">
+                ${className}
+                <span class="remove-tag" onclick="${isFromCheckbox ? `removeClassSelection('${className}')` : 'removeCustomClassTag(this)'}">×</span>
+            </span>
+        `;
+    }).join('');
+    
+    updateClassCount();
+}
 
-                // 获取表单数据（使用正确的ID）
-                const courseName = document.getElementById('courseName').value.trim();
-                const courseSession = document.getElementById('courseSession').value.trim();
-                const selectClass = document.getElementById('selectClass');  // ✅ 正确的ID
-                const duration = parseInt(document.getElementById('checkInDuration').value);  // ✅ 正确的ID
+// ==================== 添加自定义班级 ====================
+function addCustomClass() {
+    const input = document.getElementById('customClassInput');
+    const className = input.value.trim();
+    
+    if (!className) {
+        alert('⚠️ 请输入班级名称');
+        return;
+    }
+    
+    // 检查是否已经在已选列表中
+    const existingTags = Array.from(document.querySelectorAll('#selectedClassesTags .selected-tag'))
+        .map(tag => tag.textContent.replace('×', '').trim());
+    
+    if (existingTags.includes(className)) {
+        alert('⚠️ 该班级已经选择');
+        input.value = '';
+        return;
+    }
+    
+    // 添加到已选标签
+    const tagsContainer = document.getElementById('selectedClassesTags');
+    if (!tagsContainer) return;
+    
+    tagsContainer.classList.remove('hidden');
+    
+    const tag = document.createElement('span');
+    tag.className = 'selected-tag';
+    tag.setAttribute('data-class', className);
+    tag.innerHTML = `
+        ${className}
+        <span class="remove-tag" onclick="removeCustomClassTag(this)">×</span>
+    `;
+    
+    tagsContainer.appendChild(tag);
+    
+    // 更新计数
+    updateClassCount();
+    
+    // 清空输入框
+    input.value = '';
+    
+    console.log(`✅ 添加自定义班级: ${className}`);
+}
 
-                console.log('📋 表单数据:', { courseName, courseSession, duration });
+// ==================== 移除自定义班级标签 ====================
+function removeCustomClassTag(element) {
+    const tag = element.parentElement;
+    const className = tag.getAttribute('data-class');
+    
+    // 如果是从固定列表选的，取消勾选
+    const checkbox = Array.from(document.querySelectorAll('#selectClass input[type="checkbox"]'))
+        .find(cb => cb.value === className);
+    
+    if (checkbox) {
+        checkbox.checked = false;
+    }
+    
+    // 移除标签
+    tag.remove();
+    
+    // 更新计数
+    updateClassCount();
+}
 
-                // 验证必填字段
-                if (!courseName) {
-                    alert('❌ 请输入课程名称');
-                    return;
-                }
+// ==================== 更新班级计数 ====================
+function updateClassCount() {
+    const tagsContainer = document.getElementById('selectedClassesTags');
+    const tags = tagsContainer.querySelectorAll('.selected-tag');
+    const count = tags.length;
+    
+    const countSpan = document.getElementById('selectedCount');
+    if (countSpan) {
+        countSpan.textContent = count;
+    }
+    
+    // 如果没有选择，隐藏标签容器
+    if (count === 0) {
+        tagsContainer.classList.add('hidden');
+    }
+}
 
-                if (!courseSession) {
-                    alert('❌ 请输入课程节次');
-                    return;
-                }
 
-                // 获取选中的班级
-                const selectedOptions = Array.from(selectClass.selectedOptions);
-                if (selectedOptions.length === 0) {
-                    alert('❌ 请至少选择一个班级');
-                    return;
-                }
-                const classNames = selectedOptions.map(opt => opt.value);
-                console.log('👥 选中班级:', classNames);
 
-                if (!duration || duration <= 0 || isNaN(duration)) {
-                    alert('❌ 请输入有效的签到时长');
-                    return;
-                }
+// ==================== 移除班级选择 ====================
+function removeClassSelection(className) {
+    const checkboxes = document.querySelectorAll('#selectClass input[type="checkbox"], #classSelection input[type="checkbox"]');
+    const checkbox = Array.from(checkboxes).find(cb => cb.value === className);
+    
+    if (checkbox) {
+        checkbox.checked = false;
+        updateSelectedClasses();
+    }
+}
 
-                // 获取选中班级的所有学生
-                const selectedStudents = students.filter(s => 
-                    classNames.includes(s.className)
-                );
+// ==================== 开始签到（支持定时发布）====================
+async function startCheckIn() {
+    try {
+        console.log('🚀 准备发布签到...');
+        
+        // 获取表单数据
+        const courseName = document.getElementById('courseName').value.trim();
+        const courseSession = document.getElementById('courseSession').value.trim();
+        const duration = parseInt(document.getElementById('checkInDuration').value);
+        
+        // 获取选中的班级
 
-                if (selectedStudents.length === 0) {
-                    alert('❌ 所选班级没有学生，请先导入学生名单');
-                    return;
-                }
+        // 🔥 从复选框和自定义标签获取所有选中的班级
+        const checkbox2 = document.querySelectorAll('#selectClass input[type="checkbox"]:checked');
+        const checkboxClasses = Array.from(checkbox2).map(cb => cb.value);
 
-                console.log('🎓 找到学生:', selectedStudents.length, '人');
+        // 获取所有已选标签（包括自定义的）
+        const tags = document.querySelectorAll('#selectedClassesTags .selected-tag');
+        const tagClasses = Array.from(tags).map(tag => tag.getAttribute('data-class'));
 
-                // 确认开始
-                if (!confirm(`📋 确认签到信息：\n\n课程：${courseName}\n节次：${courseSession}\n班级：${classNames.join('、')}\n人数：${selectedStudents.length}人\n时长：${duration}分钟\n\n确定开始签到吗？`)) {
-                    return;
-                }
+        // 合并去重
+        const classNames = [...new Set([...checkboxClasses, ...tagClasses])];
 
-                console.log('💾 创建签到会话...');
+        console.log("选择的班级是：", classNames);
 
-                // 创建签到会话
-                const CheckInSession = AV.Object.extend('CheckInSession');
-                const session = new CheckInSession();
 
-                session.set('courseName', courseName);
-                session.set('courseSession', courseSession);
-                session.set('className', classNames.join('、'));
-                session.set('classNames', classNames);
-                session.set('duration', duration);
-                session.set('status', 'active');
-                session.set('startTime', new Date());
-                session.set('totalStudents', selectedStudents.length);
-                session.set('checkedInCount', 0);
 
-                const studentData = selectedStudents.map(s => ({
-                    className: s.className,
-                    studentId: s.studentId,
-                    name: s.name
-                }));
-                session.set('students', studentData);
 
-                await session.save();
-                console.log('✅ 签到会话已保存，ID:', session.id);
-
-                // 保存到全局变量
-                currentCheckInSession = {
-                    id: session.id,
-                    courseName: courseName,
-                    courseSession: courseSession,
-                    classNames: classNames,
-                    className: classNames.join('、'),
-                    duration: duration,
-                    startTime: new Date(),
-                    students: studentData
-                };
-
-                checkedInStudents = [];
-                previousUncheckedCount = selectedStudents.length;
-
-                // 更新UI
-                const setupPanel = document.getElementById('setupPanel');
-                const checkInStatus = document.getElementById('checkInStatus');
-                
-                if (setupPanel) setupPanel.classList.add('hidden');
-                if (checkInStatus) checkInStatus.classList.remove('hidden');
-
-                // 更新课程信息（这些元素在你的HTML中不存在，需要添加）
-                const currentCourse = document.getElementById('currentCourse');
-                const currentClass = document.getElementById('currentClass');
-                
-                if (currentCourse) currentCourse.textContent = `${courseName} - ${courseSession}`;
-                if (currentClass) currentClass.textContent = classNames.join('、');
-
-                // 初始化功能
-                updateWordCloud();
-                updateProgress();
-                updateCheckedInList();     // ✅ 显式初始化已签到列表
-                updateUncheckedList();     // ✅ 显式初始化未签到列表
-                startPolling();
-                setupCountdown(duration);
-
-                console.log('✅ 签到已开始');
-                alert(`✅ 签到已开始！\n\n📚 课程：${courseName}\n📖 节次：${courseSession}\n👥 班级：${classNames.join('、')}\n🎯 人数：${selectedStudents.length}人\n⏱️ 时长：${duration}分钟\n\n学生现在可以开始签到了！`);
-
-            } catch (error) {
-                console.error('❌ 开始签到失败:', error);
-                alert('开始签到失败：' + error.message);
-            }
+        const selectedClasses = classNames;
+        
+        // 验证必填字段
+        if (!courseName) {
+            alert('❌ 请输入课程名称');
+            return;
         }
+        if (!courseSession) {
+            alert('❌ 请输入课程节次');
+            return;
+        }
+        if (selectedClasses.length === 0) {
+            alert('❌ 请至少选择一个班级');
+            return;
+        }
+        if (!duration || duration <= 0) {
+            alert('❌ 请输入有效的签到时长');
+            return;
+        }
+        
+        // 获取选中班级的学生
+        const selectedStudents = students.filter(s => selectedClasses.includes(s.className));
+        if (selectedStudents.length === 0) {
+            alert('❌ 所选班级没有学生，请先导入学生名单');
+            return;
+        }
+        
+        // 🔥 检查发布时间选择
+        const publishNow = document.getElementById('publishNow').checked;
+        const publishScheduled = document.getElementById('publishScheduled').checked;
+        
+        let scheduledTime = null;
+        let confirmMessage = `📋 确认签到信息：\n\n课程：${courseName}\n节次：${courseSession}\n班级：${selectedClasses.join('、')}\n人数：${selectedStudents.length}人\n时长：${duration}分钟\n`;
+        
+        if (publishScheduled) {
+            // 定时发布
+            const dateTimeInput = document.getElementById('publishDateTime').value;
+            if (!dateTimeInput) {
+                alert('❌ 请选择发布时间');
+                return;
+            }
+            
+            scheduledTime = new Date(dateTimeInput);
+            const now = new Date();
+            
+            if (scheduledTime <= now) {
+                alert('❌ 发布时间必须晚于当前时间');
+                return;
+            }
+            
+            const diffMinutes = Math.round((scheduledTime - now) / 60000);
+            confirmMessage += `\n⏰ 发布方式：定时发布\n📅 发布时间：${scheduledTime.toLocaleString('zh-CN')}\n⏱️  距离发布：${diffMinutes} 分钟\n\n签到任务将在指定时间自动开始！`;
+        } else {
+            // 立即发布
+            confirmMessage += `\n⏰ 发布方式：立即发布\n\n确定立即开始签到吗？`;
+        }
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+        
+        console.log('💾 创建签到会话...');
+        
+        // 创建签到会话
+        const CheckInSession = AV.Object.extend('CheckInSession');
+        const session = new CheckInSession();
+        
+        session.set('courseName', courseName);
+        session.set('courseSession', courseSession);
+        session.set('className', selectedClasses.join('、'));
+        session.set('classNames', selectedClasses);
+        session.set('duration', duration);
+        session.set('totalStudents', selectedStudents.length);
+        session.set('checkedInCount', 0);
+        
+        const studentData = selectedStudents.map(s => ({
+            className: s.className,
+            studentId: s.studentId,
+            name: s.name
+        }));
+        session.set('students', studentData);
+        
+        if (publishScheduled && scheduledTime) {
+            // 🔥 定时发布：设置为 scheduled 状态
+            session.set('status', 'scheduled');
+            session.set('scheduledTime', scheduledTime);
+            session.set('startTime', scheduledTime); // 签到开始时间为定时时间
+        } else {
+            // 立即发布：设置为 active 状态
+            session.set('status', 'active');
+            session.set('startTime', new Date());
+        }
+        
+        await session.save();
+        console.log('✅ 签到会话已保存，ID:', session.id);
+        
+        if (publishScheduled && scheduledTime) {
+            // 🔥 定时发布：显示倒计时等待界面
+            showScheduledTaskUI(session.id, scheduledTime, courseName, courseSession, selectedClasses, selectedStudents.length, duration);
+            
+            alert(`✅ 签到任务已创建！\n\n📚 课程：${courseName}\n📖 节次：${courseSession}\n👥 班级：${selectedClasses.join('、')}\n🎯 人数：${selectedStudents.length}人\n⏱️  时长：${duration}分钟\n\n⏰ 将在 ${scheduledTime.toLocaleString('zh-CN')} 自动开始！`);
+        } else {
+            // 立即发布：直接启动签到
+            currentCheckInSession = {
+                id: session.id,
+                courseName: courseName,
+                courseSession: courseSession,
+                classNames: selectedClasses,
+                className: selectedClasses.join('、'),
+                duration: duration,
+                startTime: new Date(),
+                students: studentData
+            };
+            
+            checkedInStudents = [];
+            previousUncheckedCount = selectedStudents.length;
+            
+            // 显示签到界面
+            document.getElementById('checkInStatus').classList.remove('hidden');
+            
+            // 更新课程信息
+            const currentCourse = document.getElementById('currentCourse');
+            const currentClass = document.getElementById('currentClass');
+            if (currentCourse) currentCourse.textContent = `${courseName} - ${courseSession}`;
+            if (currentClass) currentClass.textContent = selectedClasses.join('、');
+            
+            // 初始化功能
+            updateWordCloud();
+            updateProgress();
+            updateCheckedInList();
+            updateUncheckedList();
+            startPolling();
+            setupCountdown(duration);
+            
+            alert(`✅ 签到已开始！\n\n📚 课程：${courseName}\n📖 节次：${courseSession}\n👥 班级：${selectedClasses.join('、')}\n🎯 人数：${selectedStudents.length}人\n⏱️  时长：${duration}分钟\n\n学生现在可以开始签到了！`);
+        }
+        
+        // 清空表单
+        document.getElementById('courseName').value = '';
+        document.getElementById('courseSession').value = '';
+        document.getElementById('checkInDuration').value = '10';
+        document.getElementById('customClassInput').value = '';
+        
+        const checkboxes = document.querySelectorAll('#selectClass input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+        
+        const tagsContainer = document.getElementById('selectedClassesTags');
+        if (tagsContainer) {
+            tagsContainer.innerHTML = '';
+            tagsContainer.classList.add('hidden');
+        }
+        
+        updateClassCount();
+        
+        // 重置发布时间选择
+        document.getElementById('publishNow').checked = true;
+        togglePublishTimeInput();
+        
+    } catch (error) {
+        console.error('❌ 发布签到失败:', error);
+        alert('发布签到失败：' + error.message);
+    }
+}
 
+// ==================== 显示定时任务等待界面 ====================
+let scheduledCheckInterval = null;
 
+function showScheduledTaskUI(sessionId, scheduledTime, courseName, courseSession, classNames, studentCount, duration) {
+    // 显示定时任务面板
+    const checkInStatus = document.getElementById('checkInStatus');
+    checkInStatus.classList.remove('hidden');
+    
+    // 创建定时任务UI
+    const currentCourse = document.getElementById('currentCourse');
+    const currentClass = document.getElementById('currentClass');
+    const countdown = document.getElementById('countdown');
+    
+    if (currentCourse) currentCourse.textContent = `${courseName} - ${courseSession} 【定时任务】`;
+    if (currentClass) currentClass.textContent = classNames.join('、');
+    
+    // 隐藏其他面板
+    const wordCloudContainer = document.getElementById('wordCloudContainer');
+    if (wordCloudContainer) {
+        wordCloudContainer.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <div class="text-8xl mb-4 animate-bounce">⏰</div>
+                    <h2 class="text-3xl font-bold text-blue-600 mb-3">定时签到已设置</h2>
+                    <p class="text-xl text-gray-700 mb-4">
+                        将在 <span class="font-bold text-blue-600" id="scheduledTimeDisplay">${scheduledTime.toLocaleString('zh-CN')}</span> 开始
+                    </p>
+                    <div class="text-6xl font-bold text-green-600" id="scheduledCountdown">--:--:--</div>
+                    <p class="text-sm text-gray-500 mt-4">签到将自动开始，请耐心等待</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // 启动倒计时
+    updateScheduledCountdown(scheduledTime, sessionId);
+    scheduledCheckInterval = setInterval(() => {
+        updateScheduledCountdown(scheduledTime, sessionId);
+    }, 1000);
+}
+
+function updateScheduledCountdown(scheduledTime, sessionId) {
+    const now = new Date();
+    const diff = scheduledTime - now;
+    
+    const countdownElement = document.getElementById('scheduledCountdown');
+    const mainCountdown = document.getElementById('countdown');
+    
+    if (diff <= 0) {
+        // 时间到，启动签到
+        clearInterval(scheduledCheckInterval);
+        scheduledCheckInterval = null;
+        
+        if (countdownElement) {
+            countdownElement.textContent = '🚀 正在启动...';
+        }
+        
+        // 激活签到会话
+        activateScheduledSession(sessionId);
+        return;
+    }
+    
+    // 计算时分秒
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (countdownElement) {
+        countdownElement.textContent = timeString;
+    }
+    
+    if (mainCountdown) {
+        mainCountdown.textContent = `⏰ 距离开始：${timeString}`;
+        mainCountdown.className = 'text-lg font-bold text-blue-600';
+    }
+}
+
+// ==================== 激活定时签到会话 ====================
+async function activateScheduledSession(sessionId) {
+    try {
+        console.log('🚀 激活定时签到会话:', sessionId);
+        
+        // 更新会话状态为 active
+        const query = new AV.Query('CheckInSession');
+        const session = await query.get(sessionId);
+        
+        session.set('status', 'active');
+        session.set('startTime', new Date()); // 更新实际开始时间
+        await session.save();
+        
+        console.log('✅ 会话已激活');
+        
+        // 重新加载会话（使用现有的 checkActiveSession 函数）
+        await checkActiveSession();
+        
+        alert('🎉 签到已自动开始！\n\n学生现在可以开始签到了。');
+        
+    } catch (error) {
+        console.error('❌ 激活定时会话失败:', error);
+        alert('激活定时签到失败：' + error.message);
+    }
+}
 
         // ==================== 自动刷新控制 ====================
         let pollingInterval = null;
@@ -1485,6 +2055,30 @@ async function deleteClass(className) {
                 console.log('🛑 自动刷新已停止');
             }
         }
+
+// ==================== 初始化班级下拉列表 ====================
+function initClassSelect() {
+    console.log('🔄 初始化学生表单班级下拉列表...');
+    
+    const classDatalist = document.getElementById('classDatalist');
+    if (!classDatalist) {
+        console.warn('⚠️ 未找到班级列表元素 #classDatalist');
+        return;
+    }
+    
+    // 🔥 清空现有选项
+    classDatalist.innerHTML = '';
+    
+    // 🔥 添加固定班级选项到 datalist
+    FIXED_CLASSES.forEach(className => {
+        const option = document.createElement('option');
+        option.value = className;
+        classDatalist.appendChild(option);
+    });
+    
+    console.log(`✅ 已加载 ${FIXED_CLASSES.length} 个班级到学生表单（支持手动输入）`);
+}
+
 
         // Refresh check-in data - 刷新签到数据
         // ==================== 刷新签到数据（带会话检查）====================
@@ -1596,7 +2190,7 @@ async function deleteClass(className) {
                 checkedInStudents = records.map(obj => ({
                     className: obj.get('className'),
                     studentId: obj.get('studentId'),
-                    name: obj.get('name'),
+                    name: obj.get('studentName'),
                     location: obj.get('location'),
                     checkInTime: obj.get('checkInTime')
                 }));
@@ -2499,6 +3093,22 @@ async function deleteClass(className) {
                     countdown.className = 'text-lg font-bold text-green-600';
                 }
 
+
+                // 🔥 清空班级选择
+                const checkboxes = document.querySelectorAll('#selectClass input[type="checkbox"]');
+                checkboxes.forEach(cb => cb.checked = false);
+
+                // 清空自定义输入框
+                document.getElementById('customClassInput').value = '';
+
+                // 清空所有已选标签
+                const tagsContainer = document.getElementById('selectedClassesTags');
+                if (tagsContainer) {
+                    tagsContainer.innerHTML = '';
+                    tagsContainer.classList.add('hidden');
+                }
+                updateClassCount();
+                updateSelectedClasses();
                 // ========== 完成 ==========
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
                 console.log('✅ 签到已结束');
@@ -2924,237 +3534,264 @@ async function deleteClass(className) {
         }
 
         // ==================== 检查活动会话（完整版）====================
-        async function checkActiveSession() {
-            try {
-                console.log('🔍 检查活动签到会话...');
-
-                // 查询活动的签到会话
-                const query = new AV.Query('CheckInSession');
-                query.equalTo('status', 'active');
-                query.descending('createdAt');
-                query.limit(1);
-                
-                const activeSession = await query.first();
-
-                if (!activeSession) {
-                    console.log('ℹ️ 未发现活动的签到会话');
-                    
-                    // 确保显示设置面板
-                    const setupPanel = document.getElementById('setupPanel');
-                    const checkInStatus = document.getElementById('checkInStatus');
-                    if (setupPanel) setupPanel.classList.remove('hidden');
-                    if (checkInStatus) checkInStatus.classList.add('hidden');
-                    
-                    return;
-                }
-
-                console.log('✅ 发现活动会话:', activeSession.id);
-
-                // 恢复会话信息
-                const classNames = activeSession.get('classNames') || [activeSession.get('className')];
-                const students = activeSession.get('students') || [];
-                
-                currentCheckInSession = {
-                    id: activeSession.id,
-                    courseName: activeSession.get('courseName') || '未知课程',
-                    courseSession: activeSession.get('courseSession') || '未知节次',
-                    classNames: classNames,
-                    className: classNames.join('、'),
-                    duration: activeSession.get('duration') || 30,
-                    requireLocation: activeSession.get('requireLocation') || false,
-                    startTime: activeSession.get('startTime') || new Date(),
-                    status: 'active',
-                    students: students,
-                    totalStudents: students.length
-                };
-
-                console.log('✅ 会话信息已恢复:', currentCheckInSession);
-
-                // 加载签到记录
-                console.log('📥 加载签到记录...');
-                try {
-                    const recordQuery = new AV.Query('CheckInRecord');
-                    recordQuery.equalTo('sessionId', activeSession.id);
-                    recordQuery.descending('checkInTime');
-                    recordQuery.limit(1000);
-                    
-                    const records = await recordQuery.find();
-                    console.log(`✅ 找到 ${records.length} 条签到记录`);
-                    
-                    // 转换为普通对象数组
-                    checkedInStudents = records.map(obj => ({
-                        className: obj.get('className'),
-                        studentId: obj.get('studentId'),
-                        name: obj.get('name'),
-                        location: obj.get('location'),
-                        checkInTime: obj.get('checkInTime')
-                    }));
-                    
-                    console.log('✅ 签到记录已加载:', checkedInStudents.length, '人');
-                    
-                } catch (recordError) {
-                    console.error('❌ 加载签到记录失败:', recordError);
-                    checkedInStudents = [];
-                }
-
-                // 恢复UI状态
-                console.log('🎨 恢复UI状态...');
-                
-                const setupPanel = document.getElementById('setupPanel');
-                const checkInStatus = document.getElementById('checkInStatus');
-                
-                if (setupPanel) setupPanel.classList.add('hidden');
-                if (checkInStatus) checkInStatus.classList.remove('hidden');
-
-                // 更新课程信息显示
-                const currentCourse = document.getElementById('currentCourse');
-                const currentClass = document.getElementById('currentClass');
-                
-                if (currentCourse) {
-                    currentCourse.textContent = `${currentCheckInSession.courseName} - ${currentCheckInSession.courseSession}`;
-                    console.log('✅ 课程信息已显示');
-                }
-
-                if (currentClass) {
-                    currentClass.textContent = currentCheckInSession.className;
-                    console.log('✅ 班级信息已显示');
-                }
-
-                // 初始化词云计数器
-                if (typeof previousUncheckedCount !== 'undefined') {
-                    previousUncheckedCount = students.length;
-                    console.log('✅ 词云计数器已初始化:', previousUncheckedCount);
-                }
-
-                // ========== 初始化所有显示功能 ==========
-                console.log('📊 初始化显示功能...');
-                
-                // 1. 更新词云
-                try {
-                    if (typeof updateWordCloud === 'function') {
-                        updateWordCloud();
-                        console.log('✅ 词云已初始化');
-                    }
-                } catch (error) {
-                    console.error('❌ 词云初始化失败:', error);
-                }
-
-                // 2. 更新进度条
-                try {
-                    if (typeof updateProgress === 'function') {
-                        updateProgress();
-                        console.log('✅ 进度显示已初始化');
-                    }
-                } catch (error) {
-                    console.error('❌ 进度显示初始化失败:', error);
-                }
-
-                // 3. ✅ 更新已签到列表
-                try {
-                    if (typeof updateCheckedInList === 'function') {
-                        updateCheckedInList();
-                        console.log('✅ 已签到列表已初始化');
-                    } else {
-                        console.warn('⚠️ updateCheckedInList 函数不存在');
-                    }
-                } catch (error) {
-                    console.error('❌ 已签到列表初始化失败:', error);
-                }
-
-                // 4. ✅ 更新未签到列表
-                try {
-                    if (typeof updateUncheckedList === 'function') {
-                        updateUncheckedList();
-                        console.log('✅ 未签到列表已初始化');
-                    } else {
-                        console.warn('⚠️ updateUncheckedList 函数不存在');
-                    }
-                } catch (error) {
-                    console.error('❌ 未签到列表初始化失败:', error);
-                }
-
-                // 5. 开始定时刷新
-                console.log('🔄 启动自动刷新...');
-                if (typeof startPolling === 'function') {
-                    startPolling();
-                } else {
-                    console.warn('⚠️ startPolling 函数不存在');
-                }
-
-                // 6. 恢复倒计时
-                console.log('⏱️ 恢复倒计时...');
-                try {
-                    const startTime = new Date(currentCheckInSession.startTime);
-                    const now = new Date();
-                    const elapsed = Math.floor((now - startTime) / 1000); // 已过秒数
-                    const totalSeconds = currentCheckInSession.duration * 60; // 总秒数
-                    const remainingSeconds = Math.max(0, totalSeconds - elapsed); // 剩余秒数
-                    const remainingMinutes = Math.ceil(remainingSeconds / 60); // 剩余分钟
-
-                    console.log('⏱️ 时间计算:', {
-                        开始时间: startTime.toLocaleString('zh-CN'),
-                        当前时间: now.toLocaleString('zh-CN'),
-                        已过秒数: elapsed,
-                        剩余秒数: remainingSeconds,
-                        剩余分钟: remainingMinutes
-                    });
-
-                    if (remainingSeconds > 0) {
-                        if (typeof setupCountdown === 'function') {
-                            setupCountdown(remainingMinutes);
-                            console.log(`✅ 倒计时已恢复，剩余 ${remainingMinutes} 分钟`);
-                        }
-                    } else {
-                        console.warn('⚠️ 签到时间已到');
-                        const countdownElement = document.getElementById('countdown');
-                        if (countdownElement) {
-                            countdownElement.textContent = '⏰ 签到时间已到';
-                            countdownElement.className = 'text-red-600 font-bold';
-                        }
-                    }
-                } catch (error) {
-                    console.error('❌ 倒计时恢复失败:', error);
-                }
-
-                // 显示恢复成功通知
-                console.log('✅ 签到会话已成功恢复');
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                console.log('📊 当前状态:');
-                console.log('  课程:', currentCheckInSession.courseName);
-                console.log('  节次:', currentCheckInSession.courseSession);
-                console.log('  班级:', currentCheckInSession.className);
-                console.log('  应到:', currentCheckInSession.totalStudents, '人');
-                console.log('  实到:', checkedInStudents.length, '人');
-                console.log('  未到:', currentCheckInSession.totalStudents - checkedInStudents.length, '人');
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-                // 显示轻提示（不打断用户）
-                showNotification(
-                    '✅ 签到会话已恢复',
-                    `${currentCheckInSession.courseName} - 已签到 ${checkedInStudents.length}/${currentCheckInSession.totalStudents} 人`
-                );
-
-            } catch (error) {
-                console.error('❌ 检查活动会话失败:', error);
-                
-                // 详细的错误信息
-                if (error.code === 101) {
-                    console.warn('⚠️ CheckInSession 表不存在');
-                } else if (error.code === 403) {
-                    console.error('❌ 权限不足，无法查询签到会话');
-                } else if (error.code === 1) {
-                    console.error('❌ 网络连接失败');
-                } else {
-                    console.error('❌ 未知错误:', error.message);
-                }
-
-                // 确保显示设置面板（失败时的默认状态）
-                const setupPanel = document.getElementById('setupPanel');
-                const checkInStatus = document.getElementById('checkInStatus');
-                if (setupPanel) setupPanel.classList.remove('hidden');
-                if (checkInStatus) checkInStatus.classList.add('hidden');
-            }
+// ==================== 检查活动会话（支持定时任务）====================
+async function checkActiveSession() {
+    try {
+        console.log('🔍检查活动签到会话...');
+        
+        // 🔥 第一步：先检查是否有定时任务
+        console.log('🔍检查定时任务...');
+        const scheduledQuery = new AV.Query('CheckInSession');
+        scheduledQuery.equalTo('status', 'scheduled');
+        scheduledQuery.descending('createdAt');
+        const scheduledSession = await scheduledQuery.first();
+        
+        if (scheduledSession) {
+            const scheduledTime = scheduledSession.get('scheduledTime');
+            const courseName = scheduledSession.get('courseName');
+            const courseSession = scheduledSession.get('courseSession');
+            const classNames = scheduledSession.get('classNames') || [scheduledSession.get('className')];
+            const students = scheduledSession.get('students') || [];
+            const duration = scheduledSession.get('duration');
+            
+            console.log('✅ 发现定时任务:', scheduledSession.id);
+            console.log('📅 发布时间:', new Date(scheduledTime).toLocaleString('zh-CN'));
+            
+            // 显示定时任务倒计时界面
+            showScheduledTaskUI(
+                scheduledSession.id,
+                new Date(scheduledTime),
+                courseName,
+                courseSession,
+                classNames,
+                students.length,
+                duration
+            );
+            return;
         }
+        
+        // 第二步：查询活动的签到会话（原有逻辑）
+        const query = new AV.Query('CheckInSession');
+        query.equalTo('status', 'active');
+        query.descending('createdAt');
+        query.limit(1);
+        const activeSession = await query.first();
+
+        if (!activeSession) {
+            console.log('ℹ️未发现活动的签到会话');
+            // 确保显示设置面板
+            const setupPanel = document.getElementById('setupPanel');
+            const checkInStatus = document.getElementById('checkInStatus');
+            if (setupPanel) setupPanel.classList.remove('hidden');
+            if (checkInStatus) checkInStatus.classList.add('hidden');
+            return;
+        }
+
+        console.log('✅发现活动会话:', activeSession.id);
+
+        // 恢复会话信息
+        const classNames = activeSession.get('classNames') || [activeSession.get('className')];
+        const students = activeSession.get('students') || [];
+
+        currentCheckInSession = {
+            id: activeSession.id,
+            courseName: activeSession.get('courseName') || '未知课程',
+            courseSession: activeSession.get('courseSession') || '未知节次',
+            classNames: classNames,
+            className: classNames.join('、'),
+            duration: activeSession.get('duration') || 30,
+            requireLocation: activeSession.get('requireLocation') || false,
+            startTime: activeSession.get('startTime') || new Date(),
+            status: 'active',
+            students: students,
+            totalStudents: students.length
+        };
+
+        console.log('✅会话信息已恢复:', currentCheckInSession);
+
+        // 加载签到记录
+        console.log('📥加载签到记录...');
+        try {
+            const recordQuery = new AV.Query('CheckInRecord');
+            recordQuery.equalTo('sessionId', activeSession.id);
+            recordQuery.descending('checkInTime');
+            recordQuery.limit(1000);
+            const records = await recordQuery.find();
+
+            console.log(`✅找到${records.length} 条签到记录`);
+
+            // 转换为普通对象数组
+            checkedInStudents = records.map(obj => ({
+                className: obj.get('className'),
+                studentId: obj.get('studentId'),
+                name: obj.get('studentName'),
+                location: obj.get('location'),
+                checkInTime: obj.get('checkInTime')
+            }));
+
+            console.log('✅签到记录已加载:', checkedInStudents.length, '人');
+        } catch (recordError) {
+            console.error('❌加载签到记录失败:', recordError);
+            checkedInStudents = [];
+        }
+
+        // 恢复UI状态
+        console.log('🎨恢复UI状态...');
+        const setupPanel = document.getElementById('setupPanel');
+        const checkInStatus = document.getElementById('checkInStatus');
+
+        if (setupPanel) setupPanel.classList.add('hidden');
+        if (checkInStatus) checkInStatus.classList.remove('hidden');
+
+        // 更新课程信息显示
+        const currentCourse = document.getElementById('currentCourse');
+        const currentClass = document.getElementById('currentClass');
+        
+        if (currentCourse) {
+            currentCourse.textContent = `${currentCheckInSession.courseName} - ${currentCheckInSession.courseSession}`;
+            console.log('✅课程信息已显示');
+        }
+        
+        if (currentClass) {
+            currentClass.textContent = currentCheckInSession.className;
+            console.log('✅班级信息已显示');
+        }
+
+        // 初始化词云计数器
+        if (typeof previousUncheckedCount !== 'undefined') {
+            previousUncheckedCount = students.length;
+            console.log('✅词云计数器已初始化:', previousUncheckedCount);
+        }
+
+        // ========== 初始化所有显示功能 ==========
+        console.log('📊初始化显示功能...');
+
+        // 1. 更新词云
+        try {
+            if (typeof updateWordCloud === 'function') {
+                updateWordCloud();
+                console.log('✅词云已初始化');
+            }
+        } catch (error) {
+            console.error('❌词云初始化失败:', error);
+        }
+
+        // 2. 更新进度条
+        try {
+            if (typeof updateProgress === 'function') {
+                updateProgress();
+                console.log('✅进度显示已初始化');
+            }
+        } catch (error) {
+            console.error('❌进度显示初始化失败:', error);
+        }
+
+        // 3. ✅更新已签到列表
+        try {
+            if (typeof updateCheckedInList === 'function') {
+                updateCheckedInList();
+                console.log('✅已签到列表已初始化');
+            } else {
+                console.warn('⚠️updateCheckedInList 函数不存在');
+            }
+        } catch (error) {
+            console.error('❌已签到列表初始化失败:', error);
+        }
+
+        // 4. ✅更新未签到列表
+        try {
+            if (typeof updateUncheckedList === 'function') {
+                updateUncheckedList();
+                console.log('✅未签到列表已初始化');
+            } else {
+                console.warn('⚠️updateUncheckedList 函数不存在');
+            }
+        } catch (error) {
+            console.error('❌未签到列表初始化失败:', error);
+        }
+
+        // 5. 开始定时刷新
+        console.log('🔄启动自动刷新...');
+        if (typeof startPolling === 'function') {
+            startPolling();
+        } else {
+            console.warn('⚠️startPolling 函数不存在');
+        }
+
+        // 6. 恢复倒计时
+        console.log('⏱️恢复倒计时...');
+        try {
+            const startTime = new Date(currentCheckInSession.startTime);
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000); // 已过秒数
+            const totalSeconds = currentCheckInSession.duration * 60; // 总秒数
+            const remainingSeconds = Math.max(0, totalSeconds - elapsed); // 剩余秒数
+            const remainingMinutes = Math.ceil(remainingSeconds / 60); // 剩余分钟
+
+            console.log('⏱️时间计算:', {
+                开始时间: startTime.toLocaleString('zh-CN'),
+                当前时间: now.toLocaleString('zh-CN'),
+                已过秒数: elapsed,
+                剩余秒数: remainingSeconds,
+                剩余分钟: remainingMinutes
+            });
+
+            if (remainingSeconds > 0) {
+                if (typeof setupCountdown === 'function') {
+                    setupCountdown(remainingMinutes);
+                    console.log(`✅倒计时已恢复，剩余 ${remainingMinutes} 分钟`);
+                }
+            } else {
+                console.warn('⚠️签到时间已到');
+                const countdownElement = document.getElementById('countdown');
+                if (countdownElement) {
+                    countdownElement.textContent = '⏰签到时间已到';
+                    countdownElement.className = 'text-red-600 font-bold';
+                }
+            }
+        } catch (error) {
+            console.error('❌倒计时恢复失败:', error);
+        }
+
+        // 显示恢复成功通知
+        console.log('✅签到会话已成功恢复');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('📊当前状态:');
+        console.log('  课程:', currentCheckInSession.courseName);
+        console.log('  节次:', currentCheckInSession.courseSession);
+        console.log('  班级:', currentCheckInSession.className);
+        console.log('  应到:', currentCheckInSession.totalStudents, '人');
+        console.log('  实到:', checkedInStudents.length, '人');
+        console.log('  未到:', currentCheckInSession.totalStudents - checkedInStudents.length, '人');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+        // 显示轻提示（不打断用户）
+        showNotification(
+            '✅签到会话已恢复',
+            `${currentCheckInSession.courseName} - 已签到 ${checkedInStudents.length}/${currentCheckInSession.totalStudents} 人`
+        );
+
+    } catch (error) {
+        console.error('❌检查活动会话失败:', error);
+        
+        // 详细的错误信息
+        if (error.code === 101) {
+            console.warn('⚠️CheckInSession 表不存在');
+        } else if (error.code === 403) {
+            console.error('❌权限不足，无法查询签到会话');
+        } else if (error.code === 1) {
+            console.error('❌网络连接失败');
+        } else {
+            console.error('❌未知错误:', error.message);
+        }
+
+        // 确保显示设置面板（失败时的默认状态）
+        const setupPanel = document.getElementById('setupPanel');
+        const checkInStatus = document.getElementById('checkInStatus');
+        if (setupPanel) setupPanel.classList.remove('hidden');
+        if (checkInStatus) checkInStatus.classList.add('hidden');
+    }
+}
 
         // ==================== 辅助函数：显示通知 ====================
         function showNotification(title, message) {
@@ -3446,7 +4083,8 @@ async function deleteClass(className) {
                 // 10. 开始人脸检测（确保视频正在播放）
                 const startDetection = () => {
                     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                        console.log('✅ 开始人脸检测');
+                        console.log('✅开始人脸检测');
+                        initLivenessCheck(); // 🔥初始化活体检测
                         faceDetectionRunning = true;
                         detectFaceLoop();
                     } else {
@@ -3454,7 +4092,6 @@ async function deleteClass(className) {
                         setTimeout(startDetection, 100);
                     }
                 };
-                
                 startDetection();
                 
                 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -3529,104 +4166,477 @@ async function deleteClass(className) {
         }
 
 
-        // ==================== 人脸检测循环（完整优化版）====================
-        async function detectFaceLoop() {
-            // 如果检测已停止，退出循环
-            if (!faceDetectionRunning) {
-                console.log('🛑 人脸检测循环已停止');
-                return;
+// ==================== 活体检测功能 ====================
+
+// 初始化活体检测（随机选择2个动作）
+function initLivenessCheck() {
+    const allActions = ['blink', 'mouth', 'nod'];
+    
+    const shuffled = allActions.sort(() => Math.random() - 0.5);
+    livenessActions = shuffled.slice(0, 2);
+    
+    livenessProgress = {};
+    livenessActions.forEach(action => {
+        livenessProgress[action] = { completed: false, count: 0, required: action === 'nod' ? 1 : 2 };
+    });
+    
+    livenessCheckPassed = false;
+    
+    // 重置所有检测状态
+    blinkCount = 0;
+    lastEyeState = 'open';
+    eyeClosedFrames = 0;
+    mouthOpenCount = 0;
+    lastMouthState = 'closed';
+    headPositions = [];
+    nodCount = 0;
+    
+    // 🔥重置动态阈值相关变量
+    baselineEAR = null;
+    earSamples = [];
+    
+    console.log('🎲 活体检测已初始化，需要完成:', livenessActions);
+}
+
+// 眨眼检测
+function detectBlink(landmarks) {
+    if (!livenessActions.includes('blink') || livenessProgress['blink'].completed) {
+        return false;
+    }
+    
+    function getEAR(eye) {
+        const vertical1 = Math.hypot(eye[1].x - eye[5].x, eye[1].y - eye[5].y);
+        const vertical2 = Math.hypot(eye[2].x - eye[4].x, eye[2].y - eye[4].y);
+        const horizontal = Math.hypot(eye[0].x - eye[3].x, eye[0].y - eye[3].y);
+        return (vertical1 + vertical2) / (2.0 * horizontal);
+    }
+    
+    const leftEye = [
+        landmarks.getLeftEye()[0], landmarks.getLeftEye()[1], landmarks.getLeftEye()[2],
+        landmarks.getLeftEye()[3], landmarks.getLeftEye()[4], landmarks.getLeftEye()[5]
+    ];
+    
+    const rightEye = [
+        landmarks.getRightEye()[0], landmarks.getRightEye()[1], landmarks.getRightEye()[2],
+        landmarks.getRightEye()[3], landmarks.getRightEye()[4], landmarks.getRightEye()[5]
+    ];
+    
+    const leftEAR = getEAR(leftEye);
+    const rightEAR = getEAR(rightEye);
+    const avgEAR = (leftEAR + rightEAR) / 2.0;
+    
+    // 🔥动态建立睁眼基准值（采集前10帧的平均值）
+    if (earSamples.length < SAMPLE_SIZE) {
+        earSamples.push(avgEAR);
+        if (earSamples.length === SAMPLE_SIZE) {
+            baselineEAR = earSamples.reduce((a, b) => a + b, 0) / SAMPLE_SIZE;
+            console.log(`👁️ 睁眼基准值已建立: ${baselineEAR.toFixed(3)}`);
+        }
+        return false;
+    }
+    
+    // 🔥动态阈值：基准值的85%（即EAR下降15%时判定为闭眼）
+    const dynamicThreshold = baselineEAR * 0.85;
+    const currentState = avgEAR < dynamicThreshold ? 'closed' : 'open';
+    
+    // 调试信息（每10帧打印一次）
+    if (Math.random() < 0.1) {
+        console.log(`👁️ EAR: ${avgEAR.toFixed(3)} | 动态阈值: ${dynamicThreshold.toFixed(3)} | 状态: ${currentState}`);
+    }
+    
+    if (currentState === 'closed') {
+        eyeClosedFrames++;
+    } else {
+        if (eyeClosedFrames >= 1 && lastEyeState === 'closed') {
+            blinkCount++;
+            livenessProgress['blink'].count = blinkCount;
+            console.log(`✅ 眨眼检测成功！当前: ${blinkCount}/${livenessProgress['blink'].required}`);
+            
+            if (blinkCount >= livenessProgress['blink'].required) {
+                livenessProgress['blink'].completed = true;
+                console.log('✅✅ 眨眼任务完成！');
+            }
+            
+            eyeClosedFrames = 0;
+            lastEyeState = 'open';
+            return true;
+        }
+        eyeClosedFrames = 0;
+        lastEyeState = 'open';
+    }
+    
+    if (eyeClosedFrames >= 1 && lastEyeState === 'open') {
+        lastEyeState = 'closed';
+        console.log('👁️ 检测到闭眼');
+    }
+    
+    return false;
+}
+
+// 张嘴检测
+function detectMouthOpen(landmarks) {
+    if (!livenessActions.includes('mouth') || livenessProgress['mouth'].completed) {
+        return false;
+    }
+    
+    const mouth = landmarks.getMouth();
+    
+    const vertical1 = Math.hypot(mouth[13].x - mouth[19].x, mouth[13].y - mouth[19].y);
+    const vertical2 = Math.hypot(mouth[14].x - mouth[18].x, mouth[14].y - mouth[18].y);
+    const vertical3 = Math.hypot(mouth[15].x - mouth[17].x, mouth[15].y - mouth[17].y);
+    const horizontal = Math.hypot(mouth[0].x - mouth[6].x, mouth[0].y - mouth[6].y);
+    
+    const MAR = (vertical1 + vertical2 + vertical3) / (3.0 * horizontal);
+    const MAR_THRESHOLD = 0.5;
+    const currentState = MAR > MAR_THRESHOLD ? 'open' : 'closed';
+    
+    if (lastMouthState === 'closed' && currentState === 'open') {
+        lastMouthState = 'open';
+    } else if (lastMouthState === 'open' && currentState === 'closed') {
+        mouthOpenCount++;
+        lastMouthState = 'closed';
+        livenessProgress['mouth'].count = mouthOpenCount;
+        console.log(`👄 张嘴检测: ${mouthOpenCount}/${livenessProgress['mouth'].required}`);
+        
+        if (mouthOpenCount >= livenessProgress['mouth'].required) {
+            livenessProgress['mouth'].completed = true;
+            console.log('✅ 张嘴检测完成！');
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+// 点头检测
+function detectNod(detection) {
+    if (!livenessActions.includes('nod') || livenessProgress['nod'].completed) {
+        return false;
+    }
+    
+    const box = detection.detection.box;
+    const currentY = box.y + box.height / 2;
+    
+    headPositions.push(currentY);
+    if (headPositions.length > 30) {
+        headPositions.shift();
+    }
+    
+    if (headPositions.length < 30) {
+        return false;
+    }
+    
+    const maxY = Math.max(...headPositions);
+    const minY = Math.min(...headPositions);
+    const movement = maxY - minY;
+    
+    if (movement > 30) {
+        nodCount++;
+        headPositions = [];
+        livenessProgress['nod'].count = nodCount;
+        console.log(`🔽 点头检测: ${nodCount}/${livenessProgress['nod'].required}`);
+        
+        if (nodCount >= livenessProgress['nod'].required) {
+            livenessProgress['nod'].completed = true;
+            console.log('✅ 点头检测完成！');
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+// 检查是否所有动作都完成
+function checkLivenessComplete() {
+    const allCompleted = livenessActions.every(action => livenessProgress[action].completed);
+    if (allCompleted && !livenessCheckPassed) {
+        livenessCheckPassed = true;
+        console.log('✅ 活体检测全部通过！');
+        return true;
+    }
+    return false;
+}
+
+// 获取活体检测提示文本
+function getLivenessHintHTML() {
+    const actionNames = {
+        'blink': '👁️ 眨眼',
+        'mouth': '👄 张嘴',
+        'nod': '🔽 点头'
+    };
+    
+    let html = '<p class="text-blue-600 font-bold text-lg">活体检测</p><div class="mt-2 space-y-1">';
+    
+    livenessActions.forEach(action => {
+        const progress = livenessProgress[action];
+        const completed = progress.completed;
+        const color = completed ? 'text-green-600' : 'text-blue-600';
+        const icon = completed ? '✅' : '⏳';
+        
+        html += `
+            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <span class="${color} font-semibold">${icon} ${actionNames[action]}</span>
+                <span class="${color} font-bold">${progress.count}/${progress.required}</span>
+            </div>
+        `;
+    });
+    
+    html += '</div><p class="text-gray-600 mt-2 text-xs">💡 自然完成动作即可，不要刻意快速操作</p>';
+    
+    return html;
+}
+
+
+// ==================== 人脸检测循环（多帧验证 + 识别锁定） ====================
+async function detectFaceLoop() {
+    // 🔥 修复1：如果已经识别成功，直接退出循环
+    if (recognitionSuccess) {
+        console.log('✅ 已识别成功，停止检测');
+        return;
+    }
+
+    // 如果检测已停止，退出循环
+    if (!faceDetectionRunning) {
+        console.log('🛑 人脸检测循环已停止');
+        return;
+    }
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('faceCanvas');
+    const statusElement = document.getElementById('recognitionStatus');
+
+    // 检查视频流是否有效
+    if (!video || !video.srcObject) {
+        console.error('❌ 视频流无效，停止检测');
+        faceDetectionRunning = false;
+        if (statusElement) {
+            statusElement.innerHTML = '<p class="text-red-600 font-semibold">❌ 摄像头连接失败</p>';
+        }
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    try {
+        // ========== 第一步：检测人脸 ==========
+        const detections = await faceapi
+            .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({
+                inputSize: 416,
+                scoreThreshold: 0.5
+            }))
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+        // 清空画布
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // ========== 第二步：处理检测结果 ==========
+        if (detections.length > 0) {
+            // 调整 Canvas 尺寸以匹配视频
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            canvas.width = displaySize.width;
+            canvas.height = displaySize.height;
+
+            // 调整检测结果尺寸
+            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+            // 绘制检测框和关键点
+            faceapi.draw.drawDetections(canvas, resizedDetections);
+            faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+
+
+            // ========== 第三步：活体检测（在人脸识别之前）==========
+            if (!livenessCheckPassed && resizedDetections.length > 0) {
+                const firstDetection = resizedDetections[0];
+                const landmarks = firstDetection.landmarks;
+                
+                // 执行各项检测
+                if (livenessActions.includes('blink')) {
+                    detectBlink(landmarks);
+                }
+                if (livenessActions.includes('mouth')) {
+                    detectMouthOpen(landmarks);
+                }
+                if (livenessActions.includes('nod')) {
+                    detectNod(firstDetection);
+                }
+                
+                // 检查是否完成
+                checkLivenessComplete();
+                
+                // 更新提示
+                if (statusElement) {
+                    statusElement.innerHTML = getLivenessHintHTML();
+                }
             }
 
-            const video = document.getElementById('video');
-            const canvas = document.getElementById('faceCanvas');
-            const statusElement = document.getElementById('recognitionStatus');
-            
-            // 检查视频流是否有效
-            if (!video || !video.srcObject) {
-                console.error('❌ 视频流无效，停止检测');
-                faceDetectionRunning = false;
-                if (statusElement) {
-                    statusElement.innerHTML = '<p class="text-red-600 font-semibold">❌ 摄像头连接失败</p>';
+            // 如果活体检测未通过，不进行人脸识别
+            if (!livenessCheckPassed) {
+                if (faceDetectionRunning) {
+                    requestAnimationFrame(detectFaceLoop);
                 }
                 return;
             }
 
-            const ctx = canvas.getContext('2d');
+            // ========== 第四步：人脸识别匹配（活体检测通过后才执行）==========
 
-            try {
-                // ========== 第一步：检测人脸 ==========
-                const detections = await faceapi
-                    .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ 
-                        inputSize: 416, 
-                        scoreThreshold: 0.5 
-                    }))
-                    .withFaceLandmarks()
-                    .withFaceDescriptors();
+            if (!labeledDescriptors || labeledDescriptors.length === 0) {
+                // 没有加载人脸库
+                if (statusElement) {
+                    statusElement.innerHTML =
+                        '<p class="text-red-600 font-semibold">❌ 人脸库未加载，无法识别<br/><small>请刷新页面重试</small></p>';
+                }
+            } else {
+                // 使用较低的匹配阈值，先获取所有可能的匹配
+                const MATCH_THRESHOLD = 0.50;
+                const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, MATCH_THRESHOLD);
+                const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
 
-                // 清空画布
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // ========== 第四步：处理识别结果 ==========
+                let currentBestMatch = null;
+                let currentBestConfidence = 0;
+                let minDistance = Infinity;
 
-                // ========== 第二步：处理检测结果 ==========
-                if (detections.length > 0) {
-                    console.log(`✅ 检测到 ${detections.length} 个人脸`);
+                results.forEach((result, i) => {
+                    const box = resizedDetections[i].detection.box;
+                    const distance = result.distance;
+                    const confidence = (1 - distance) * 100;
+                    
+                    minDistance = Math.min(minDistance, distance);
 
-                    // 调整Canvas尺寸以匹配视频
-                    const displaySize = { width: video.videoWidth, height: video.videoHeight };
-                    canvas.width = displaySize.width;
-                    canvas.height = displaySize.height;
+                    if (result.label !== 'unknown' && confidence >= MIN_CONFIDENCE * 100) {
+                        // 解析学生信息
+                        const parts = result.label.split('|');
+                        const studentId = parts[0] || '';
+                        const name = parts[1] || '未知';
+                        const studentClass = parts[2] || '';
 
-                    // 调整检测结果尺寸
-                    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        console.log(`🎯 检测到: ${name} (${studentId}) | 置信度: ${confidence.toFixed(1)}% | 距离: ${distance.toFixed(3)}`);
 
-                    // 绘制检测框和关键点
-                    faceapi.draw.drawDetections(canvas, resizedDetections);
-                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-
-                    // ========== 第三步：人脸识别匹配 ==========
-                    if (!labeledDescriptors || labeledDescriptors.length === 0) {
-                        // 没有加载人脸库
-                        if (statusElement && !recognitionSuccess) {
-                            statusElement.innerHTML = 
-                                '<p class="text-red-600 font-semibold">❌ 人脸库未加载，无法识别<br/><small>请刷新页面重试</small></p>';
+                        // 记录到多帧验证队列
+                        if (!currentBestMatch || confidence > currentBestConfidence) {
+                            currentBestMatch = {
+                                studentId: studentId,
+                                name: name,
+                                studentClass: studentClass,
+                                confidence: confidence,
+                                distance: distance,
+                                box: box,
+                                label: result.label
+                            };
+                            currentBestConfidence = confidence;
                         }
-                    } else {
-                        // 创建人脸匹配器（阈值0.65，距离小于此值视为匹配）
-                        const faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.7);
-                        const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor));
+                    } else if (result.label !== 'unknown') {
+                        const parts = result.label.split('|');
+                        const name = parts[1] || '未知';
+                        console.log(`⚠️ 低置信度: ${name} | ${confidence.toFixed(1)}% (需要 ≥${MIN_CONFIDENCE * 100}%)`);
+                    }
+                });
 
-                        // 调试输出
-                        console.log('━━━━━━━━━━━━━━━━━━━━');
-                        results.forEach((r, idx) => {
-                            console.log(`人脸${idx + 1}: ${r.label} | 距离: ${r.distance.toFixed(3)} | ${r.label !== 'unknown' ? '✅匹配' : '❌未匹配'}`);
-                        });
-                        console.log('━━━━━━━━━━━━━━━━━━━━');
+                // ========== 第五步：多帧验证 ==========
+                if (currentBestMatch) {
+                    // 添加到最近匹配队列
+                    recentMatches.push({
+                        studentId: currentBestMatch.studentId,
+                        name: currentBestMatch.name,
+                        studentClass: currentBestMatch.studentClass,
+                        confidence: currentBestMatch.confidence,
+                        timestamp: Date.now()
+                    });
 
-                        // ========== 第四步：处理识别结果 ==========
-                        let hasMatched = false; // 本轮是否有匹配成功
-                        let minDistance = Infinity; // 最小距离
+                    // 只保留最近的帧数
+                    if (recentMatches.length > CONSECUTIVE_FRAMES) {
+                        recentMatches.shift();
+                    }
 
-                        results.forEach((result, i) => {
-                            const box = resizedDetections[i].detection.box;
-                            const distance = result.distance;
-                            minDistance = Math.min(minDistance, distance);
+                    // 检查是否连续匹配
+                    if (recentMatches.length >= CONSECUTIVE_FRAMES) {
+                        // 检查最近N帧是否都是同一个人
+                        const firstMatch = recentMatches[0];
+                        const allSamePerson = recentMatches.every(m => 
+                            m.studentId === firstMatch.studentId && 
+                            m.confidence >= MIN_CONFIDENCE * 100
+                        );
 
-                            if (result.label !== 'unknown') {
-                                // ========== 识别成功 ==========
-                                hasMatched = true;
+                        if (allSamePerson) {
+                            // ========== 连续帧验证通过！==========
+                            const avgConfidence = (recentMatches.reduce((sum, m) => sum + m.confidence, 0) / recentMatches.length).toFixed(1);
+                            
+                            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                            console.log(`✅ 连续 ${CONSECUTIVE_FRAMES} 帧验证通过！`);
+                            console.log(`   学生: ${firstMatch.name} (${firstMatch.studentId})`);
+                            console.log(`   平均置信度: ${avgConfidence}%`);
+                            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-                                // 解析学生信息
-                                const parts = result.label.split('|');
-                                const studentId = parts[0] || '';
-                                const name = parts[1] || '未知';
-                                const className = parts[2] || '';
+                            // 验证班级
+                            let isInActiveClass = false;
+                            let activeClassNames = [];
 
-                                const confidence = ((1 - distance) * 100).toFixed(1);
+                            if (activeSessions.length > 0) {
+                                activeSessions.forEach(session => {
+                                    const classNames = session.get('classNames') || [session.get('className')];
+                                    activeClassNames = activeClassNames.concat(classNames);
+                                });
+                                isInActiveClass = activeClassNames.includes(firstMatch.studentClass);
+                            }
+
+                            if (!isInActiveClass && activeSessions.length > 0) {
+                                // ========== 不属于当前签到班级 ==========
+                                console.warn(`⚠️ ${firstMatch.name} 不属于当前签到班级`);
+
+                                // 绘制橙色警告框
+                                const drawBox = new faceapi.draw.DrawBox(currentBestMatch.box, {
+                                    label: `${firstMatch.name} - 非当前班级`,
+                                    boxColor: '#ff9800',
+                                    lineWidth: 3
+                                });
+                                drawBox.draw(canvas);
+
+                                // 显示警告提示
+                                if (statusElement) {
+                                    statusElement.innerHTML =
+                                        `<p class="text-orange-600 font-bold text-lg">
+                                            ⚠️ 识别成功，但不属于当前签到班级
+                                        </p>
+                                        <p class="text-gray-700 mt-2">
+                                            识别姓名：<span class="font-bold">${firstMatch.name}</span><br/>
+                                            学生班级：<span class="font-bold text-orange-600">${firstMatch.studentClass}</span><br/>
+                                            平均置信度：<span class="font-bold text-orange-600">${avgConfidence}%</span>
+                                        </p>
+                                        <p class="text-red-600 mt-2 font-semibold">
+                                            ❌ 当前签到班级：${activeClassNames.join('、')}
+                                        </p>
+                                        <p class="text-gray-600 mt-2 text-sm">
+                                            💡 如果信息正确，请联系教师确认；<br/>
+                                            如果识别错误，请手动填写正确信息
+                                        </p>`;
+                                }
+
+                                // 清空匹配队列，继续检测
+                                recentMatches = [];
+
+                            } else {
+                                // ========== 属于当前签到班级，识别成功！==========
+                                // 🔥 修复2：立即停止检测
+                                recognitionSuccess = true;
+                                faceDetectionRunning = false;
+
+                                // 🔥重置活体检测
+                                livenessCheckPassed = false;
+                                livenessActions = [];
+                                livenessProgress = {};
+
+                                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                                console.log('✅ 识别成功！停止检测循环');
+                                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
                                 // 绘制绿色识别框
-                                const drawBox = new faceapi.draw.DrawBox(box, { 
-                                    label: `${name} (${confidence}%)`,
+                                const drawBox = new faceapi.draw.DrawBox(currentBestMatch.box, {
+                                    label: `${firstMatch.name} (${avgConfidence}%)`,
                                     boxColor: '#00ff00',
-                                    lineWidth: 3
+                                    lineWidth: 4
                                 });
                                 drawBox.draw(canvas);
 
@@ -3635,129 +4645,176 @@ async function deleteClass(className) {
                                 const idInput = document.getElementById('stuId');
                                 const nameInput = document.getElementById('stuName');
 
-                                if (classInput) classInput.value = className;
-                                if (idInput) idInput.value = studentId;
-                                if (nameInput) nameInput.value = name;
+                                if (classInput) classInput.value = firstMatch.studentClass;
+                                if (idInput) idInput.value = firstMatch.studentId;
+                                if (nameInput) nameInput.value = firstMatch.name;
 
                                 // 显示成功提示
                                 if (statusElement) {
-                                    statusElement.innerHTML = 
-                                        `<p class="text-green-600 font-bold text-lg animate-pulse">
-                                            ✅ 识别成功：${name}
-                                            <br/>📊 置信度: ${confidence}% | 📚 班级: ${className}
-                                            <br/>📷 相机将在2秒后自动关闭
+                                    statusElement.innerHTML =
+                                        `<p class="text-green-600 font-bold text-xl animate-pulse">
+                                            ✅ 识别成功：${firstMatch.name}
+                                        </p>
+                                        <p class="text-gray-700 mt-2">
+                                            📊 平均置信度: <span class="font-bold text-green-600">${avgConfidence}%</span><br/>
+                                            📚 班级: ${firstMatch.studentClass}<br/>
+                                            ✅ 连续 ${CONSECUTIVE_FRAMES} 帧验证通过
+                                        </p>
+                                        <p class="text-blue-600 mt-2 text-sm">
+                                            📷 相机将在 2 秒后自动关闭
                                         </p>`;
                                 }
 
-                                // 标记识别成功（防止后续覆盖状态）
-                                if (!recognitionSuccess) {
-                                    recognitionSuccess = true;
-                                    console.log(`✅ 识别成功: ${name} (${studentId}) - ${className}`);
-
-                                    // 2秒后自动关闭相机
-                                    setTimeout(() => {
-                                        if (recognitionSuccess) { // 再次检查，防止重复关闭
-                                            console.log('📷 自动关闭相机...');
-                                            stopCamera();
-                                            recognitionSuccess = false; // 重置标记
-                                        }
-                                    }, 2000);
-                                }
-
-                            } else {
-                                // ========== 未识别（unknown）==========
-                                // 只有在尚未识别成功时才绘制红色框
-                                if (!recognitionSuccess) {
-                                    const drawBox = new faceapi.draw.DrawBox(box, { 
-                                        label: `未知 (${distance.toFixed(3)})`,
-                                        boxColor: '#ff6b6b',
-                                        lineWidth: 2
-                                    });
-                                    drawBox.draw(canvas);
-                                }
+                                // 2秒后自动关闭相机
+                                setTimeout(() => {
+                                    console.log('📷 2秒后自动关闭相机...');
+                                    stopCamera();
+                                    recognitionSuccess = false;  // 重置标志
+                                    recentMatches = [];
+                                }, 2000);
+                                
+                                // 🔥 修复3：立即返回，不再执行后续代码
+                                return;
                             }
-                        });
-
-                        // ========== 第五步：更新状态提示 ==========
-                        if (statusElement && !recognitionSuccess) {
-                            if (hasMatched) {
-                                // 有匹配成功的（状态已在上面更新）
-                                // 不需要额外操作
-                            } else {
-                                // 检测到人脸但全部未匹配
-                                if (minDistance < 0.7) {
-                                    // 相似度接近阈值
-                                    statusElement.innerHTML = 
-                                        `<p class="text-orange-600 font-semibold">
-                                            ⚠️ 检测到人脸但相似度略低
-                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.70</span>)
-                                            <br/>💡 建议：调整角度、光线，或手动填写信息
-                                        </p>`;
-                                } else if (minDistance < 1.0) {
-                                    // 相似度较低
-                                    statusElement.innerHTML = 
-                                        `<p class="text-orange-600 font-semibold">
-                                            ⚠️ 检测到人脸但未找到匹配
-                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span> (阈值: <span class="text-green-600 font-bold">0.70</span>)
-                                            <br/>✓ 确保已录入照片 ✓ 正对摄像头 ✓ 光线充足
-                                        </p>`;
-                                } else {
-                                    // 完全不匹配
-                                    statusElement.innerHTML = 
-                                        `<p class="text-red-600 font-semibold">
-                                            ❌ 检测到人脸但差异过大，无法匹配
-                                            <br/>📏 相似度距离: <span class="text-red-600 font-bold">${minDistance.toFixed(3)}</span>
-                                            <br/>💡 请手动填写信息，或联系管理员录入照片
-                                        </p>`;
-                                }
-                            }
+                        } else {
+                            // 不是同一个人，或者置信度不稳定
+                            const uniquePeople = [...new Set(recentMatches.map(m => m.name))];
+                            console.log(`⚠️ 最近 ${recentMatches.length} 帧检测到多人: ${uniquePeople.join(', ')}`);
+                            
+                            // 清空队列，重新开始
+                            recentMatches = [];
                         }
                     }
 
-                } else {
-                    // ========== 未检测到人脸 ==========
-                    console.log('👤 未检测到人脸');
+                    // ========== 显示实时进度 ==========
+                    if (statusElement) {
+                        const progress = recentMatches.length;
+                        const needed = CONSECUTIVE_FRAMES;
+                        const progressPercent = Math.round((progress / needed) * 100);
 
-                    // 只有在未识别成功时才显示提示
-                    if (statusElement && !recognitionSuccess) {
-                        statusElement.innerHTML = 
-                            `<p class="text-blue-600 font-semibold">
-                                🔍 未检测到人脸，请调整位置...
-                                <br/>✓ 面部正对摄像头 ✓ 保持适当距离 ✓ 光线充足
+                        statusElement.innerHTML =
+                            `<p class="text-blue-600 font-bold text-lg">
+                                🔍 正在识别：${currentBestMatch.name}
+                            </p>
+                            <p class="text-gray-700 mt-2">
+                                当前置信度: <span class="font-bold ${currentBestMatch.confidence >= MIN_CONFIDENCE * 100 ? 'text-green-600' : 'text-orange-600'}">${currentBestMatch.confidence.toFixed(1)}%</span><br/>
+                                验证进度: <span class="font-bold text-blue-600">${progress}/${needed} 帧</span>
+                            </p>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <p class="text-gray-600 mt-2 text-xs">
+                                💡 保持姿势不动 ${needed - progress} 帧...
                             </p>`;
                     }
-                }
 
-                // ========== 第六步：继续检测循环 ==========
-                if (faceDetectionRunning) {
-                    requestAnimationFrame(detectFaceLoop);
-                }
+                } else {
+                    // 当前帧没有高置信度匹配，清空队列
+                    if (recentMatches.length > 0) {
+                        console.log('⚠️ 当前帧无匹配，清空验证队列');
+                        recentMatches = [];
+                    }
 
-            } catch (error) {
-                console.error('❌ 人脸检测错误:', error);
-                
-                // 显示错误信息
-                const statusElement = document.getElementById('recognitionStatus');
-                if (statusElement && !recognitionSuccess) {
-                    statusElement.innerHTML = 
-                        `<p class="text-red-600 font-semibold">
-                            ❌ 检测出错: ${error.message}
-                            <br/><small>继续尝试中...</small>
-                        </p>`;
-                }
-
-                // 即使出错也继续循环（避免因临时错误而停止）
-                if (faceDetectionRunning) {
-                    requestAnimationFrame(detectFaceLoop);
+                    // 显示当前状态
+                    if (statusElement) {
+                        const confidence = ((1 - minDistance) * 100).toFixed(1);
+                        
+                        if (minDistance < 0.50) {
+                            statusElement.innerHTML =
+                                `<p class="text-orange-600 font-semibold text-lg">
+                                    ⚠️ 检测到人脸但置信度不稳定
+                                </p>
+                                <p class="text-gray-700 mt-2">
+                                    当前置信度: <span class="text-orange-600 font-bold">${confidence}%</span><br/>
+                                    需要置信度: <span class="text-green-600 font-bold">≥ ${MIN_CONFIDENCE * 100}%</span>
+                                </p>
+                                <p class="text-gray-600 mt-2 text-sm">
+                                    💡 建议：<br/>
+                                    ✓ 保持姿势不动<br/>
+                                    ✓ 正对摄像头<br/>
+                                    ✓ 调整光线
+                                </p>`;
+                        } else if (minDistance < 0.7) {
+                            statusElement.innerHTML =
+                                `<p class="text-orange-600 font-semibold">
+                                    ⚠️ 检测到人脸但未找到匹配
+                                </p>
+                                <p class="text-gray-700 mt-2">
+                                    相似度: <span class="text-red-600 font-bold">${confidence}%</span>（过低）
+                                </p>
+                                <p class="text-gray-600 mt-2 text-sm">
+                                    ✓ 确保已录入照片<br/>
+                                    ✓ 正对摄像头<br/>
+                                    ✓ 光线充足
+                                </p>`;
+                        } else {
+                            statusElement.innerHTML =
+                                `<p class="text-red-600 font-semibold">
+                                    ❌ 检测到人脸但差异过大
+                                </p>
+                                <p class="text-gray-700 mt-2">
+                                    相似度: <span class="text-red-600 font-bold">${confidence}%</span>
+                                </p>
+                                <p class="text-gray-600 mt-2 text-sm">
+                                    💡 请手动填写信息，或联系管理员录入照片
+                                </p>`;
+                        }
+                    }
                 }
             }
+
+        } else {
+            // ========== 未检测到人脸 ==========
+            if (recentMatches.length > 0) {
+                recentMatches = [];
+            }
+
+            if (statusElement) {
+                statusElement.innerHTML =
+                    `<p class="text-blue-600 font-semibold">
+                        🔍 未检测到人脸，请调整位置...
+                    </p>
+                    <p class="text-gray-600 mt-2 text-sm">
+                        ✓ 面部正对摄像头<br/>
+                        ✓ 保持适当距离<br/>
+                        ✓ 光线充足
+                    </p>`;
+            }
         }
+
+        // ========== 第六步：继续检测循环 ==========
+        if (faceDetectionRunning) {
+            requestAnimationFrame(detectFaceLoop);
+        }
+
+    } catch (error) {
+        console.error('❌ 人脸检测错误:', error);
+
+        const statusElement = document.getElementById('recognitionStatus');
+        if (statusElement) {
+            statusElement.innerHTML =
+                `<p class="text-red-600 font-semibold">
+                    ❌ 检测出错: ${error.message}
+                    <br/><small>继续尝试中...</small>
+                </p>`;
+        }
+
+        if (faceDetectionRunning) {
+            requestAnimationFrame(detectFaceLoop);
+        }
+    }
+}
 
 
         // Stop camera
         function stopCamera() {
             faceDetectionRunning = false;
             recognitionSuccess = false; // 重置识别成功标志
+
+            // 🔥重置活体检测
+            livenessCheckPassed = false;
+            livenessActions = [];
+            livenessProgress = {};
             
             if (videoStream) {
                 videoStream.getTracks().forEach(track => track.stop());
@@ -3857,7 +4914,7 @@ async function deleteClass(className) {
                 record.set('sessionId', sessionId);
                 record.set('className', className);
                 record.set('studentId', studentId);
-                record.set('name', name);
+                record.set('studentName', name);
                 record.set('location', finalLocation);
                 record.set('checkInTime', new Date());
                 await record.save();
