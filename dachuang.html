@@ -1,0 +1,1656 @@
+<!DOCTYPE html>  
+<html lang="zh-CN">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>智能科学与技术专业导师分配系统</title>  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.0/dist/av-min.js"></script>  
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
+</head>  
+<body class="bg-gray-100 min-h-screen">  
+    <!-- 登录页面 -->  
+    <div id="loginPage" class="container mx-auto px-4 py-8">  
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 mt-20">  
+            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">智能科学与技术专业导师分配系统</h1>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">选择身份</label>  
+                <select id="roleSelect" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">  
+                    <option value="admin">管理员</option>  
+                    <option value="student">学生</option>  
+                    <option value="teacher">专业导师</option>  
+                </select>  
+            </div>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">账号</label>  
+                <input type="text" id="username" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入账号">  
+            </div>  
+            <div class="mb-6">  
+                <label class="block text-gray-700 mb-2">密码</label>  
+                <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入密码">  
+            </div>  
+            <button onclick="login()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">登录</button>  
+        </div>  
+    </div>  
+
+    <!-- 修改密码弹窗 -->  
+    <div id="changePasswordModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">  
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">  
+            <h2 class="text-xl font-bold mb-4">首次登录，请修改密码</h2>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">新密码</label>  
+                <input type="password" id="newPassword" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入新密码">  
+            </div>  
+            <div class="mb-6">  
+                <label class="block text-gray-700 mb-2">确认新密码</label>  
+                <input type="password" id="confirmPassword" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请再次输入新密码">  
+            </div>  
+            <button onclick="changePassword()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">确认修改</button>  
+        </div>  
+    </div>  
+
+    <!-- 编辑导师主页弹窗 -->  
+    <div id="editHomepageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">  
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">  
+            <h2 class="text-xl font-bold mb-4">编辑导师主页</h2>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">导师姓名</label>  
+                <input type="text" id="editTeacherName" class="w-full px-4 py-2 border rounded-lg bg-gray-100" readonly>  
+            </div>  
+            <div class="mb-6">  
+                <label class="block text-gray-700 mb-2">主页链接</label>  
+                <input type="text" id="editTeacherHomepage" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入完整的网址，如：https://example.com">  
+                <p class="text-sm text-gray-500 mt-1">留空表示无主页</p>  
+            </div>  
+            <div class="flex gap-2">  
+                <button onclick="saveTeacherHomepage()" class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">保存</button>  
+                <button onclick="closeHomepageModal()" class="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition">取消</button>  
+            </div>  
+        </div>  
+    </div>  
+
+    <!-- 管理员页面 -->  
+    <div id="adminPage" class="hidden container mx-auto px-4 py-8">  
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">  
+            <div class="flex justify-between items-center mb-4">  
+                <h1 class="text-2xl font-bold text-blue-600">管理员控制台</h1>  
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">退出登录</button>  
+            </div>  
+        </div>  
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">  
+            <button onclick="showSection('studentManage')" class="bg-blue-500 text-white py-4 rounded-lg hover:bg-blue-600 transition text-lg font-semibold">学生信息管理</button>  
+            <button onclick="showSection('teacherManage')" class="bg-green-500 text-white py-4 rounded-lg hover:bg-green-600 transition text-lg font-semibold">导师信息管理</button>  
+            <button onclick="showSection('selectionView')" class="bg-purple-500 text-white py-4 rounded-lg hover:bg-purple-600 transition text-lg font-semibold">学生选题查看</button>  
+            <button onclick="showSection('assignmentManage')" class="bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition text-lg font-semibold">导师分配管理</button>  
+        </div>  
+
+        <!-- 学生信息管理 -->  
+        <div id="studentManage" class="hidden bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">学生信息管理</h2>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">批量录入学生（每行格式：学号 姓名 班级，用空格分隔）</label>  
+                <textarea id="studentBatchInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32" placeholder="例如：&#10;24001 张三 1班&#10;24002 李四 2班"></textarea>  
+            </div>  
+            <button onclick="batchAddStudents()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition mb-4">批量添加</button>  
+            <div class="overflow-x-auto">  
+                <table class="w-full border-collapse border">  
+                    <thead class="bg-gray-200">  
+                        <tr>  
+                            <th class="border px-4 py-2">学号</th>  
+                            <th class="border px-4 py-2">姓名</th>  
+                            <th class="border px-4 py-2">班级</th>  
+                            <th class="border px-4 py-2">年级</th>  
+                            <th class="border px-4 py-2">操作</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody id="studentTableBody"></tbody>  
+                </table>  
+            </div>  
+        </div>  
+
+        <!-- 导师信息管理 -->  
+        <div id="teacherManage" class="hidden bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">导师信息管理</h2>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">批量录入导师（每行格式：工号 姓名，用空格分隔）</label>  
+                <textarea id="teacherBatchInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32" placeholder="例如：&#10;T001 王教授&#10;T002 李教授"></textarea>  
+            </div>  
+            <button onclick="batchAddTeachers()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition mb-4">批量添加</button>  
+            <div class="overflow-x-auto">  
+                <table class="w-full border-collapse border">  
+                    <thead class="bg-gray-200">  
+                        <tr>  
+                            <th class="border px-4 py-2">工号</th>  
+                            <th class="border px-4 py-2">姓名</th>  
+                            <th class="border px-4 py-2">题目数量</th>  
+                            <th class="border px-4 py-2">主页</th>  
+                            <th class="border px-4 py-2">操作</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody id="teacherTableBody"></tbody>  
+                </table>  
+            </div>  
+        </div>  
+
+        <!-- 学生选题查看 -->  
+        <div id="selectionView" class="hidden bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">学生选题信息</h2>  
+            <div class="overflow-x-auto">  
+                <table class="w-full border-collapse border">  
+                    <thead class="bg-gray-200">  
+                        <tr>  
+                            <th class="border px-4 py-2">学号</th>  
+                            <th class="border px-4 py-2">姓名</th>  
+                            <th class="border px-4 py-2">第一志愿</th>  
+                            <th class="border px-4 py-2">第二志愿</th>  
+                            <th class="border px-4 py-2">第三志愿</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody id="selectionTableBody"></tbody>  
+                </table>  
+            </div>  
+        </div>  
+
+        <!-- 导师分配管理 -->  
+        <div id="assignmentManage" class="hidden bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">导师分配管理</h2>  
+            
+            <!-- 搜索条件 -->  
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">  
+                <h3 class="font-bold mb-3">搜索条件</h3>  
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">  
+                    <div>  
+                        <label class="block text-gray-700 mb-2 text-sm">学号</label>  
+                        <input type="text" id="searchStudentId" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="输入学号">  
+                    </div>  
+                    <div>  
+                        <label class="block text-gray-700 mb-2 text-sm">姓名</label>  
+                        <input type="text" id="searchStudentName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="输入姓名">  
+                    </div>  
+                    <div>  
+                        <label class="block text-gray-700 mb-2 text-sm">年级</label>  
+                        <select id="searchGrade" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">  
+                            <option value="">全部年级</option>  
+                            <option value="24">2024级</option>  
+                            <option value="25">2025级</option>  
+                            <option value="26">2026级</option>  
+                            <option value="27">2027级</option>  
+                            <option value="28">2028级</option>  
+                        </select>  
+                    </div>  
+                    <div>  
+                        <label class="block text-gray-700 mb-2 text-sm">分配状态</label>  
+                        <select id="searchAssignStatus" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">  
+                            <option value="">全部</option>  
+                            <option value="assigned">已分配</option>  
+                            <option value="unassigned">未分配</option>  
+                            <option value="fromChoice">从志愿分配</option>  
+                            <option value="notFromChoice">非志愿分配</option>  
+                        </select>  
+                    </div>  
+                </div>  
+                <div class="mt-4 flex gap-2">  
+                    <button onclick="searchStudents()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">搜索</button>  
+                    <button onclick="resetSearch()" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">重置</button>  
+                </div>  
+            </div>  
+
+            <div class="mb-4 flex gap-4">  
+                <button onclick="autoAssignment()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">一键分配导师</button>  
+                <button onclick="saveAssignment()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">保存分配方案</button>  
+                <button onclick="exportToExcel()" class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition">导出Excel</button>  
+            </div>  
+            
+            <!-- 分配统计 -->  
+            <div id="assignmentStats" class="mb-4 p-4 bg-blue-50 rounded-lg hidden">  
+                <h3 class="font-bold mb-2">分配统计</h3>  
+                <p id="statsText"></p>  
+            </div>  
+
+            <!-- 未分配学生列表 -->  
+            <div id="unassignedList" class="mb-4 p-4 bg-red-50 rounded-lg hidden">  
+                <h3 class="font-bold mb-2 text-red-600">未能从三志愿中分配的学生</h3>  
+                <div id="unassignedStudents"></div>  
+            </div>  
+
+            <div class="overflow-x-auto">  
+                <table class="w-full border-collapse border">  
+                    <thead class="bg-gray-200">  
+                        <tr>  
+                            <th class="border px-4 py-2">学号</th>  
+                            <th class="border px-4 py-2">姓名</th>  
+                            <th class="border px-4 py-2">班级</th>  
+                            <th class="border px-4 py-2">分配题目</th>  
+                            <th class="border px-4 py-2">分配导师</th>  
+                            <th class="border px-4 py-2">是否志愿</th>  
+                        </tr>  
+                    </thead>  
+                    <tbody id="assignmentTableBody"></tbody>  
+                </table>  
+            </div>  
+        </div>  
+    </div>  
+
+    <!-- 学生页面 -->  
+    <div id="studentPage" class="hidden container mx-auto px-4 py-8">  
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">  
+            <div class="flex justify-between items-center mb-4">  
+                <div>  
+                    <h1 class="text-2xl font-bold text-blue-600">学生选题系统</h1>  
+                    <p class="text-gray-600" id="studentInfo"></p>  
+                </div>  
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">退出登录</button>  
+            </div>  
+        </div>  
+
+        <!-- 分配结果显示区域 -->  
+        <div id="assignmentResultSection" class="hidden bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-green-500">  
+            <h2 class="text-xl font-bold mb-4 text-green-600">✓ 导师分配结果</h2>  
+            <div class="bg-green-50 p-6 rounded-lg">  
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">  
+                    <div>  
+                        <p class="text-sm text-gray-600 mb-1">分配题目</p>  
+                        <p class="text-lg font-bold text-gray-800" id="assignedTopicTitle">-</p>  
+                    </div>  
+                    <div>  
+                        <p class="text-sm text-gray-600 mb-1">指导教师</p>  
+                        <p class="text-lg font-bold text-gray-800" id="assignedTeacherNameLink">-</p>  
+                    </div>  
+                    <div class="md:col-span-2">  
+                        <p class="text-sm text-gray-600 mb-1">分配说明</p>  
+                        <p class="text-base text-gray-700" id="assignmentNote">-</p>  
+                    </div>  
+                </div>  
+            </div>  
+            <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">  
+                <p class="text-sm text-yellow-700">📌 导师已分配，志愿填报功能已锁定。如有疑问请联系管理员。</p>  
+            </div>  
+        </div>  
+
+        <div id="topicListSection" class="bg-white rounded-lg shadow-lg p-6 mb-6">  
+            <h2 class="text-xl font-bold mb-4">可选题目列表</h2>  
+            <div id="topicList" class="space-y-4"></div>  
+        </div>  
+
+        <div class="bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">我的志愿</h2>  
+            <div id="submittedNotice" class="hidden mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">  
+                <p class="text-green-700 font-semibold">✓ 您已成功提交志愿，志愿不可修改</p>  
+            </div>  
+            <div id="assignedNotice" class="hidden mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">  
+                <p class="text-orange-700 font-semibold">⚠️ 导师已分配，无法再提交志愿</p>  
+            </div>  
+            <div class="space-y-2">  
+                <div class="flex items-center justify-between">  
+                    <div class="flex items-center flex-1">  
+                        <span class="font-semibold mr-4 w-24">第一志愿：</span>  
+                        <span id="choice1" class="text-gray-600">未选择</span>  
+                    </div>  
+                    <button id="removeBtn1" onclick="removeChoice(0)" class="hidden ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">删除</button>  
+                </div>  
+                <div class="flex items-center justify-between">  
+                    <div class="flex items-center flex-1">  
+                        <span class="font-semibold mr-4 w-24">第二志愿：</span>  
+                        <span id="choice2" class="text-gray-600">未选择</span>  
+                    </div>  
+                    <button id="removeBtn2" onclick="removeChoice(1)" class="hidden ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">删除</button>  
+                </div>  
+                <div class="flex items-center justify-between">  
+                    <div class="flex items-center flex-1">  
+                        <span class="font-semibold mr-4 w-24">第三志愿：</span>  
+                        <span id="choice3" class="text-gray-600">未选择</span>  
+                    </div>  
+                    <button id="removeBtn3" onclick="removeChoice(2)" class="hidden ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">删除</button>  
+                </div>  
+            </div>  
+            <button id="submitBtn" onclick="submitSelection()" class="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">提交志愿</button>  
+        </div>  
+    </div>  
+
+    <!-- 教师页面 -->  
+    <div id="teacherPage" class="hidden container mx-auto px-4 py-8">  
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">  
+            <div class="flex justify-between items-center mb-4">  
+                <div>  
+                    <h1 class="text-2xl font-bold text-blue-600">导师题目管理</h1>  
+                    <p class="text-gray-600" id="teacherInfo"></p>  
+                </div>  
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">退出登录</button>  
+            </div>  
+        </div>  
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">  
+            <h2 class="text-xl font-bold mb-4">添加新题目（最多5个）</h2>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">题目名称</label>  
+                <input type="text" id="topicTitle" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入题目名称">  
+            </div>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">题目描述</label>  
+                <textarea id="topicDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-32" placeholder="请输入题目描述"></textarea>  
+            </div>  
+            <div class="mb-4">  
+                <label class="block text-gray-700 mb-2">适用年级</label>  
+                <select id="topicGrade" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">  
+                    <option value="24">2024级</option>  
+                    <option value="25">2025级</option>  
+                    <option value="26">2026级</option>  
+                    <option value="27">2027级</option>  
+                    <option value="28">2028级</option>  
+                </select>  
+            </div>  
+            <button onclick="addTopic()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">添加题目</button>  
+        </div>  
+
+        <div class="bg-white rounded-lg shadow-lg p-6">  
+            <h2 class="text-xl font-bold mb-4">我的题目列表</h2>  
+            <div id="myTopicList" class="space-y-4"></div>  
+        </div>  
+    </div>  
+
+    <script>  
+        // LeanCloud初始化  
+        AV.init({  
+            appId: "i5dgesLUGwTIlWX5VCA8eqF3-gzGzoHsz",  
+            appKey: "X2ZTE6mo0VlPr6ZQQ0DSj4aM",  
+            serverURL: "https://i5dgeslu.lc-cn-n1-shared.com"  
+        });  
+
+        let currentUser = null;  
+        let selectedTopics = [];  
+        let currentAssignments = []; // 当前分配方案  
+        let filteredAssignments = []; // 过滤后的分配方案（用于显示和操作）  
+        let hasSubmitted = false; // 是否已提交志愿  
+        let hasAssigned = false; // 是否已被分配导师  
+        let editingTeacherId = null; // 正在编辑的教师ID  
+        let teacherHomepageMap = {}; // 导师主页映射表  
+
+        // 登录  
+        async function login() {  
+            const username = document.getElementById('username').value.trim();  
+            const password = document.getElementById('password').value.trim();  
+            const role = document.getElementById('roleSelect').value;  
+
+            if (!username || !password) {  
+                alert('请输入账号和密码');  
+                return;  
+            }  
+
+            try {  
+                const query = new AV.Query('SystemUser');  
+                query.equalTo('username', username);  
+                query.equalTo('role', role);  
+                const user = await query.first();  
+
+                if (!user) {  
+                    alert('账号不存在或身份选择错误');  
+                    return;  
+                }  
+
+                if (user.get('password') !== password) {  
+                    alert('密码错误');  
+                    return;  
+                }  
+
+                currentUser = user;  
+
+                // 检查是否需要修改密码  
+                if (user.get('needPasswordChange')) {  
+                    document.getElementById('changePasswordModal').classList.remove('hidden');  
+                    return;  
+                }  
+
+                enterSystem(role);  
+            } catch (error) {  
+                alert('登录失败：' + error.message);  
+            }  
+        }  
+
+        // 进入系统  
+        function enterSystem(role) {  
+            document.getElementById('loginPage').classList.add('hidden');  
+            if (role === 'admin') {  
+                document.getElementById('adminPage').classList.remove('hidden');  
+                loadAdminData();  
+            } else if (role === 'student') {  
+                document.getElementById('studentPage').classList.remove('hidden');  
+                loadStudentData();  
+            } else if (role === 'teacher') {  
+                document.getElementById('teacherPage').classList.remove('hidden');  
+                loadTeacherData();  
+            }  
+        }  
+
+        // 修改密码  
+        async function changePassword() {  
+            const newPassword = document.getElementById('newPassword').value.trim();  
+            const confirmPassword = document.getElementById('confirmPassword').value.trim();  
+
+            if (!newPassword || !confirmPassword) {  
+                alert('请输入新密码');  
+                return;  
+            }  
+
+            if (newPassword !== confirmPassword) {  
+                alert('两次输入的密码不一致');  
+                return;  
+            }  
+
+            if (newPassword.length < 6) {  
+                alert('密码长度至少6位');  
+                return;  
+            }  
+
+            try {  
+                currentUser.set('password', newPassword);  
+                currentUser.set('needPasswordChange', false);  
+                await currentUser.save();  
+                
+                document.getElementById('changePasswordModal').classList.add('hidden');  
+                document.getElementById('newPassword').value = '';  
+                document.getElementById('confirmPassword').value = '';  
+                
+                alert('密码修改成功');  
+                enterSystem(currentUser.get('role'));  
+            } catch (error) {  
+                alert('密码修改失败：' + error.message);  
+            }  
+        }  
+
+        // 退出登录  
+        function logout() {  
+            currentUser = null;  
+            selectedTopics = [];  
+            currentAssignments = [];  
+            filteredAssignments = [];  
+            hasSubmitted = false;  
+            hasAssigned = false;  
+            teacherHomepageMap = {};  
+            document.getElementById('adminPage').classList.add('hidden');  
+            document.getElementById('studentPage').classList.add('hidden');  
+            document.getElementById('teacherPage').classList.add('hidden');  
+            document.getElementById('loginPage').classList.remove('hidden');  
+            document.getElementById('username').value = '';  
+            document.getElementById('password').value = '';  
+        }  
+
+        // 显示管理员页面的不同部分  
+        function showSection(section) {  
+            document.getElementById('studentManage').classList.add('hidden');  
+            document.getElementById('teacherManage').classList.add('hidden');  
+            document.getElementById('selectionView').classList.add('hidden');  
+            document.getElementById('assignmentManage').classList.add('hidden');  
+            document.getElementById(section).classList.remove('hidden');  
+
+            if (section === 'studentManage') {  
+                loadStudentList();  
+            } else if (section === 'teacherManage') {  
+                loadTeacherList();  
+            } else if (section === 'selectionView') {  
+                loadSelectionList();  
+            } else if (section === 'assignmentManage') {  
+                loadAssignmentView();  
+            }  
+        }  
+
+        // 批量添加学生  
+        async function batchAddStudents() {  
+            const input = document.getElementById('studentBatchInput').value.trim();  
+            if (!input) {  
+                alert('请输入学生信息');  
+                return;  
+            }  
+
+            const lines = input.split('\n');  
+            let successCount = 0;  
+
+            for (let line of lines) {  
+                const parts = line.trim().split(/\s+/);  
+                if (parts.length !== 3) continue;  
+
+                const [studentId, name, className] = parts;  
+                const grade = studentId.substring(0, 2);  
+
+                try {  
+                    // 检查是否已存在  
+                    const checkQuery = new AV.Query('SystemUser');  
+                    checkQuery.equalTo('username', studentId);  
+                    const existing = await checkQuery.first();  
+                    
+                    if (existing) continue;  
+
+                    const student = new AV.Object('SystemUser');  
+                    student.set('username', studentId);  
+                    student.set('password', studentId);  
+                    student.set('role', 'student');  
+                    student.set('name', name);  
+                    student.set('class', className);  
+                    student.set('grade', grade);  
+                    student.set('needPasswordChange', true);  
+                    await student.save();  
+                    successCount++;  
+                } catch (error) {  
+                    console.error('添加学生失败：', error);  
+                }  
+            }  
+
+            alert(`成功添加 ${successCount} 名学生`);  
+            document.getElementById('studentBatchInput').value = '';  
+            loadStudentList();  
+        }  
+
+        // 加载学生列表  
+        async function loadStudentList() {  
+            try {  
+                const query = new AV.Query('SystemUser');  
+                query.equalTo('role', 'student');  
+                query.limit(1000);  
+                const students = await query.find();  
+
+                const tbody = document.getElementById('studentTableBody');  
+                tbody.innerHTML = '';  
+
+                for (let student of students) {  
+                    const tr = document.createElement('tr');  
+                    tr.innerHTML = `  
+                        <td class="border px-4 py-2">${student.get('username')}</td>  
+                        <td class="border px-4 py-2">${student.get('name')}</td>  
+                        <td class="border px-4 py-2">${student.get('class')}</td>  
+                        <td class="border px-4 py-2">${student.get('grade')}</td>  
+                        <td class="border px-4 py-2">  
+                            <button onclick="deleteUser('${student.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">删除</button>  
+                        </td>  
+                    `;  
+                    tbody.appendChild(tr);  
+                }  
+            } catch (error) {  
+                alert('加载学生列表失败：' + error.message);  
+            }  
+        }  
+
+        // 批量添加教师  
+        async function batchAddTeachers() {  
+            const input = document.getElementById('teacherBatchInput').value.trim();  
+            if (!input) {  
+                alert('请输入教师信息');  
+                return;  
+            }  
+
+            const lines = input.split('\n');  
+            let successCount = 0;  
+
+            for (let line of lines) {  
+                const parts = line.trim().split(/\s+/);  
+                if (parts.length !== 2) continue;  
+
+                const [teacherId, name] = parts;  
+
+                try {  
+                    // 检查是否已存在  
+                    const checkQuery = new AV.Query('SystemUser');  
+                    checkQuery.equalTo('username', teacherId);  
+                    const existing = await checkQuery.first();  
+                    
+                    if (existing) continue;  
+
+                    const teacher = new AV.Object('SystemUser');  
+                    teacher.set('username', teacherId);  
+                    teacher.set('password', teacherId);  
+                    teacher.set('role', 'teacher');  
+                    teacher.set('name', name);  
+                    teacher.set('homepage', ''); // 初始化主页字段为空  
+                    teacher.set('needPasswordChange', true);  
+                    await teacher.save();  
+                    successCount++;  
+                } catch (error) {  
+                    console.error('添加教师失败：', error);  
+                }  
+            }  
+
+            alert(`成功添加 ${successCount} 名教师`);  
+            document.getElementById('teacherBatchInput').value = '';  
+            loadTeacherList();  
+        }  
+
+        // 加载教师列表  
+        async function loadTeacherList() {  
+            try {  
+                const query = new AV.Query('SystemUser');  
+                query.equalTo('role', 'teacher');  
+                query.limit(1000);  
+                const teachers = await query.find();  
+
+                // 构建主页映射表  
+                teacherHomepageMap = {};  
+                for (let teacher of teachers) {  
+                    teacherHomepageMap[teacher.get('username')] = teacher.get('homepage') || '';  
+                }  
+
+                const tbody = document.getElementById('teacherTableBody');  
+                tbody.innerHTML = '';  
+
+                for (let teacher of teachers) {  
+                    // 统计题目数量  
+                    const topicQuery = new AV.Query('Topic');  
+                    topicQuery.equalTo('teacherId', teacher.get('username'));  
+                    const topicCount = await topicQuery.count();  
+
+                    const homepage = teacher.get('homepage') || '';  
+                    const homepageDisplay = homepage ? `<a href="${homepage}" target="_blank" class="text-blue-600 hover:underline text-sm">🔗 ${homepage.substring(0, 30)}${homepage.length > 30 ? '...' : ''}</a>` : '<span class="text-gray-400 text-sm">未设置</span>';  
+
+                    const tr = document.createElement('tr');  
+                    tr.innerHTML = `  
+                        <td class="border px-4 py-2">${teacher.get('username')}</td>  
+                        <td class="border px-4 py-2">${teacher.get('name')}</td>  
+                        <td class="border px-4 py-2">${topicCount}</td>  
+                        <td class="border px-4 py-2">${homepageDisplay}</td>  
+                        <td class="border px-4 py-2">  
+                            <button onclick="openEditHomepage('${teacher.id}', '${teacher.get('name')}', '${homepage}')" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm mr-2">编辑主页</button>  
+                            <button onclick="deleteUser('${teacher.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">删除</button>  
+                        </td>  
+                    `;  
+                    tbody.appendChild(tr);  
+                }  
+            } catch (error) {  
+                alert('加载教师列表失败：' + error.message);  
+            }  
+        }  
+
+        // 打开编辑主页弹窗  
+        function openEditHomepage(teacherId, teacherName, homepage) {  
+            editingTeacherId = teacherId;  
+            document.getElementById('editTeacherName').value = teacherName;  
+            document.getElementById('editTeacherHomepage').value = homepage || '';  
+            document.getElementById('editHomepageModal').classList.remove('hidden');  
+        }  
+
+        // 关闭编辑主页弹窗  
+        function closeHomepageModal() {  
+            editingTeacherId = null;  
+            document.getElementById('editTeacherName').value = '';  
+            document.getElementById('editTeacherHomepage').value = '';  
+            document.getElementById('editHomepageModal').classList.add('hidden');  
+        }  
+
+        // 保存教师主页  
+        async function saveTeacherHomepage() {  
+            if (!editingTeacherId) return;  
+
+            const homepage = document.getElementById('editTeacherHomepage').value.trim();  
+
+            // 验证URL格式（如果不为空）  
+            if (homepage && !homepage.match(/^https?:\/\/.+/)) {  
+                alert('请输入完整的网址，格式如：https://example.com');  
+                return;  
+            }  
+
+            try {  
+                const teacher = AV.Object.createWithoutData('SystemUser', editingTeacherId);  
+                teacher.set('homepage', homepage);  
+                await teacher.save();  
+
+                alert('保存成功');  
+                closeHomepageModal();  
+                loadTeacherList();  
+            } catch (error) {  
+                alert('保存失败：' + error.message);  
+            }  
+        }  
+
+        // 删除用户  
+        async function deleteUser(userId) {  
+            if (!confirm('确定要删除该用户吗？')) return;  
+
+            try {  
+                const user = AV.Object.createWithoutData('SystemUser', userId);  
+                await user.destroy();  
+                alert('删除成功');  
+                loadStudentList();  
+                loadTeacherList();  
+            } catch (error) {  
+                alert('删除失败：' + error.message);  
+            }  
+        }  
+
+        // 加载选题列表  
+        async function loadSelectionList() {  
+            try {  
+                const query = new AV.Query('Selection');  
+                query.limit(1000);  
+                const selections = await query.find();  
+
+                const tbody = document.getElementById('selectionTableBody');  
+                tbody.innerHTML = '';  
+
+                for (let selection of selections) {  
+                    const topic1 = await getTopic(selection.get('topic1Id'));  
+                    const topic2 = await getTopic(selection.get('topic2Id'));  
+                    const topic3 = await getTopic(selection.get('topic3Id'));  
+
+                    const tr = document.createElement('tr');  
+                    tr.innerHTML = `  
+                        <td class="border px-4 py-2">${selection.get('studentId')}</td>  
+                        <td class="border px-4 py-2">${selection.get('studentName')}</td>  
+                        <td class="border px-4 py-2">${topic1 ? topic1.get('title') + '<br><span class="text-sm text-gray-500">（' + topic1.get('teacherName') + '）</span>' : '未选择'}</td>  
+                        <td class="border px-4 py-2">${topic2 ? topic2.get('title') + '<br><span class="text-sm text-gray-500">（' + topic2.get('teacherName') + '）</span>' : '未选择'}</td>  
+                        <td class="border px-4 py-2">${topic3 ? topic3.get('title') + '<br><span class="text-sm text-gray-500">（' + topic3.get('teacherName') + '）</span>' : '未选择'}</td>  
+                    `;  
+                    tbody.appendChild(tr);  
+                }  
+
+                if (selections.length === 0) {  
+                    tbody.innerHTML = '<tr><td colspan="5" class="border px-4 py-2 text-center text-gray-500">暂无选题信息</td></tr>';  
+                }  
+            } catch (error) {  
+                alert('加载选题列表失败：' + error.message);  
+            }  
+        }  
+
+        // 获取题目  
+        async function getTopic(topicId) {  
+            if (!topicId) return null;  
+            try {  
+                const query = new AV.Query('Topic');  
+                return await query.get(topicId);  
+            } catch (error) {  
+                return null;  
+            }  
+        }  
+
+        // 加载管理员数据  
+        async function loadAdminData() {  
+            // 加载教师主页映射表  
+            await loadTeacherHomepageMap();  
+            // 默认显示学生管理  
+            showSection('studentManage');  
+        }  
+
+        // 加载教师主页映射表  
+        async function loadTeacherHomepageMap() {  
+            try {  
+                const query = new AV.Query('SystemUser');  
+                query.equalTo('role', 'teacher');  
+                query.limit(1000);  
+                const teachers = await query.find();  
+
+                teacherHomepageMap = {};  
+                for (let teacher of teachers) {  
+                    teacherHomepageMap[teacher.get('username')] = teacher.get('homepage') || '';  
+                }  
+            } catch (error) {  
+                console.error('加载教师主页映射失败：', error);  
+            }  
+        }  
+
+        // 创建教师名字链接  
+        function createTeacherLink(teacherName, teacherId) {  
+            const homepage = teacherHomepageMap[teacherId] || '';  
+            if (homepage) {  
+                return `<a href="${homepage}" target="_blank" class="text-blue-600 hover:underline cursor-pointer" title="点击访问${teacherName}的主页">${teacherName}</a>`;  
+            } else {  
+                return teacherName;  
+            }  
+        }  
+
+        // 加载学生数据  
+        async function loadStudentData() {  
+            document.getElementById('studentInfo').textContent = `欢迎，${currentUser.get('name')}（${currentUser.get('username')}）`;  
+            
+            // 加载教师主页映射表  
+            await loadTeacherHomepageMap();  
+            
+            // 先检查是否已被分配导师  
+            await checkAssignmentStatus();  
+            
+            // 如果已分配，不再显示题目列表和志愿选择  
+            if (hasAssigned) {  
+                return;  
+            }  
+            
+            // 检查是否已提交志愿  
+            await checkSubmissionStatus();  
+            
+            // 加载所有题目  
+            await loadAllTopics();  
+            
+            // 加载已选择的题目  
+            await loadMySelection();  
+        }  
+
+        // 检查分配状态  
+        async function checkAssignmentStatus() {  
+            try {  
+                const query = new AV.Query('Assignment');  
+                query.equalTo('studentId', currentUser.get('username'));  
+                const assignment = await query.first();  
+
+                if (assignment && assignment.get('assignedTopicId')) {  
+                    hasAssigned = true;  
+                    // 显示分配结果  
+                    displayAssignmentResult(assignment);  
+                    // 锁定志愿功能  
+                    lockSelectionForAssignment();  
+                }  
+            } catch (error) {  
+                console.error('检查分配状态失败：', error);  
+            }  
+        }  
+
+        // 显示分配结果  
+        function displayAssignmentResult(assignment) {  
+            document.getElementById('assignmentResultSection').classList.remove('hidden');  
+            document.getElementById('assignedTopicTitle').textContent = assignment.get('assignedTopicTitle');  
+            
+            // 获取导师信息和主页  
+            const teacherName = assignment.get('assignedTeacherName');  
+            const teacherId = assignment.get('assignedTeacherId') || '';  
+            const homepage = teacherHomepageMap[teacherId] || '';  
+            
+            const teacherLinkElement = document.getElementById('assignedTeacherNameLink');  
+            if (homepage) {  
+                teacherLinkElement.innerHTML = `<a href="${homepage}" target="_blank" class="text-blue-600 hover:underline cursor-pointer" title="点击访问${teacherName}的主页">${teacherName}</a>`;  
+            } else {  
+                teacherLinkElement.textContent = teacherName;  
+            }  
+            
+            const isFromChoice = assignment.get('isFromChoice');  
+            let note = '';  
+            if (isFromChoice) {  
+                note = '✓ 恭喜！系统已从您的三个志愿中为您分配导师和题目。';  
+            } else {  
+                note = '⚠️ 您填报的三个志愿题目均已被其他同学选走，系统未能从志愿中为您分配。请联系管理员或导师进行调整。';  
+            }  
+            document.getElementById('assignmentNote').textContent = note;  
+        }  
+
+        // 因已分配而锁定选择功能  
+        function lockSelectionForAssignment() {  
+            // 隐藏题目列表  
+            document.getElementById('topicListSection').classList.add('hidden');  
+            
+            // 显示已分配提示  
+            document.getElementById('assignedNotice').classList.remove('hidden');  
+            
+            // 禁用提交按钮  
+            const submitBtn = document.getElementById('submitBtn');  
+            submitBtn.disabled = true;  
+            submitBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');  
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');  
+            submitBtn.textContent = '导师已分配';  
+            
+            // 隐藏删除按钮  
+            for (let i = 1; i <= 3; i++) {  
+                document.getElementById(`removeBtn${i}`).classList.add('hidden');  
+            }  
+        }  
+
+        // 检查提交状态  
+        async function checkSubmissionStatus() {  
+            try {  
+                const query = new AV.Query('Selection');  
+                query.equalTo('studentId', currentUser.get('username'));  
+                const selection = await query.first();  
+
+                if (selection && selection.get('submitted')) {  
+                    hasSubmitted = true;  
+                    lockSelection();  
+                }  
+            } catch (error) {  
+                console.error('检查提交状态失败：', error);  
+            }  
+        }  
+
+        // 锁定选择功能  
+        function lockSelection() {  
+            // 显示已提交提示  
+            document.getElementById('submittedNotice').classList.remove('hidden');  
+            
+            // 禁用提交按钮  
+            const submitBtn = document.getElementById('submitBtn');  
+            submitBtn.disabled = true;  
+            submitBtn.classList.remove('bg-blue-500', 'hover:bg-blue-600');  
+            submitBtn.classList.add('bg-gray-400', 'cursor-not-allowed');  
+            submitBtn.textContent = '已提交志愿';  
+            
+            // 隐藏删除按钮  
+            for (let i = 1; i <= 3; i++) {  
+                document.getElementById(`removeBtn${i}`).classList.add('hidden');  
+            }  
+            
+            // 隐藏题目列表的选择按钮  
+            document.getElementById('topicListSection').classList.add('hidden');  
+        }  
+
+        // 加载所有题目  
+        async function loadAllTopics() {  
+            try {  
+                const query = new AV.Query('Topic');  
+                // 只显示学生所在年级的题目  
+                query.equalTo('grade', currentUser.get('grade'));  
+                query.limit(1000);  
+                const topics = await query.find();  
+
+                const topicList = document.getElementById('topicList');  
+                topicList.innerHTML = '';  
+
+                if (topics.length === 0) {  
+                    topicList.innerHTML = '<p class="text-gray-500 text-center">暂无可选题目</p>';  
+                    return;  
+                }  
+
+                for (let topic of topics) {  
+                    const teacherName = topic.get('teacherName');  
+                    const teacherId = topic.get('teacherId');  
+                    const teacherDisplay = createTeacherLink(teacherName, teacherId);  
+
+                    const div = document.createElement('div');  
+                    div.className = 'border rounded-lg p-4 hover:border-blue-500 transition';  
+                    div.innerHTML = `  
+                        <div class="flex justify-between items-start mb-2">  
+                            <h3 class="font-bold text-lg">${topic.get('title')}</h3>  
+                            <button onclick="selectTopic('${topic.id}', '${topic.get('title')}', '${teacherName}', '${teacherId}')" class="topic-select-btn bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 text-sm">选择</button>  
+                        </div>  
+                        <p class="text-gray-600 mb-2">${topic.get('description') || '无描述'}</p>  
+                        <p class="text-sm text-gray-500">指导教师：${teacherDisplay} | 适用年级：20${topic.get('grade')}级</p>  
+                    `;  
+                    topicList.appendChild(div);  
+                }  
+            } catch (error) {  
+                alert('加载题目失败：' + error.message);  
+            }  
+        }  
+
+        // 选择题目  
+        function selectTopic(topicId, title, teacherName, teacherId) {  
+            if (hasAssigned) {  
+                alert('导师已分配，无法修改志愿');  
+                return;  
+            }  
+
+            if (hasSubmitted) {  
+                alert('您已提交志愿，无法修改');  
+                return;  
+            }  
+
+            if (selectedTopics.length >= 3) {  
+                alert('最多只能选择3个题目');  
+                return;  
+            }  
+
+            if (selectedTopics.some(t => t.id === topicId)) {  
+                alert('该题目已选择');  
+                return;  
+            }  
+
+            selectedTopics.push({ id: topicId, title: title, teacherName: teacherName, teacherId: teacherId });  
+            updateSelectionDisplay();  
+        }  
+
+        // 删除选择  
+        function removeChoice(index) {  
+            if (hasAssigned) {  
+                alert('导师已分配，无法修改志愿');  
+                return;  
+            }  
+
+            if (hasSubmitted) {  
+                alert('您已提交志愿，无法修改');  
+                return;  
+            }  
+
+            if (selectedTopics[index]) {  
+                selectedTopics.splice(index, 1);  
+                updateSelectionDisplay();  
+            }  
+        }  
+
+        // 更新选择显示  
+        function updateSelectionDisplay() {  
+            for (let i = 1; i <= 3; i++) {  
+                const elem = document.getElementById(`choice${i}`);  
+                const removeBtn = document.getElementById(`removeBtn${i}`);  
+                
+                if (selectedTopics[i - 1]) {  
+                    const topic = selectedTopics[i - 1];  
+                    const teacherDisplay = createTeacherLink(topic.teacherName, topic.teacherId);  
+                    elem.innerHTML = `${topic.title}（${teacherDisplay}）`;  
+                    elem.className = 'text-blue-600';  
+                    if (!hasSubmitted && !hasAssigned) {  
+                        removeBtn.classList.remove('hidden');  
+                    }  
+                } else {  
+                    elem.textContent = '未选择';  
+                    elem.className = 'text-gray-600';  
+                    removeBtn.classList.add('hidden');  
+                }  
+            }  
+        }  
+
+        // 提交选题  
+        async function submitSelection() {  
+            if (hasAssigned) {  
+                alert('导师已分配，无法提交志愿');  
+                return;  
+            }  
+
+            if (hasSubmitted) {  
+                alert('您已提交志愿，无法重复提交');  
+                return;  
+            }  
+
+            if (selectedTopics.length === 0) {  
+                alert('请至少选择一个题目');  
+                return;  
+            }  
+
+            if (!confirm('确定提交志愿吗？提交后将无法修改')) {  
+                return;  
+            }  
+
+            try {  
+                // 检查是否已经提交过  
+                const checkQuery = new AV.Query('Selection');  
+                checkQuery.equalTo('studentId', currentUser.get('username'));  
+                const existing = await checkQuery.first();  
+
+                let selection;  
+                if (existing) {  
+                    selection = existing;  
+                } else {  
+                    selection = new AV.Object('Selection');  
+                    selection.set('studentId', currentUser.get('username'));  
+                    selection.set('studentName', currentUser.get('name'));  
+                }  
+
+                selection.set('topic1Id', selectedTopics[0]?.id || '');  
+                selection.set('topic2Id', selectedTopics[1]?.id || '');  
+                selection.set('topic3Id', selectedTopics[2]?.id || '');  
+                selection.set('submitted', true); // 标记为已提交  
+                selection.set('submitTime', new Date()); // 记录提交时间  
+                
+                await selection.save();  
+                
+                hasSubmitted = true;  
+                lockSelection();  
+                
+                alert('提交成功！');  
+            } catch (error) {  
+                alert('提交失败：' + error.message);  
+            }  
+        }  
+
+        // 加载我的选题  
+        async function loadMySelection() {  
+            try {  
+                const query = new AV.Query('Selection');  
+                query.equalTo('studentId', currentUser.get('username'));  
+                const selection = await query.first();  
+
+                if (selection) {  
+                    selectedTopics = [];  
+                    const topic1Id = selection.get('topic1Id');  
+                    const topic2Id = selection.get('topic2Id');  
+                    const topic3Id = selection.get('topic3Id');  
+
+                    if (topic1Id) {  
+                        const topic1 = await getTopic(topic1Id);  
+                        if (topic1) selectedTopics.push({   
+                            id: topic1Id,   
+                            title: topic1.get('title'),   
+                            teacherName: topic1.get('teacherName'),  
+                            teacherId: topic1.get('teacherId')  
+                        });  
+                    }  
+                    if (topic2Id) {  
+                        const topic2 = await getTopic(topic2Id);  
+                        if (topic2) selectedTopics.push({   
+                            id: topic2Id,   
+                            title: topic2.get('title'),   
+                            teacherName: topic2.get('teacherName'),  
+                            teacherId: topic2.get('teacherId')  
+                        });  
+                    }  
+                    if (topic3Id) {  
+                        const topic3 = await getTopic(topic3Id);  
+                        if (topic3) selectedTopics.push({   
+                            id: topic3Id,   
+                            title: topic3.get('title'),   
+                            teacherName: topic3.get('teacherName'),  
+                            teacherId: topic3.get('teacherId')  
+                        });  
+                    }  
+
+                    updateSelectionDisplay();  
+                }  
+            } catch (error) {  
+                console.error('加载我的选题失败：', error);  
+            }  
+        }  
+
+        // 加载教师数据  
+        async function loadTeacherData() {  
+            document.getElementById('teacherInfo').textContent = `欢迎，${currentUser.get('name')}（${currentUser.get('username')}）`;  
+            await loadMyTopics();  
+        }  
+
+        // 添加题目  
+        async function addTopic() {  
+            const title = document.getElementById('topicTitle').value.trim();  
+            const description = document.getElementById('topicDescription').value.trim();  
+            const grade = document.getElementById('topicGrade').value;  
+
+            if (!title) {  
+                alert('请输入题目名称');  
+                return;  
+            }  
+
+            try {  
+                // 检查题目数量  
+                const countQuery = new AV.Query('Topic');  
+                countQuery.equalTo('teacherId', currentUser.get('username'));  
+                const count = await countQuery.count();  
+
+                if (count >= 5) {  
+                    alert('最多只能添加5个题目');  
+                    return;  
+                }  
+
+                const topic = new AV.Object('Topic');  
+                topic.set('teacherId', currentUser.get('username'));  
+                topic.set('teacherName', currentUser.get('name'));  
+                topic.set('title', title);  
+                topic.set('description', description);  
+                topic.set('grade', grade);  
+                await topic.save();  
+
+                alert('添加成功');  
+                document.getElementById('topicTitle').value = '';  
+                document.getElementById('topicDescription').value = '';  
+                loadMyTopics();  
+            } catch (error) {  
+                alert('添加失败：' + error.message);  
+            }  
+        }  
+
+        // 加载我的题目  
+        async function loadMyTopics() {  
+            try {  
+                const query = new AV.Query('Topic');  
+                query.equalTo('teacherId', currentUser.get('username'));  
+                query.limit(5);  
+                const topics = await query.find();  
+
+                const topicList = document.getElementById('myTopicList');  
+                topicList.innerHTML = '';  
+
+                if (topics.length === 0) {  
+                    topicList.innerHTML = '<p class="text-gray-500 text-center">暂无题目</p>';  
+                    return;  
+                }  
+
+                for (let topic of topics) {  
+                    const div = document.createElement('div');  
+                    div.className = 'border rounded-lg p-4';  
+                    div.innerHTML = `  
+                        <div class="flex justify-between items-start mb-2">  
+                            <h3 class="font-bold text-lg">${topic.get('title')}</h3>  
+                            <button onclick="deleteTopic('${topic.id}')" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">删除</button>  
+                        </div>  
+                        <p class="text-gray-600 mb-2">${topic.get('description') || '无描述'}</p>  
+                        <p class="text-sm text-gray-500">适用年级：20${topic.get('grade')}级</p>  
+                    `;  
+                    topicList.appendChild(div);  
+                }  
+
+                topicList.innerHTML += `<p class="text-sm text-gray-500 text-center mt-4">已添加 ${topics.length}/5 个题目</p>`;  
+            } catch (error) {  
+                alert('加载题目失败：' + error.message);  
+            }  
+        }  
+
+        // 删除题目  
+        async function deleteTopic(topicId) {  
+            if (!confirm('确定要删除该题目吗？')) return;  
+
+            try {
+                const topic = AV.Object.createWithoutData('Topic', topicId);
+                await topic.destroy();
+                alert('删除成功');
+                loadMyTopics();
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        // 加载分配视图
+        async function loadAssignmentView() {
+            try {
+                // 加载教师主页映射表
+                await loadTeacherHomepageMap();
+
+                // 获取所有学生
+                const studentQuery = new AV.Query('SystemUser');
+                studentQuery.equalTo('role', 'student');
+                studentQuery.limit(1000);
+                const students = await studentQuery.find();
+
+                // 获取已保存的分配方案
+                const assignmentQuery = new AV.Query('Assignment');
+                assignmentQuery.limit(1000);
+                const savedAssignments = await assignmentQuery.find();
+
+                // 构建分配映射
+                const assignmentMap = {};
+                for (let a of savedAssignments) {
+                    assignmentMap[a.get('studentId')] = {
+                        assignedTopicId: a.get('assignedTopicId'),
+                        assignedTopicTitle: a.get('assignedTopicTitle'),
+                        assignedTeacherId: a.get('assignedTeacherId'),
+                        assignedTeacherName: a.get('assignedTeacherName'),
+                        isFromChoice: a.get('isFromChoice'),
+                        choice1: a.get('choice1'),
+                        choice1Teacher: a.get('choice1Teacher'),
+                        choice2: a.get('choice2'),
+                        choice2Teacher: a.get('choice2Teacher'),
+                        choice3: a.get('choice3'),
+                        choice3Teacher: a.get('choice3Teacher')
+                    };
+                }
+
+                // 为所有学生构建分配信息
+                currentAssignments = [];
+                for (let student of students) {
+                    const studentId = student.get('username');
+                    const assignment = assignmentMap[studentId];
+                    
+                    if (assignment) {
+                        currentAssignments.push({
+                            studentId: studentId,
+                            studentName: student.get('name'),
+                            className: student.get('class'),
+                            grade: student.get('grade'),
+                            ...assignment
+                        });
+                    } else {
+                        // 没有分配方案的学生
+                        currentAssignments.push({
+                            studentId: studentId,
+                            studentName: student.get('name'),
+                            className: student.get('class'),
+                            grade: student.get('grade'),
+                            assignedTopicId: '',
+                            assignedTopicTitle: '',
+                            assignedTeacherId: '',
+                            assignedTeacherName: '',
+                            isFromChoice: false,
+                            choice1: '',
+                            choice1Teacher: '',
+                            choice2: '',
+                            choice2Teacher: '',
+                            choice3: '',
+                            choice3Teacher: ''
+                        });
+                    }
+                }
+
+                // 默认显示所有学生
+                filteredAssignments = [...currentAssignments];
+                displayAssignments();
+            } catch (error) {
+                console.error('加载分配视图失败：', error);
+            }
+        }
+
+        // 搜索学生
+        function searchStudents() {
+            const searchStudentId = document.getElementById('searchStudentId').value.trim().toLowerCase();
+            const searchStudentName = document.getElementById('searchStudentName').value.trim().toLowerCase();
+            const searchGrade = document.getElementById('searchGrade').value;
+            const searchAssignStatus = document.getElementById('searchAssignStatus').value;
+
+            filteredAssignments = currentAssignments.filter(assignment => {
+                // 学号筛选
+                if (searchStudentId && !assignment.studentId.toLowerCase().includes(searchStudentId)) {
+                    return false;
+                }
+
+                // 姓名筛选
+                if (searchStudentName && !assignment.studentName.toLowerCase().includes(searchStudentName)) {
+                    return false;
+                }
+
+                // 年级筛选
+                if (searchGrade && assignment.grade !== searchGrade) {
+                    return false;
+                }
+
+                // 分配状态筛选
+                if (searchAssignStatus) {
+                    if (searchAssignStatus === 'assigned' && !assignment.assignedTopicId) {
+                        return false;
+                    }
+                    if (searchAssignStatus === 'unassigned' && assignment.assignedTopicId) {
+                        return false;
+                    }
+                    if (searchAssignStatus === 'fromChoice' && !assignment.isFromChoice) {
+                        return false;
+                    }
+                    if (searchAssignStatus === 'notFromChoice' && (assignment.isFromChoice || !assignment.assignedTopicId)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            displayAssignments();
+            
+            // 显示搜索结果统计
+            alert(`找到 ${filteredAssignments.length} 条符合条件的记录`);
+        }
+
+        // 重置搜索
+        function resetSearch() {
+            document.getElementById('searchStudentId').value = '';
+            document.getElementById('searchStudentName').value = '';
+            document.getElementById('searchGrade').value = '';
+            document.getElementById('searchAssignStatus').value = '';
+            
+            filteredAssignments = [...currentAssignments];
+            displayAssignments();
+        }
+
+        // 自动分配导师（只对搜索条件下的学生）
+        async function autoAssignment() {
+            if (filteredAssignments.length === 0) {
+                alert('当前搜索条件下没有学生，请调整搜索条件');
+                return;
+            }
+
+            if (!confirm(`将对当前搜索条件下的 ${filteredAssignments.length} 名学生进行分配，确定吗？`)) {
+                return;
+            }
+
+            try {
+                // 获取所有选题
+                const selectionQuery = new AV.Query('Selection');
+                selectionQuery.limit(1000);
+                const selections = await selectionQuery.find();
+
+                // 构建学生-选题映射
+                const selectionMap = {};
+                for (let sel of selections) {
+                    selectionMap[sel.get('studentId')] = sel;
+                }
+
+                // 记录已分配的题目（每个题目只能分配给1个学生）
+                const assignedTopics = new Set();
+                
+                const unassignedStudents = [];
+
+                // 随机打乱学生顺序，增加公平性
+                const shuffledStudents = [...filteredAssignments].sort(() => Math.random() - 0.5);
+
+                // 为每个学生分配导师
+                for (let i = 0; i < shuffledStudents.length; i++) {
+                    const student = shuffledStudents[i];
+                    const studentId = student.studentId;
+                    const selection = selectionMap[studentId];
+                    
+                    if (!selection) {
+                        // 没有填写志愿的学生
+                        student.assignedTopicId = '';
+                        student.assignedTopicTitle = '未填写志愿';
+                        student.assignedTeacherId = '';
+                        student.assignedTeacherName = '';
+                        student.isFromChoice = false;
+                        student.choice1 = '';
+                        student.choice1Teacher = '';
+                        student.choice2 = '';
+                        student.choice2Teacher = '';
+                        student.choice3 = '';
+                        student.choice3Teacher = '';
+                        continue;
+                    }
+
+                    // 获取学生的三个志愿
+                    const choices = [
+                        selection.get('topic1Id'),
+                        selection.get('topic2Id'),
+                        selection.get('topic3Id')
+                    ].filter(id => id);
+
+                    // 获取志愿题目信息用于显示
+                    const topic1 = await getTopic(selection.get('topic1Id'));
+                    const topic2 = await getTopic(selection.get('topic2Id'));
+                    const topic3 = await getTopic(selection.get('topic3Id'));
+
+                    // 更新志愿信息
+                    student.choice1 = topic1 ? topic1.get('title') : '';
+                    student.choice1Teacher = topic1 ? topic1.get('teacherName') : '';
+                    student.choice2 = topic2 ? topic2.get('title') : '';
+                    student.choice2Teacher = topic2 ? topic2.get('teacherName') : '';
+                    student.choice3 = topic3 ? topic3.get('title') : '';
+                    student.choice3Teacher = topic3 ? topic3.get('teacherName') : '';
+
+                    // 随机打乱志愿顺序
+                    const shuffledChoices = choices.sort(() => Math.random() - 0.5);
+                    
+                    let assigned = false;
+                    let assignedTopic = null;
+
+                    // 尝试分配志愿
+                    for (let topicId of shuffledChoices) {
+                        const topic = await getTopic(topicId);
+                        if (!topic) continue;
+
+                        // 检查该题目是否已被分配
+                        if (!assignedTopics.has(topicId)) {
+                            assignedTopics.add(topicId); // 标记为已分配
+                            assigned = true;
+                            assignedTopic = topic;
+                            break;
+                        }
+                    }
+
+                    if (assigned && assignedTopic) {
+                        // 成功从志愿中分配
+                        student.assignedTopicId = assignedTopic.id;
+                        student.assignedTopicTitle = assignedTopic.get('title');
+                        student.assignedTeacherId = assignedTopic.get('teacherId');
+                        student.assignedTeacherName = assignedTopic.get('teacherName');
+                        student.isFromChoice = true;
+                    } else {
+                        // 无法从志愿中分配
+                        student.assignedTopicId = '';
+                        student.assignedTopicTitle = '未能分配';
+                        student.assignedTeacherId = '';
+                        student.assignedTeacherName = '';
+                        student.isFromChoice = false;
+                        unassignedStudents.push({
+                            studentId: studentId,
+                            studentName: student.studentName,
+                            choice1: student.choice1 ? student.choice1 + '（' + student.choice1Teacher + '）' : '',
+                            choice2: student.choice2 ? student.choice2 + '（' + student.choice2Teacher + '）' : '',
+                            choice3: student.choice3 ? student.choice3 + '（' + student.choice3Teacher + '）' : ''
+                        });
+                    }
+
+                    // 更新currentAssignments中对应的学生
+                    const index = currentAssignments.findIndex(a => a.studentId === studentId);
+                    if (index !== -1) {
+                        currentAssignments[index] = {...student};
+                    }
+                }
+
+                // 显示分配结果
+                displayAssignments();
+
+                // 显示统计信息
+                const assignedCount = filteredAssignments.filter(a => a.isFromChoice).length;
+                const unassignedCount = unassignedStudents.length;
+                document.getElementById('assignmentStats').classList.remove('hidden');
+                document.getElementById('statsText').innerHTML = 
+                    `本次分配学生数：${filteredAssignments.length}，成功从志愿中分配：<span class="text-green-600 font-bold">${assignedCount}</span>，未能从志愿中分配：<span class="text-red-600 font-bold">${unassignedCount}</span>`;
+
+                // 显示未分配学生
+                if (unassignedStudents.length > 0) {
+                    document.getElementById('unassignedList').classList.remove('hidden');
+                    const unassignedDiv = document.getElementById('unassignedStudents');
+                    unassignedDiv.innerHTML = unassignedStudents.map(s => `
+                        <div class="border-b py-2">
+                            <p class="font-semibold">${s.studentName}（${s.studentId}）</p>
+                            <p class="text-sm">第一志愿：${s.choice1 || '未选择'}</p>
+                            <p class="text-sm">第二志愿：${s.choice2 || '未选择'}</p>
+                            <p class="text-sm">第三志愿：${s.choice3 || '未选择'}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('unassignedList').classList.add('hidden');
+                    alert('✅ 搜索条件下的所有学生都成功从志愿中分配到导师！');
+                }
+
+            } catch (error) {
+                alert('分配失败：' + error.message);
+            }
+        }
+
+        // 显示分配结果
+        function displayAssignments() {
+            const tbody = document.getElementById('assignmentTableBody');
+            tbody.innerHTML = '';
+
+            for (let assignment of filteredAssignments) {
+                const tr = document.createElement('tr');
+                const bgColor = assignment.isFromChoice ? '' : 'bg-yellow-50';
+                tr.className = bgColor;
+                tr.innerHTML = `
+                    <td class="border px-4 py-2">${assignment.studentId}</td>
+                    <td class="border px-4 py-2">${assignment.studentName}</td>
+                    <td class="border px-4 py-2">${assignment.className}</td>
+                    <td class="border px-4 py-2">${assignment.assignedTopicTitle || '未分配'}</td>
+                    <td class="border px-4 py-2">${assignment.assignedTeacherName || '-'}</td>
+                    <td class="border px-4 py-2">${assignment.assignedTopicId ? (assignment.isFromChoice ? '<span class="text-green-600 font-semibold">是</span>' : '<span class="text-red-600 font-semibold">否</span>') : '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            if (filteredAssignments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="border px-4 py-2 text-center text-gray-500">没有符合条件的学生</td></tr>';
+            }
+        }
+
+        // 保存分配方案（只保存已分配的学生）
+        async function saveAssignment() {
+            const assignedStudents = filteredAssignments.filter(a => a.assignedTopicId);
+            
+            if (assignedStudents.length === 0) {
+                alert('当前搜索条件下没有已分配的学生');
+                return;
+            }
+
+            if (!confirm(`确定保存当前搜索条件下 ${assignedStudents.length} 名学生的分配方案吗？\n注意：这将覆盖这些学生之前的分配记录`)) {
+                return;
+            }
+
+            try {
+                // 只删除当前要保存的学生的旧分配记录
+                const studentIds = assignedStudents.map(a => a.studentId);
+                const oldQuery = new AV.Query('Assignment');
+                oldQuery.containedIn('studentId', studentIds);
+                oldQuery.limit(1000);
+                const oldAssignments = await oldQuery.find();
+                if (oldAssignments.length > 0) {
+                    await AV.Object.destroyAll(oldAssignments);
+                }
+
+                // 保存新的分配方案
+                for (let assignment of assignedStudents) {
+                    const assignmentObj = new AV.Object('Assignment');
+                    assignmentObj.set('studentId', assignment.studentId);
+                    assignmentObj.set('studentName', assignment.studentName);
+                    assignmentObj.set('className', assignment.className);
+                    assignmentObj.set('assignedTopicId', assignment.assignedTopicId);
+                    assignmentObj.set('assignedTopicTitle', assignment.assignedTopicTitle);
+                    assignmentObj.set('assignedTeacherId', assignment.assignedTeacherId);
+                    assignmentObj.set('assignedTeacherName', assignment.assignedTeacherName);
+                    assignmentObj.set('isFromChoice', assignment.isFromChoice);
+                    assignmentObj.set('choice1', assignment.choice1);
+                    assignmentObj.set('choice1Teacher', assignment.choice1Teacher);
+                    assignmentObj.set('choice2', assignment.choice2);
+                    assignmentObj.set('choice2Teacher', assignment.choice2Teacher);
+                    assignmentObj.set('choice3', assignment.choice3);
+                    assignmentObj.set('choice3Teacher', assignment.choice3Teacher);
+                    await assignmentObj.save();
+                }
+
+                alert(`成功保存 ${assignedStudents.length} 名学生的分配方案！`);
+            } catch (error) {
+                alert('保存失败：' + error.message);
+            }
+        }
+
+        // 导出Excel（只导出当前显示的学生）
+        function exportToExcel() {
+            if (filteredAssignments.length === 0) {
+                alert('当前搜索条件下没有学生数据');
+                return;
+            }
+
+            // 准备数据
+            const data = filteredAssignments.map(a => ({
+                '学生姓名': a.studentName,
+                '学号': a.studentId,
+                '班级': a.className,
+                '年级': '20' + a.grade + '级',
+                '第一志愿题目': a.choice1 || '-',
+                '第一志愿指导教师': a.choice1Teacher || '-',
+                '第二志愿题目': a.choice2 || '-',
+                '第二志愿指导教师': a.choice2Teacher || '-',
+                '第三志愿题目': a.choice3 || '-',
+                '第三志愿指导教师': a.choice3Teacher || '-',
+                '系统分配题目': a.assignedTopicTitle || '未分配',
+                '系统分配指导教师': a.assignedTeacherName || '-',
+                '是否三志愿之一': a.assignedTopicId ? (a.isFromChoice ? '是' : '否') : '-'
+            }));
+
+            // 创建工作簿
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "导师分配结果");
+
+            // 导出文件
+            const date = new Date();
+            const dateStr = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
+            const fileName = `导师分配结果_${dateStr}_共${filteredAssignments.length}人.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            alert(`已导出 ${filteredAssignments.length} 名学生的分配信息`);
+        }
+
+        // 页面加载时初始化管理员账号
+        window.onload = async function() {
+            try {
+                const query = new AV.Query('SystemUser');
+                query.equalTo('username', '080907');
+                query.equalTo('role', 'admin');
+                const admin = await query.first();
+
+                if (!admin) {
+                    const newAdmin = new AV.Object('SystemUser');
+                    newAdmin.set('username', '080907');
+                    newAdmin.set('password', '080907T');
+                    newAdmin.set('role', 'admin');
+                    newAdmin.set('name', '管理员');
+                    newAdmin.set('needPasswordChange', false);
+                    await newAdmin.save();
+                    console.log('管理员账号初始化成功');
+                }
+            } catch (error) {
+                console.error('初始化失败：', error);
+            }
+        };
+    </script>
+</body>
+</html>
