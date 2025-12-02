@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel学生数据转代码工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-green-50 to-blue-50 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-blue-700 mb-8">📊 Excel学生数据转代码工具</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- 左侧：输入区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📥 数据输入</h2>
+                
+                <!-- 使用说明 -->
+                <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                    <h3 class="font-semibold text-blue-800 mb-2">🔧 使用步骤：</h3>
+                    <ol class="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                        <li>在Excel中选择学号和姓名两列数据</li>
+                        <li>复制选中的数据 (Ctrl+C)</li>
+                        <li>粘贴到下面的文本框 (Ctrl+V)</li>
+                        <li>填写班级信息</li>
+                        <li>点击"生成代码"</li>
+                        <li>复制右侧生成的完整代码</li>
+                    </ol>
+                </div>
+                
+                <!-- 班级信息 -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">班级ID</label>
+                        <input id="classId" type="text" placeholder="例如：ai2024" 
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">英文标识符，程序内部使用</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">班级名称</label>
+                        <input id="className" type="text" placeholder="例如：人工智能2024级" 
+                               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">中文显示名称</p>
+                    </div>
+                </div>
+                
+                <!-- Excel数据输入 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Excel数据粘贴区</label>
+                    <textarea id="excelData" rows="12" 
+                              placeholder="从Excel复制学号和姓名两列，然后粘贴到这里...&#10;&#10;示例格式：&#10;20240001    张三&#10;20240002    李四&#10;20240003    王五&#10;20240004    赵六"
+                              class="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"></textarea>
+                </div>
+                
+                <!-- 状态显示 -->
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm text-gray-600">
+                        检测到学生：<span id="studentCount" class="font-bold text-green-600">0</span> 人
+                    </span>
+                    <span id="status" class="text-sm text-gray-500"></span>
+                </div>
+                
+                <!-- 生成按钮 -->
+                <button onclick="generateCode()" 
+                        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition duration-200">
+                    🚀 生成代码
+                </button>
+                
+                <!-- 快速测试数据按钮 -->
+                <button onclick="loadTestData()" 
+                        class="w-full mt-2 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 text-sm">
+                    📝 加载测试数据
+                </button>
+            </div>
+            
+            <!-- 右侧：代码输出区域 -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📤 生成的代码</h2>
+                
+                <!-- 代码预览 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">完整班级代码</label>
+                    <textarea id="generatedCode" rows="18" readonly
+                              class="w-full p-3 border border-gray-300 rounded bg-gray-50 font-mono text-sm resize-none"
+                              placeholder="生成的代码将在这里显示...&#10;&#10;你可以直接复制这段代码，&#10;粘贴到程序的 studentClasses 数组中。"></textarea>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex gap-2 mb-4">
+                    <button onclick="copyCode()" 
+                            class="flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                        📋 复制代码
+                    </button>
+                    <button onclick="clearAll()" 
+                            class="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                        🗑️ 清空重置
+                    </button>
+                </div>
+                
+                <!-- 使用提示 -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                    <h3 class="font-semibold text-yellow-800 mb-2">💡 如何使用生成的代码：</h3>
+                    <div class="text-sm text-yellow-700 space-y-1">
+                        <p>1. 复制上面生成的完整代码</p>
+                        <p>2. 在程序源码中找到：<code class="bg-yellow-200 px-1 rounded">const studentClasses = [</code></p>
+                        <p>3. 将代码粘贴到数组中，注意在前一个班级后加逗号</p>
+                        <p>4. 保存文件并刷新页面</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部示例 -->
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">📋 Excel复制示例</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Excel中的数据格式：</h4>
+                    <div class="bg-gray-100 p-3 rounded font-mono text-sm">
+                        <table class="w-full">
+                            <tr><td class="border border-gray-300 p-1">20240001</td><td class="border border-gray-300 p-1">张三</td></tr>
+                            <tr><td class="border border-gray-300 p-1">20240002</td><td class="border border-gray-300 p-1">李四</td></tr>
+                            <tr><td class="border border-gray-300 p-1">20240003</td><td class="border border-gray-300 p-1">王五</td></tr>
+                            <tr><td class="border border-gray-300 p-1">20240004</td><td class="border border-gray-300 p-1">赵六</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">复制后粘贴的格式：</h4>
+                    <div class="bg-gray-100 p-3 rounded font-mono text-sm">
+                        20240001&nbsp;&nbsp;&nbsp;&nbsp;张三<br>
+                        20240002&nbsp;&nbsp;&nbsp;&nbsp;李四<br>
+                        20240003&nbsp;&nbsp;&nbsp;&nbsp;王五<br>
+                        20240004&nbsp;&nbsp;&nbsp;&nbsp;赵六
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 实时检测输入数据变化
+        document.getElementById('excelData').addEventListener('input', function() {
+            updateStudentCount();
+        });
+
+        function updateStudentCount() {
+            const data = document.getElementById('excelData').value.trim();
+            const students = parseExcelData(data);
+            document.getElementById('studentCount').textContent = students.length;
+            
+            if (students.length > 0) {
+                document.getElementById('status').textContent = '✅ 数据格式正确';
+                document.getElementById('status').className = 'text-sm text-green-600';
+            } else if (data) {
+                document.getElementById('status').textContent = '⚠️ 请检查数据格式';
+                document.getElementById('status').className = 'text-sm text-orange-600';
+            } else {
+                document.getElementById('status').textContent = '';
+            }
+        }
+
+        function parseExcelData(data) {
+            if (!data.trim()) return [];
+            
+            const lines = data.trim().split('\n');
+            const students = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // 支持制表符、多个空格、逗号等分隔符
+                const parts = line.split(/[\t\s,]+/).filter(part => part.trim());
+                
+                if (parts.length >= 2) {
+                    const id = parts[0].trim();
+                    const name = parts[1].trim();
+                    
+                    if (id && name) {
+                        students.push({id, name});
+                    }
+                }
+            }
+            
+            return students;
+        }
+
+        function generateCode() {
+            const classId = document.getElementById('classId').value.trim();
+            const className = document.getElementById('className').value.trim();
+            const data = document.getElementById('excelData').value.trim();
+            
+            if (!classId) {
+                alert('❌ 请填写班级ID');
+                return;
+            }
+            
+            if (!className) {
+                alert('❌ 请填写班级名称');
+                return;
+            }
+            
+            if (!data) {
+                alert('❌ 请粘贴Excel数据');
+                return;
+            }
+            
+            const students = parseExcelData(data);
+            
+            if (students.length === 0) {
+                alert('❌ 未识别到有效的学生数据，请检查格式');
+                return;
+            }
+            
+            // 生成完整的班级代码
+            let code = `    {\n        id: '${classId}',\n        name: '${className}',\n        students: [\n`;
+            
+            // 每行显示3个学生，格式更紧凑美观
+            for (let i = 0; i < students.length; i += 3) {
+                code += '            ';
+                const chunk = students.slice(i, i + 3);
+                const studentStrings = chunk.map(s => `{id: '${s.id}', name: '${s.name}'}`);
+                code += studentStrings.join(', ');
+                if (i + 3 < students.length) {
+                    code += ',';
+                }
+                code += '\n';
+            }
+            
+            code += `        ]\n    }`;
+            
+            document.getElementById('generatedCode').value = code;
+            
+            // 显示成功消息
+            document.getElementById('status').textContent = `✅ 已生成 ${students.length} 名学生的代码`;
+            document.getElementById('status').className = 'text-sm text-green-600';
+        }
+
+        function copyCode() {
+            const codeTextarea = document.getElementById('generatedCode');
+            if (!codeTextarea.value.trim()) {
+                alert('❌ 请先生成代码');
+                return;
+            }
+            
+            codeTextarea.select();
+            document.execCommand('copy');
+            
+            // 提供视觉反馈
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ 已复制到剪贴板';
+            btn.className = 'flex-1 py-2 bg-green-800 text-white rounded-lg font-semibold';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.className = 'flex-1 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold';
+            }, 2000);
+        }
+
+        function clearAll() {
+            document.getElementById('classId').value = '';
+            document.getElementById('className').value = '';
+            document.getElementById('excelData').value = '';
+            document.getElementById('generatedCode').value = '';
+            document.getElementById('studentCount').textContent = '0';
+            document.getElementById('status').textContent = '';
+        }
+
+        function loadTestData() {
+            document.getElementById('classId').value = 'test2024';
+            document.getElementById('className').value = '测试班级2024级';
+            document.getElementById('excelData').value = `20240001	张三
+20240002	李四
+20240003	王五
+20240004	赵六
+20240005	钱七
+20240006	孙八
+20240007	周九
+20240008	吴十`;
+            updateStudentCount();
+        }
+    </script>
+</body>
+</html>

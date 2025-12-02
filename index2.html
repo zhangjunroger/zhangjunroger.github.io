@@ -1,0 +1,106 @@
+<!DOCTYPE html>  
+<html lang="zh-CN">  
+<head>  
+    <meta charset="utf-8" />  
+    <title>常用软件下载</title>  
+    <style type="text/css">  
+                html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0}body{font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:14px;line-height:1.6;color:#333;background-color:#fff;padding:20px;max-width:960px;margin:0 auto}body>*:first-child{margin-top:0 !important}body>*:last-child{margin-bottom:0 !important}p,blockquote,ul,ol,dl,table,pre{margin:15px 0}h1,h2,h3,h4,h5,h6{margin:20px 0 10px;padding:0;font-weight:bold;-webkit-font-smoothing:antialiased}h1 tt,h1 code,h2 tt,h2 code,h3 tt,h3 code,h4 tt,h4 code,h5 tt,h5 code,h6 tt,h6 code{font-size:inherit}h1{font-size:28px;color:#000}h2{font-size:24px;border-bottom:1px solid #ccc;color:#000}h3{font-size:18px}h4{font-size:16px}h5{font-size:14px}h6{color:#777;font-size:14px}body>h2:first-child,body>h1:first-child,body>h1:first-child+h2,body>h3:first-child,body>h4:first-child,body>h5:first-child,body>h6:first-child{margin-top:0;padding-top:0}a:first-child h1,a:first-child h2,a:first-child h3,a:first-child h4,a:first-child h5,a:first-child h6{margin-top:0;padding-top:0}h1+p,h2+p,h3+p,h4+p,h5+p,h6+p{margin-top:10px}a{color:#4183c4;text-decoration:none}a:hover{text-decoration:underline}ul,ol{padding-left:30px}ul li>:first-child,ol li>:first-child,ul li ul:first-of-type,ol li ol:first-of-type,ul li ol:first-of-type,ol li ul:first-of-type{margin-top:0}ul ul,ul ol,ol ol,ol ul{margin-bottom:0}dl{padding:0}dl dt{font-size:14px;font-weight:bold;font-style:italic;padding:0;margin:15px 0 5px}dl dt:first-child{padding:0}dl dt>:first-child{margin-top:0}dl dt>:last-child{margin-bottom:0}dl dd{margin:0 0 15px;padding:0 15px}dl dd>:first-child{margin-top:0}dl dd>:last-child{margin-bottom:0}pre,code,tt{font-size:12px;font-family:Consolas,"Liberation Mono",Courier,monospace}code,tt{margin:0;padding:0;white-space:nowrap;border:1px solid #eaeaea;background-color:#f8f8f8;border-radius:3px}pre>code{margin:0;padding:0;white-space:pre;border:0;background:transparent}pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}pre code,pre tt{background-color:transparent;border:0}blockquote{border-left:4px solid #DDD;padding:0 15px;color:#777}blockquote>:first-child{margin-top:0}blockquote>:last-child{margin-bottom:0}hr{clear:both;margin:15px 0;height:0;overflow:hidden;border:0;background:transparent;border-bottom:4px solid #ddd;padding:0}table th{font-weight:bold}table th,table td{border:1px solid #ccc;padding:6px 13px}table tr{border-top:1px solid #ccc;background-color:#fff}table tr:nth-child(2n){background-color:#f8f8f8}img{max-width:100%}
+        #container {  
+            text-align: center;  
+            padding: 20px;  
+            border-radius: 15px;  
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); /* 阴影效果 */  
+            background: rgba(255, 255, 255, 0.1); /* 半透明背景 */  
+        }
+
+        body_time {  
+            margin: 0;  
+            padding: 0;  
+            height: 100%;  
+            display: flex;  
+            justify-content: center;  
+            align-items: center;  
+            font-family: Arial, sans-serif;  
+            background: linear-gradient(135deg, #74ebd5, #acb6e5); /* 渐变背景 */  
+            color: #fff; /* 字体颜色 */  
+        }  
+        
+        h1 {
+            text-align: center;  
+            font-size: 36px;  
+            margin-bottom: 20px;  
+        }  
+        #clock {  
+            font-size: 64px; /* 增大字体 */  
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); /* 字体阴影 */  
+            animation: pulse 1s infinite; /* 动画效果 */  
+        }  
+        @keyframes pulse {  
+            0% {  
+                transform: scale(1);  
+            }  
+            50% {  
+                transform: scale(1.05);  
+            }  
+            100% {  
+                transform: scale(1);  
+            }  
+        }  
+    </style>  
+</head>
+
+<h1>北京时间</h1>
+    
+<body_time>   
+    <div id="container">   
+        <div id="clock"></div> <!-- 用于显示时间的div -->  
+    </div>  
+
+    <script>  
+        function updateTime() {  
+            const now = new Date();  
+            const beijingTime = new Date(now.getTime());  
+            const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };  
+            document.getElementById('clock').innerText = beijingTime.toLocaleTimeString('zh-CN', options);  
+        }  
+
+        setInterval(updateTime, 1000);  
+        updateTime(); // 初始化显示时间  
+    </script>  
+</body_time>  
+        
+<h2>常用的软件工具</h2>
+<ol>
+<li>Pycharm_2020.2   <a href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr">https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr</a></li>
+<li>Pycharm_2020.2激活包   <a href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf">https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf</a></li>
+<li>matlab R2016b                 <a href="https://pan.baidu.com/s/1yrSo5JUxYjWJI7NPQ2GLYA?pwd=4rap">https://pan.baidu.com/s/1yrSo5JUxYjWJI7NPQ2GLYA?pwd=4rap</a></li>
+<li>matlab R2021a                 <a href="https://pan.baidu.com/s/1tpXTHPiqgKiu2w3uqTtjBA?pwd=p7yz">https://pan.baidu.com/s/1tpXTHPiqgKiu2w3uqTtjBA?pwd=p7yz</a></li>
+<li><p>matlab R2021a MAC            <a href="https://pan.baidu.com/s/1pEybla5RYiESuqMr_O6olw?pwd=p132">https://pan.baidu.com/s/1pEybla5RYiESuqMr_O6olw?pwd=p132</a></p>
+</li>
+<li><p>WIN10系统    <a href="https://pan.baidu.com/s/1jq8E_Ko2KlC_HssI2JUwew?pwd=xtzj">https://pan.baidu.com/s/1jq8E_Ko2KlC_HssI2JUwew?pwd=xtzj</a></p>
+</li>
+<li><p>WIN11系统    <a href="https://pan.baidu.com/s/1QaaqNTRibIzH1Oq0cI92wQ?pwd=xtzj">https://pan.baidu.com/s/1QaaqNTRibIzH1Oq0cI92wQ?pwd=xtzj</a></p>
+</li>
+<li><p>office安装部署              <a href="https://wwi.lanzoup.com/iAZ7a1lje8dc">https://wwi.lanzoup.com/iAZ7a1lje8dc</a></p>
+</li>
+<li>window系统、office破解      <a href="https://wwi.lanzoup.com/iYQQf1ljch6h">https://wwi.lanzoup.com/iYQQf1ljch6h</a></li>
+<li>visio破解版                 <a href="https://pan.baidu.com/s/1TqI-0QjOUG4IdJWDq6Uewg?pwd=7p1z">https://pan.baidu.com/s/1TqI-0QjOUG4IdJWDq6Uewg?pwd=7p1z</a></li>
+<li>福昕pdf企业编辑破解版       <a href="https://pan.baidu.com/s/122HPEtXudUot6yoGvcpB0w?pwd=rmb3">https://pan.baidu.com/s/122HPEtXudUot6yoGvcpB0w?pwd=rmb3</a></li>
+<li>pdf简易编辑版              <a href="https://wwi.lanzoup.com/ij9H01ljeggd">https://wwi.lanzoup.com/ij9H01ljeggd</a></li>
+<li>mathtype破解版1            <a href="https://wwi.lanzoup.com/iM2j01ljf5ob">https://wwi.lanzoup.com/iM2j01ljf5ob</a></li>
+<li>mathtype破解版2           <a href="https://wwi.lanzoup.com/iKN7Z1ljfyef">https://wwi.lanzoup.com/iKN7Z1ljfyef</a></li>
+<li>mathtype破解版3          <a href="https://wwi.lanzoup.com/iH9Hf1ljf5cj">https://wwi.lanzoup.com/iH9Hf1ljf5cj</a></li>
+<li>公式识别mathpix_snipping   <a href="https://wwi.lanzoup.com/iJbAp1ljip9e">https://wwi.lanzoup.com/iJbAp1ljip9e</a></li>
+<li>公式识别（quicker，需自己粘贴公式识别动作） <a href="https://wwi.lanzoup.com/izGQF1lji6ef">https://wwi.lanzoup.com/izGQF1lji6ef</a>
+公式识别动作库       <a href="https://getquicker.net/Share/Actions?filter=公式识别">https://getquicker.net/Share/Actions?filter=公式识别</a></li>
+<li>6种常用电子书格式互转       <a href="https://wwi.lanzoup.com/iYHHD1lje27a">https://wwi.lanzoup.com/iYHHD1lje27a</a></li>
+<li>万彩办公大师OfficeBox绿色版  <a href="https://wwi.lanzoup.com/ijWqd1ljiwfc">https://wwi.lanzoup.com/ijWqd1ljiwfc</a></li>
+<li>流程图draw.io-22.1.2-便携版   <a href="https://wwi.lanzoup.com/iJxdu1ljfc9i">https://wwi.lanzoup.com/iJxdu1ljfc9i</a></li>
+<li>天若OCR文字识别本地版     <a href="https://wwi.lanzoup.com/iUa8H1ljfs5a">https://wwi.lanzoup.com/iUa8H1ljfs5a</a></li>
+<li>OCR工具集                <a href="https://wwi.lanzoup.com/iKTnF1ljg2ni">https://wwi.lanzoup.com/iKTnF1ljg2ni</a></li>
+<li>迅捷屏幕录像工具           <a href="https://wwi.lanzoup.com/iujsT1ljj46b">https://wwi.lanzoup.com/iujsT1ljj46b</a> </li>
+</ol>
+<p>......</p>
+
+<!-- Use style in style1-->
+</html>

@@ -1,0 +1,889 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张俊的课程资源主页</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0 50px 0;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* System Button */
+        .system-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 18px 35px;
+            border-radius: 15px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            margin: 10px;
+            display: inline-block;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .system-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .system-btn:hover::before {
+            left: 100%;
+        }
+        
+        .system-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+            color: white;
+        }
+        
+        /* Quick Access Cards */
+        .quick-access-section {
+            margin-bottom: 30px;
+        }
+        
+        .access-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .access-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .access-card:hover::before {
+            opacity: 1;
+        }
+        
+        .access-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .access-card-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .access-card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Submit Card */
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.12);
+            margin-bottom: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            border: none;
+        }
+        
+        .card-body {
+            padding: 30px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e8e8e8;
+            padding: 12px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Accordion Course Section */
+        .course-accordion {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .accordion-item {
+            border: none;
+            margin-bottom: 15px;
+            border-radius: 15px !important;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .accordion-item:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        }
+        
+        .accordion-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 20px 25px;
+            border: none;
+            box-shadow: none;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+            color: white;
+            box-shadow: none;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+            border: none;
+        }
+        
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+            filter: brightness(0) invert(1);
+        }
+        
+        .accordion-body {
+            padding: 25px;
+            background: #fafbfc;
+        }
+        
+        .resource-link {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 12px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .resource-link:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(8px);
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .resource-link i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+        
+        .section-divider {
+            margin: 30px 0;
+            padding-top: 25px;
+            border-top: 2px dashed #dee2e6;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+        }
+        
+        .icon-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .scroll-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7);
+        }
+        
+        .scroll-top.show {
+            display: flex;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            color: #2d3748;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-header i {
+            margin-right: 15px;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .system-btn {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section" data-aos="fade-down">
+            <h1 class="hero-title"><i class="bi bi-mortarboard-fill me-3"></i>张俊的课程资源主页</h1>
+        </div>
+
+        <!-- Quick Access Cards (3 Clickable Cards + Submit Form) -->
+        <div class="row quick-access-section">
+          <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+              <a href="./index1.html" class="access-card">
+                  <i class="bi bi-diagram-3 access-card-icon"></i>
+                  <h3 class="access-card-title">《神经网络与深度学习》虚拟仿真实验系统</h3>
+              </a>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+            <a href="./qiandao.html" class="access-card">
+                <i class="bi bi-layers access-card-icon"></i>
+                <h3 class="access-card-title">课堂签到系统</h3>
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+          <a href="./index5.html" class="access-card">
+              <i class="bi bi-calendar-check access-card-icon"></i>
+              <h3 class="access-card-title">人工智能学院-教室、实验室、会议室-预定系统！</h3>
+          </a>
+      </div>
+
+          </div>
+        
+        <!-- Quick Access Cards (3 Clickable Cards + Submit Form) -->
+        <div class="row quick-access-section">
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <a href="./index2.html" class="access-card">
+                    <i class="bi bi-download access-card-icon"></i>
+                    <h3 class="access-card-title">常用软件下载</h3>
+                </a>
+            </div>
+            
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="150">
+                <a href="./index3.html" class="access-card">
+                    <i class="bi bi-file-earmark-text access-card-icon"></i>
+                    <h3 class="access-card-title">教学模版文件下载</h3>
+                </a>
+            </div>
+                        
+            <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="250">
+                <a href="./exam.html" class="access-card">
+                    <i class="bi bi-alarm access-card-icon"></i>
+                    <h3 class="access-card-title">考试提示系统！</h3>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Submit Form Card -->
+        <div class="row mb-4">
+            <div class="col-12" data-aos="fade-up">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-upload me-2"></i>作业提交
+                    </div>
+                    <div class="card-body">
+                        <form class="row g-3">
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="学号：">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="姓名：">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="专业：">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="课程：">
+                            </div>
+                            <div class="col-md-9">
+                                <input type="file" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-submit w-100" onclick="alert('开发中，敬请期待！...')">
+                                    <i class="bi bi-send me-2"></i>提交
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course Resources Accordion Section -->
+        <div class="course-accordion" data-aos="fade-up">
+            <h2 class="section-header">
+                <i class="bi bi-book"></i>张俊的课程资源
+            </h2>
+            
+            <div class="accordion" id="courseAccordion">
+                
+                <!-- 自动控制原理 -->
+                <div class="accordion-item" data-aos="fade-up" data-aos-delay="100">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#course1">
+                            <span class="icon-badge"><i class="bi bi-cpu"></i></span>
+                            自动控制原理（23级智能科学与技术专业本科生）
+                        </button>
+                    </h2>
+                    <div id="course1" class="accordion-collapse collapse show" data-bs-parent="#courseAccordion">
+                        <div class="accordion-body">
+                            <a href="https://www.lanzoub.com/iiBo51lh7ptg" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>教材PDF
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iyEBW20pv9dg" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/inmvf1lh88fg" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>控制理论MATLAB教程.pdf
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 神经网络与深度学习 -->
+                <div class="accordion-item" data-aos="fade-up" data-aos-delay="150">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#course2">
+                            <span class="icon-badge"><i class="bi bi-diagram-3"></i></span>
+                            神经网络与深度学习（24级智能科学与技术、工业智能专业本科生）
+                        </button>
+                    </h2>
+                    <div id="course2" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                        <div class="accordion-body">
+                            <a href="https://wwi.lanzoup.com/isO9O08c83xa" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>教材PDF
+                            </a>
+                            <a href="https://wwi.lanzoup.com/i26pD08c83zc" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>Python入门 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ipC6N15kj1vi" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第1章 绪论 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ikj4W08c843g" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第2章 人工神经网络建模基础 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/izPJY08c845i" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第3章 感知器神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/irxAY08c846j" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第5章 径向基函数神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iJpGh08c847a" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第6章 反馈神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iY75608c849c" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第8章 深度神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iN90k08c84be" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第8章 深度神经网络—堆栈式自动编码器 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/i45dH08c84fi" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第8章 深度神经网络—受限玻尔兹曼机 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iIAaG0i4ryba" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第8章 深度神经网络—卷积神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iiaAb0i15nsb" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>第9章 支持向量机基本原理 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iecrc08c868d" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>《神经网络与深度学习》上机指导书PDF
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iEcxn08c86ch" class="resource-link" target="_blank">
+                                <i class="bi bi-file-text"></i>沈阳工业大学实验报告(计算机程序设计类)
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iPZOR08c86af" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>数学基础PDF
+                            </a>
+                            <a href="https://wwi.lanzoup.com/b011utjof" class="resource-link" target="_blank">
+                                <i class="bi bi-folder"></i>参考书文件夹PDF（密码:8jif）
+                            </a>
+                            
+                            <div class="section-divider">
+                                <div class="section-title">
+                                    <i class="bi bi-download"></i>软件下载
+                                </div>
+                                <a href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Pycharm_2020.2
+                                </a>
+                                <a href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf" class="resource-link" target="_blank">
+                                    <i class="bi bi-key"></i>Pycharm_2020.2激活包
+                                </a>
+                                <a href="https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Pycharm_2023安装包与激活
+                                </a>
+                                <a href="https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Anaconda3-2024.06-1-Windows-x86_64安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/is57v2aqy5gj" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>vscode1.87.2安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iMM822aqy46d" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.12.4安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/i8ikG2aqy3xe" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.11.3安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iGzMG2aqy3qh" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.10.4安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iD3yd2aqy3gh" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.9.1安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/i4WY92aqy38j" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.8.5安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iW3s22aqy2yj" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.7.9安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iE59a2aqy2te" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.6.4安装包
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 计算机控制系统 -->
+                <div class="accordion-item" data-aos="fade-up" data-aos-delay="200">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#course3">
+                            <span class="icon-badge"><i class="bi bi-gear"></i></span>
+                            计算机控制系统（25级控制工程专业研究生）
+                        </button>
+                    </h2>
+                    <div id="course3" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                        <div class="accordion-body">
+                            <a href="https://wwi.lanzoup.com/iVDHI08cbgpi" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>教材pdf
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ivcdx0aaklah" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap1_计算机控制系统概述
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iC0BO0aaklbi" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap2_信号转换与z变换
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ibgCf0aaklda" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap3_数学描述与性能分析
+                            </a>
+                            <a href="https://wwi.lanzoup.com/isf5z0aaklfc" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap4_模拟化设计方法
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iegfB0aaklhe" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap5_直接设计方法
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iAwU10aakljg" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap6_极点配置设计方法
+                            </a>
+                            <a href="https://wwi.lanzoup.com/imrd30aaklkh" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap7_先进控制规律的设计方法
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iFtO20bp0evc" class="resource-link" target="_blank">
+                                <i class="bi bi-file-text"></i>课后习题参考答案
+                            </a>
+                            
+                            <div class="section-divider">
+                                <div class="section-title">
+                                    <i class="bi bi-download"></i>MATLAB下载
+                                </div>
+                                <a href="https://pan.baidu.com/s/1RlT2DVUtFCeExRtHrwoYPQ?pwd=zmuw" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>matlab R2016b
+                                </a>
+                                <a href="https://pan.baidu.com/s/1tpXTHPiqgKiu2w3uqTtjBA?pwd=p7yz" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>matlab R2021a
+                                </a>
+                                <a href="https://pan.baidu.com/s/1XLUOoRVMoposO2H9ZMDNtw?pwd=u8zt" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>matlab R2023b
+                                </a>
+                                <a href="https://pan.baidu.com/s/1ahC_b4lUopp5SiBUgvmH1A?pwd=ow7u" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>matlab R2024a
+                                </a>
+                                <a href="https://pan.baidu.com/s/1QkMNaMm_STjYmasG5nf4zw?pwd=h6fg" class="resource-link" target="_blank">
+                                    <i class="bi bi-apple"></i>matlab R2021a MAC
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 神经网络与强化学习 -->
+                <div class="accordion-item" data-aos="fade-up" data-aos-delay="250">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#course4">
+                            <span class="icon-badge"><i class="bi bi-robot"></i></span>
+                            神经网络与强化学习（25级研究生）
+                        </button>
+                    </h2>
+                    <div id="course4" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                        <div class="accordion-body">
+                            <a href="https://wwi.lanzoup.com/ifU7k08cbjmd" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>教材pdf
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iKNKH2aqzgbg" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>Python入门 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iPZOR08c86af" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>数学基础PDF
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iDLW02aqzgqb" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap01-绪论 PPT
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/is9SN2aqzguf" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap02-机器学习概述 PPT
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iVACQ2aqzgxi" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap03-线性模型 PPT
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iby5c2aqzh2d" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap04-前馈神经网络 PPT
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iHwfF2aqzhta" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap05-卷积神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ijGHn08cbkyb" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap06-循环神经网络 PPT
+                            </a>
+                            <a href="https://wwfz.lanzouv.com/iw1Je2aqzi2j" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap14-深度强化学习 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/b011utjof" class="resource-link" target="_blank">
+                                <i class="bi bi-folder"></i>参考书文件夹PDF（密码:8jif）
+                            </a>
+                            
+                            <div class="section-divider">
+                                <div class="section-title">
+                                    <i class="bi bi-download"></i>软件下载
+                                </div>
+                                <a href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Pycharm_2020.2
+                                </a>
+                                <a href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf" class="resource-link" target="_blank">
+                                    <i class="bi bi-key"></i>Pycharm_2020.2激活包
+                                </a>
+                                <a href="https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Pycharm_2023安装包与激活
+                                </a>
+                                <a href="https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Anaconda3-2024.06-1-Windows-x86_64安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/is57v2aqy5gj" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>vscode1.87.2安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iMM822aqy46d" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.12.4安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/i8ikG2aqy3xe" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.11.3安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iGzMG2aqy3qh" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.10.4安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iD3yd2aqy3gh" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.9.1安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/i4WY92aqy38j" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.8.5安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iW3s22aqy2yj" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.7.9安装包
+                                </a>
+                                <a href="https://wwfz.lanzouv.com/iE59a2aqy2te" class="resource-link" target="_blank">
+                                    <i class="bi bi-code-square"></i>python3.6.4安装包
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 深度学习理论及应用 -->
+                <div class="accordion-item" data-aos="fade-up" data-aos-delay="300">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#course5">
+                            <span class="icon-badge"><i class="bi bi-layers"></i></span>
+                            深度学习理论及应用（25级人工智能学院博士研究生）
+                        </button>
+                    </h2>
+                    <div id="course5" class="accordion-collapse collapse" data-bs-parent="#courseAccordion">
+                        <div class="accordion-body">
+                            <a href="https://wwi.lanzoup.com/ifU7k08cbjmd" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>教材pdf
+                            </a>
+                            <a href="https://wwi.lanzoup.com/i26pD08c83zc" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>Python入门 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iPZOR08c86af" class="resource-link" target="_blank">
+                                <i class="bi bi-file-pdf"></i>数学基础PDF
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iZwi308cbjxe" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap01-绪论 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/itHeD08cbk5c" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap02-机器学习概述 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/i0oT308cbkeb" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap03-线性模型 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/imTV508cbkkh" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap04-前馈神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/iqiet0i4s1mj" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap05-卷积神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/ijGHn08cbkyb" class="resource-link" target="_blank">
+                                <i class="bi bi-file-slides"></i>chap06-循环神经网络 PPT
+                            </a>
+                            <a href="https://wwi.lanzoup.com/b011utjof" class="resource-link" target="_blank">
+                                <i class="bi bi-folder"></i>参考书文件夹PDF（密码:8jif）
+                            </a>
+                            
+                            <div class="section-divider">
+                                <div class="section-title">
+                                    <i class="bi bi-download"></i>软件下载
+                                </div>
+                                <a href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr" class="resource-link" target="_blank">
+                                    <i class="bi bi-app"></i>Pycharm_2020.2
+                                </a>
+                                <a href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf" class="resource-link" target="_blank">
+                                    <i class="bi bi-key"></i>Pycharm_2020.2激活包
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" id="scrollTopBtn">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+        
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+        
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+
+
+<script src="https://agi-dev-platform-web.bj.bcebos.com/ai_apaas/embed/output/embedLiteSDK.js?responseExpires=0"></script> <script> new EmbedLiteSDK({appId: 'cdafed31-a250-4bbd-84c7-8ed45a2d61fc', code: 'embedy6nc71LKGTdNXFGYKIUy'}); </script>
+</body>
+</html>

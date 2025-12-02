@@ -1,0 +1,2412 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>考试座位安排系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- LeanCloud SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.15.2/dist/av-min.js"></script>
+</head>
+<body class="bg-gradient-to-r from-blue-50 to-blue-100 min-h-screen p-8">
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-4xl font-bold text-blue-700 mb-8 text-center">考试座位安排系统</h1>
+
+    <!-- 数据管理按钮 -->
+    <div class="mb-6 text-center">
+        <button onclick="openDataManager()" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium">
+            📊 数据管理
+        </button>
+        <span id="cloudStatus" class="ml-4 text-sm text-gray-600">云端连接检测中...</span>
+    </div>
+
+    <!-- 数据管理弹窗 -->
+    <div id="dataManagerModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">数据管理</h2>
+                        <button onclick="closeDataManager()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                    </div>
+
+                    <!-- 管理标签页 -->
+                    <div class="border-b border-gray-200 mb-6">
+                        <nav class="flex space-x-8">
+                            <button onclick="switchTab('courses')" id="tab-courses" class="tab-button active">课程管理</button>
+                            <button onclick="switchTab('classes')" id="tab-classes" class="tab-button">班级管理</button>
+                            <button onclick="switchTab('rooms')" id="tab-rooms" class="tab-button">考场管理</button>
+                        </nav>
+                    </div>
+
+                    <!-- 课程管理 -->
+                    <div id="courses-panel" class="tab-panel">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">课程列表</h3>
+                            <button onclick="showAddCourseForm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                + 添加课程
+                            </button>
+                        </div>
+
+                        <!-- 添加课程表单 -->
+                        <div id="addCourseForm" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-medium mb-3">添加新课程</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">课程ID</label>
+                                    <input id="courseId" type="text" class="w-full p-2 border rounded-lg" placeholder="如: math-101">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">课程名称</label>
+                                    <input id="courseName" type="text" class="w-full p-2 border rounded-lg" placeholder="如: 高等数学">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">考试时间</label>
+                                    <input id="courseTime" type="text" class="w-full p-2 border rounded-lg" placeholder="如: 2025-01-20 14:00-15:35">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">考试时长</label>
+                                    <input id="courseDuration" type="text" class="w-full p-2 border rounded-lg" placeholder="如: 95分钟">
+                                </div>
+                            </div>
+                            <div class="mt-4 flex gap-2">
+                                <button onclick="saveCourse()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">保存</button>
+                                <button onclick="cancelAddCourse()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 课程列表 -->
+                        <div id="coursesList" class="space-y-2"></div>
+                    </div>
+
+                    <!-- 班级管理 -->
+                    <div id="classes-panel" class="tab-panel hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">班级列表</h3>
+                            <button onclick="showAddClassForm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                + 添加班级
+                            </button>
+                        </div>
+
+                        <!-- 添加班级表单 -->
+                        <div id="addClassForm" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-medium mb-3">添加新班级</h4>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">班级ID</label>
+                                    <input id="classId" type="text" class="w-full p-2 border rounded-lg" placeholder="如: ai2023130101">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">班级名称</label>
+                                    <input id="className" type="text" class="w-full p-2 border rounded-lg" placeholder="如: 智能科学与技术2023级01班">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">学生信息</label>
+                                <textarea id="classStudents" rows="8" class="w-full p-2 border rounded-lg" 
+                                    placeholder="每行一个学生，格式：学号 姓名&#10;如：&#10;202301001 张三&#10;202301002 李四"></textarea>
+                                <p class="text-sm text-gray-600 mt-1">格式：学号 姓名（每行一个学生）</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="saveClass()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">保存</button>
+                                <button onclick="cancelAddClass()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 班级列表 -->
+                        <div id="classesList" class="space-y-2"></div>
+                    </div>
+
+                    <!-- 考场管理 -->
+                    <div id="rooms-panel" class="tab-panel hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">考场列表</h3>
+                            <button onclick="showAddRoomForm()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                + 添加考场
+                            </button>
+                        </div>
+
+                        <!-- 添加考场表单 -->
+                        <div id="addRoomForm" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-medium mb-3">添加新考场</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">考场ID</label>
+                                    <input id="roomId" type="text" class="w-full p-2 border rounded-lg" placeholder="如: A101">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">考场名称</label>
+                                    <input id="roomName" type="text" class="w-full p-2 border rounded-lg" placeholder="如: 教学楼A101">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">行数</label>
+                                    <input id="roomRows" type="number" min="1" class="w-full p-2 border rounded-lg" placeholder="如: 8">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">列数</label>
+                                    <input id="roomCols" type="number" min="1" class="w-full p-2 border rounded-lg" placeholder="如: 5">
+                                </div>
+                            </div>
+                            <div class="mt-4 flex gap-2">
+                                <button onclick="saveRoom()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">保存</button>
+                                <button onclick="cancelAddRoom()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">取消</button>
+                            </div>
+                        </div>
+
+                        <!-- 考场列表 -->
+                        <div id="roomsList" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 实时考试信息面板 -->
+    <div id="examTimePanel" class="hidden bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4 border-blue-500">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">当前时间</h3>
+                <div id="currentTime" class="text-2xl font-mono text-blue-600"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">考试倒计时</h3>
+                <div id="countdown" class="text-2xl font-mono text-red-600"></div>
+                <div id="examStatus" class="text-sm text-gray-600 mt-1"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">语音设置</h3>
+                <div class="space-y-2">
+                    <button id="voiceToggle" onclick="toggleVoice()" class="w-full px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">
+                        🔊 语音开启
+                    </button>
+                    <select id="voiceSelect" class="w-full p-1 border rounded text-sm" onchange="changeVoice()">
+                        <option value="">选择语音...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">语音测试</h3>
+                <div class="space-y-2">
+                    <button onclick="testVoice()" class="w-full px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm">
+                        🎵 测试语音
+                    </button>
+                    <div id="voiceStatus" class="text-xs text-gray-600">语音提示已启用</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 左侧：配置面板 -->
+        <div class="bg-white rounded-lg shadow p-6 space-y-6">
+            <!-- 考试课程选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">考试课程</label>
+                <select id="courseSelect" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                    <option value="">-- 请选择课程 --</option>
+                </select>
+            </div>
+
+            <!-- 学生班级选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">学生班级</label>
+                
+                <!-- 第一个班级 -->
+                <div class="mb-3">
+                    <select id="classSelect1" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                        <option value="">-- 请选择第一个班级 --</option>
+                    </select>
+                    <p class="text-sm text-gray-600 mt-1">班级1人数：<span id="studentCount1">0</span> 人</p>
+                </div>
+                
+                <!-- 第二个班级（可选） -->
+                <div class="mb-3">
+                    <select id="classSelect2" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-400">
+                        <option value="">-- 第二个班级（可选） --</option>
+                    </select>
+                    <p class="text-sm text-gray-600 mt-1">班级2人数：<span id="studentCount2">0</span> 人</p>
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded-lg text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-blue-800">总人数：<span id="totalStudentCount">0</span> 人</span>
+                        <button onclick="clearClasses()" class="text-blue-600 hover:text-blue-800 text-xs">清空选择</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 考场选择 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">考场</label>
+                <select id="roomSelect" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                    <option value="">-- 请选择考场 --</option>
+                </select>
+            </div>
+
+            <!-- 当前考场行列显示和编辑 -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">行数</label>
+                    <input id="rowInput" type="number" min="1"
+                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">列数</label>
+                    <input id="colInput" type="number" min="1"
+                           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                </div>
+            </div>
+
+            <!-- 显示方式 -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">座位显示方式</label>
+                <div class="space-y-1">
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="last3" checked class="mr-2">学号后3位
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="last5" class="mr-2">学号后5位
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="name" class="mr-2">姓名
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="showMode" value="seq" class="mr-2">序号
+                    </label>
+                </div>
+            </div>
+
+<!-- 双班级混合选项 -->
+<div id="mixingOptions" class="hidden">
+    <label class="block text-sm font-medium text-gray-700 mb-1">双班级排座方式</label>
+    <div class="space-y-1">
+        <label class="flex items-center">
+            <input type="radio" name="mixMode" value="random" checked class="mr-2">随机混合
+            <span class="ml-1 text-xs text-gray-500">(两班学生完全随机排列)</span>
+        </label>
+        <label class="flex items-center">
+            <input type="radio" name="mixMode" value="alternate" class="mr-2">交替排列
+            <span class="ml-1 text-xs text-gray-500">(座位间交替，每次随机顺序)</span>
+        </label>
+        <label class="flex items-center">
+            <input type="radio" name="mixMode" value="separate" class="mr-2">左右分区排列
+            <span class="ml-1 text-xs text-gray-500">(左边班级1，右边班级2，区内随机)</span>
+        </label>
+    </div>
+</div>
+
+            <button onclick="generateSeating()"
+                    class="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+                生成座位表
+            </button>
+
+            <!-- 导出按钮 -->
+            <div id="exportButtons" class="hidden space-y-2">
+                <button onclick="exportToExcel()" 
+                        class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    导出Excel
+                </button>
+                <button onclick="printSeating()" 
+                        class="w-full py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    打印座位表
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧：预览 -->
+        <div class="bg-white rounded-lg shadow p-6 lg:col-span-2">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">座位安排预览</h2>
+            <div id="examInfo" class="mb-4 p-4 bg-gray-50 rounded-lg"></div>
+            <div id="seatingChart" class="overflow-auto"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ---------- LeanCloud 配置 ---------- */
+// 请替换为您的 LeanCloud 应用信息
+const APP_ID = 'Gi7s7RAi1epWNVtj0X9EAqxe-gzGzoHsz'; // 替换为您的 App ID
+const APP_KEY = 'wMXylXbeOH82GkuprhkdAon4'; // 替换为您的 App Key
+const SERVER_URL = 'https://avoscloud.com'; // 替换为您的服务器地址
+
+let isCloudConnected = false;
+
+// 初始化 LeanCloud
+function initLeanCloud() {
+    try {
+        if (APP_ID === 'YOUR_APP_ID') {
+            // 如果没有配置LeanCloud，使用本地模式
+            isCloudConnected = false;
+            document.getElementById('cloudStatus').textContent = '💾 本地模式（未配置云端）';
+            document.getElementById('cloudStatus').className = 'ml-4 text-sm text-gray-600';
+            return;
+        }
+        
+        AV.init({
+            appId: APP_ID,
+            appKey: APP_KEY,
+            serverURL: SERVER_URL
+        });
+        isCloudConnected = true;
+        document.getElementById('cloudStatus').textContent = '☁️ 云端已连接';
+        document.getElementById('cloudStatus').className = 'ml-4 text-sm text-green-600';
+        console.log('LeanCloud 初始化成功');
+    } catch (error) {
+        isCloudConnected = false;
+        document.getElementById('cloudStatus').textContent = '⚠️ 云端连接失败，使用本地数据';
+        document.getElementById('cloudStatus').className = 'ml-4 text-sm text-orange-600';
+        console.error('LeanCloud 初始化失败:', error);
+    }
+}
+
+/* ---------- 完整预设数据 ---------- */
+const defaultCourses = [
+    {
+        id: 'auto-control',
+        name: '自动控制原理',
+        time: '2025-06-27 13:30-15:05',
+        duration: '95分钟'
+    }
+];
+
+const defaultStudentClasses = [
+    {
+        id: 'ai2023130101',
+        name: '智能科学与技术2023级01班',
+        students: [
+            {id: '230502115', name: '孙雨佳'}, {id: '230502121', name: '卢柏妍'}, {id: '230503113', name: '张清宇'},
+            {id: '231301101', name: '吴秉霖'}, {id: '231301102', name: '吴彭远'}, {id: '231301103', name: '王语聪'},
+            {id: '231301104', name: '满依杭'}, {id: '231301105', name: '黄俊茗'}, {id: '231301106', name: '张磊'},
+            {id: '231301107', name: '葛峻'}, {id: '231301108', name: '黄子林'}, {id: '231301109', name: '李佳毅'},
+            {id: '231301112', name: '殷崇赫'}, {id: '231301113', name: '黄煊儒'}, {id: '231301114', name: '陈建菘'},
+            {id: '231301115', name: '刘进超'}, {id: '231301116', name: '黄文凯'}, {id: '231301117', name: '杨锐'},
+            {id: '231301118', name: '杨佳琦'}, {id: '231301119', name: '白秋萍'}, {id: '231301120', name: '凌文卓'},
+            {id: '231301121', name: '赵梓晗'}, {id: '231301122', name: '颜莹'}, {id: '231301123', name: '王慧鑫'},
+            {id: '211301301', name: '孙华阳'}, {id: '211301309', name: '陆涛'}, {id: '211301311', name: '胡崇周'},
+            {id: '221301112', name: '杨冀龙'}, {id: '221301122', name: '谭西敏'}, {id: '221301202', name: '马硕'},
+            {id: '221301206', name: '冯垚'}, {id: '221301215', name: '赵佳乐'}, {id: '221301218', name: '徐铭珠'},
+            {id: '221301304', name: '张钰琪'}, {id: '221301307', name: '莫宇杰'}
+        ]
+    },
+    {
+        id: 'ai2023130102',
+        name: '智能科学与技术2023级02班',
+        students: [
+            {id: '230501230', name: '袁佳'}, {id: '231002216', name: '徐筠舒'}, {id: '231301201', name: '李葉泽'},
+            {id: '231301202', name: '张龙坤'}, {id: '231301203', name: '马肇北'}, {id: '231301204', name: '秦硕'},
+            {id: '231301205', name: '富鹏博'}, {id: '231301206', name: '王昱懿'}, {id: '231301207', name: '李宇宸'},
+            {id: '231301208', name: '贾春旺'}, {id: '231301209', name: '陈鹏博'}, {id: '231301210', name: '邵子朗'},
+            {id: '231301211', name: '郑优'}, {id: '231301212', name: '陈松燚'}, {id: '231301213', name: '祝欣宏'},
+            {id: '231301214', name: '刘俊熙'}, {id: '231301215', name: '周驰伟'}, {id: '231301217', name: '赵一霖'},
+            {id: '231301218', name: '杜翘楚'}, {id: '231301219', name: '柴小喆'}, {id: '231301220', name: '张傲雪'},
+            {id: '231301221', name: '吕航'}, {id: '231301222', name: '邬嘉誉'}, {id: '231301223', name: '黄婷'}
+        ]
+    },
+    {
+        id: 'ai2023130103',
+        name: '智能科学与技术2023级03班',
+        students: [
+            {id: '231301301', name: '刘志翔'}, {id: '231301302', name: '李韫丞'}, {id: '231301303', name: '马仕博'},
+            {id: '231301304', name: '娄嘉'}, {id: '231301305', name: '陶剑南'}, {id: '231301306', name: '顾志成'},
+            {id: '231301307', name: '吴大周'}, {id: '231301308', name: '梁天阳'}, {id: '231301309', name: '王景皓'},
+            {id: '231301310', name: '张忠恩'}, {id: '231301311', name: '向延浩'}, {id: '231301312', name: '段家昌'},
+            {id: '231301313', name: '克然·哈别克'}, {id: '231301314', name: '努力扎提·努力买买提'}, {id: '231301315', name: '翟佳俊'},
+            {id: '231301316', name: '阿卜杜瓦日斯·巴拉提尼亚孜'}, {id: '231301317', name: '王云菲'}, {id: '231301318', name: '隋新仪'},
+            {id: '231301319', name: '霍林怡'}, {id: '231301320', name: '姜圣洁'}, {id: '231301321', name: '王妍丹'},
+            {id: '231301322', name: '安凤娇'}, {id: '231301323', name: '李欣瑶'}
+        ]
+    },
+    {
+        id: 'ai2023130301',
+        name: '工业智能2023级01班',
+        students: [
+            {id: '221303221', name: '陈柏霖'}, {id: '231303101', name: '及鹤竣'}, {id: '231303102', name: '吴略锟'},
+            {id: '231303103', name: '赵禹程'}, {id: '231303104', name: '陈阳'}, {id: '231303105', name: '李响'},
+            {id: '231303106', name: '宋海楠'}, {id: '231303107', name: '强昱晴'}, {id: '231303108', name: '王东时'},
+            {id: '231303109', name: '李凯平'}, {id: '231303111', name: '吴从飞'}, {id: '231303112', name: '周克熙'},
+            {id: '231303113', name: '赵宇晨'}, {id: '231303114', name: '戴陈'}, {id: '231303115', name: '陈济培'},
+            {id: '231303116', name: '刘烨'}, {id: '231303117', name: '严榕耀'}, {id: '231303118', name: '吴星磊'},
+            {id: '231303119', name: '林兴丹'}, {id: '231303120', name: '莫子煊'}, {id: '231303121', name: '熊浩然'},
+            {id: '231303122', name: '陈厚儒'}, {id: '231303123', name: '吴龙'}, {id: '231303124', name: '张诗茹'},
+            {id: '231303126', name: '赵婉伊'}, {id: '231303127', name: '王佳蕊'}, {id: '231303128', name: '房文静'},
+            {id: '231303129', name: '吴扬俪'}, {id: '231303130', name: '向双红'}, {id: '211303104', name: '王宏宇'},
+            {id: '211303109', name: '刘岩松'}, {id: '211303207', name: '刘世博'}, {id: '211303230', name: '陈丽云'},
+            {id: '221303121', name: '李高志'}, {id: '221303123', name: '秦一'}, {id: '221303130', name: '梅玉兰'},
+            {id: '221303203', name: '张宇航'}, {id: '221303217', name: '何泽斌'}, {id: '221303218', name: '雷耀天'}
+        ]
+    },    
+    {
+        id: 'ai2023130302',
+        name: '工业智能2023级02班',
+        students: [
+            {id: '211303214', name: '董建序'}, {id: '230502223', name: '王文静'}, {id: '230801215', name: '王文博'},
+            {id: '231303201', name: '白宇'}, {id: '231303202', name: '胡韶华'}, {id: '231303203', name: '王承辉'},
+            {id: '231303204', name: '薛博文'}, {id: '231303205', name: '王健翔'}, {id: '231303206', name: '陈英同'},
+            {id: '231303207', name: '袁侨亨'}, {id: '231303208', name: '葛世坤'}, {id: '231303209', name: '韩佳讯'},
+            {id: '231303210', name: '王柄然'}, {id: '231303211', name: '常宝安'}, {id: '231303212', name: '王彬'},
+            {id: '231303213', name: '廖海涛'}, {id: '231303214', name: '蔡志鹏'}, {id: '231303215', name: '高焕东'},
+            {id: '231303216', name: '邱盅淇'}, {id: '231303217', name: '江小川'}, {id: '231303218', name: '冯愉'},
+            {id: '231303219', name: '江宇航'}, {id: '231303220', name: '马志凌'}, {id: '231303221', name: '李扬'},
+            {id: '231303222', name: '陈肸'}, {id: '231303223', name: '李开峰'}, {id: '231303224', name: '鲁兴超'},
+            {id: '231303225', name: '侯玉涵'}, {id: '231303226', name: '李劲染'}, {id: '231303227', name: '刘潇雯'},
+            {id: '231303229', name: '裴悦然'}, {id: '231303230', name: '向鹏铮'}
+        ]
+    }   
+];
+
+const defaultRooms = [
+    {id: 'B104', name: '教学楼B104', rows: 8, cols: 5},
+    {id: 'B105', name: '教学楼B105', rows: 7, cols: 5},
+    {id: 'B106', name: '教学楼B106', rows: 7, cols: 5},
+    {id: 'B109', name: '教学楼B109', rows: 12, cols: 6}    
+];
+
+/* ---------- 数据模型 ---------- */
+let courses = [];
+let studentClasses = [];
+let rooms = [];
+
+let currentStudents1 = [];
+let currentStudents2 = [];
+let currentSeating = null;
+
+// 时间和语音相关变量
+let examTimer = null;
+let voiceEnabled = true;
+let voiceAlerts = [30, 20, 10, 5];
+let alertedTimes = new Set();
+let availableVoices = [];
+let selectedVoice = null;
+
+/* ---------- 初始化 ---------- */
+async function init() {
+    try {
+        // 初始化 LeanCloud
+        initLeanCloud();
+        
+        if (isCloudConnected) {
+            // 尝试从云端加载数据
+            await loadCoursesFromCloud();
+            await loadClassesFromCloud();
+            await loadRoomsFromCloud();
+        } else {
+            // 使用默认数据
+            loadDefaultData();
+        }
+        
+        // 初始化界面
+        refreshCourseSelect();
+        refreshClassSelect();
+        refreshRoomSelect();
+        startRealTimeClock();
+        loadVoices();
+        
+        console.log('系统初始化完成');
+    } catch (error) {
+        console.error('初始化失败:', error);
+        // 如果云端加载失败，使用默认数据
+        loadDefaultData();
+        refreshCourseSelect();
+        refreshClassSelect();
+        refreshRoomSelect();
+        startRealTimeClock();
+        loadVoices();
+    }
+}
+
+/* ---------- LeanCloud 数据操作 ---------- */
+
+// 加载课程数据
+async function loadCoursesFromCloud() {
+    if (!isCloudConnected) {
+        loadDefaultData();
+        return;
+    }
+    
+    try {
+        const Course = AV.Object.extend('Course');
+        const query = new AV.Query(Course);
+        const results = await query.find();
+        
+        courses = results.map(course => ({
+            id: course.get('courseId'),
+            name: course.get('name'),
+            time: course.get('time'),
+            duration: course.get('duration'),
+            objectId: course.id
+        }));
+        
+        // 如果云端没有数据，使用默认数据
+        if (courses.length === 0) {
+            courses = [...defaultCourses];
+        }
+        
+        console.log('课程数据加载完成:', courses.length);
+    } catch (error) {
+        console.error('加载课程数据失败:', error);
+        courses = [...defaultCourses];
+    }
+}
+
+// 加载班级数据
+async function loadClassesFromCloud() {
+    if (!isCloudConnected) {
+        return;
+    }
+    
+    try {
+        const StudentClass = AV.Object.extend('StudentClass');
+        const query = new AV.Query(StudentClass);
+        const results = await query.find();
+        
+        studentClasses = results.map(cls => ({
+            id: cls.get('classId'),
+            name: cls.get('name'),
+            students: cls.get('students') || [],
+            objectId: cls.id
+        }));
+        
+        // 如果云端没有数据，使用默认数据
+        if (studentClasses.length === 0) {
+            studentClasses = [...defaultStudentClasses];
+        }
+        
+        console.log('班级数据加载完成:', studentClasses.length);
+    } catch (error) {
+        console.error('加载班级数据失败:', error);
+        studentClasses = [...defaultStudentClasses];
+    }
+}
+
+// 加载考场数据
+async function loadRoomsFromCloud() {
+    if (!isCloudConnected) {
+        return;
+    }
+    
+    try {
+        const Room = AV.Object.extend('Room');
+        const query = new AV.Query(Room);
+        const results = await query.find();
+        
+        rooms = results.map(room => ({
+            id: room.get('roomId'),
+            name: room.get('name'),
+            rows: room.get('rows'),
+            cols: room.get('cols'),
+            objectId: room.id
+        }));
+        
+        // 如果云端没有数据，使用默认数据
+        if (rooms.length === 0) {
+            rooms = [...defaultRooms];
+        }
+        
+        console.log('考场数据加载完成:', rooms.length);
+    } catch (error) {
+        console.error('加载考场数据失败:', error);
+        rooms = [...defaultRooms];
+    }
+}
+
+// 加载默认数据
+function loadDefaultData() {
+    courses = [...defaultCourses];
+    studentClasses = [...defaultStudentClasses];
+    rooms = [...defaultRooms];
+    console.log('使用默认数据');
+}
+
+// 保存课程到云端
+async function saveCourseToCloud(courseData) {
+    if (!isCloudConnected) {
+        console.log('云端未连接，仅保存到本地');
+        return courseData;
+    }
+    
+    try {
+        const Course = AV.Object.extend('Course');
+        const course = new Course();
+        
+        course.set('courseId', courseData.id);
+        course.set('name', courseData.name);
+        course.set('time', courseData.time);
+        course.set('duration', courseData.duration);
+        
+        const savedCourse = await course.save();
+        courseData.objectId = savedCourse.id;
+        
+        console.log('课程保存成功:', courseData);
+        return courseData;
+    } catch (error) {
+        console.error('保存课程失败:', error);
+        alert('保存到云端失败，仅保存到本地');
+        return courseData;
+    }
+}
+
+// 保存班级到云端
+async function saveClassToCloud(classData) {
+    if (!isCloudConnected) {
+        console.log('云端未连接，仅保存到本地');
+        return classData;
+    }
+    
+    try {
+        const StudentClass = AV.Object.extend('StudentClass');
+        const studentClass = new StudentClass();
+        
+        studentClass.set('classId', classData.id);
+        studentClass.set('name', classData.name);
+        studentClass.set('students', classData.students);
+        
+        const savedClass = await studentClass.save();
+        classData.objectId = savedClass.id;
+        
+        console.log('班级保存成功:', classData);
+        return classData;
+    } catch (error) {
+        console.error('保存班级失败:', error);
+        alert('保存到云端失败，仅保存到本地');
+        return classData;
+    }
+}
+
+// 保存考场到云端
+async function saveRoomToCloud(roomData) {
+    if (!isCloudConnected) {
+        console.log('云端未连接，仅保存到本地');
+        return roomData;
+    }
+    
+    try {
+        const Room = AV.Object.extend('Room');
+        const room = new Room();
+        
+        room.set('roomId', roomData.id);
+        room.set('name', roomData.name);
+        room.set('rows', roomData.rows);
+        room.set('cols', roomData.cols);
+        
+        const savedRoom = await room.save();
+        roomData.objectId = savedRoom.id;
+        
+        console.log('考场保存成功:', roomData);
+        return roomData;
+    } catch (error) {
+        console.error('保存考场失败:', error);
+        alert('保存到云端失败，仅保存到本地');
+        return roomData;
+    }
+}
+
+// 删除数据
+async function deleteFromCloud(className, objectId) {
+    if (!isCloudConnected || !objectId) {
+        console.log('云端未连接或无objectId，仅从本地删除');
+        return;
+    }
+    
+    try {
+        const DataClass = AV.Object.extend(className);
+        const object = AV.Object.createWithoutData(className, objectId);
+        await object.destroy();
+        console.log('删除成功:', className, objectId);
+    } catch (error) {
+        console.error('删除失败:', error);
+        alert('从云端删除失败');
+    }
+}
+
+/* ---------- 数据管理界面 ---------- */
+
+// 打开数据管理弹窗
+function openDataManager() {
+    document.getElementById('dataManagerModal').classList.remove('hidden');
+    loadDataManagerContent();
+}
+
+// 关闭数据管理弹窗
+function closeDataManager() {
+    document.getElementById('dataManagerModal').classList.add('hidden');
+}
+
+// 切换标签页
+function switchTab(tabName) {
+    // 隐藏所有面板
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.add('hidden');
+    });
+    
+    // 移除所有按钮的active类
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // 显示选中的面板
+    document.getElementById(`${tabName}-panel`).classList.remove('hidden');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    
+    // 加载对应数据
+    loadDataManagerContent(tabName);
+}
+
+// 加载数据管理内容
+function loadDataManagerContent(activeTab = 'courses') {
+    if (activeTab === 'courses') {
+        loadCoursesManager();
+    } else if (activeTab === 'classes') {
+        loadClassesManager();
+    } else if (activeTab === 'rooms') {
+        loadRoomsManager();
+    }
+}
+
+// 加载课程管理内容
+function loadCoursesManager() {
+    const container = document.getElementById('coursesList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    courses.forEach(course => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-3 bg-white border rounded-lg';
+        item.innerHTML = `
+            <div class="flex-1">
+                <div class="font-medium">${course.name}</div>
+                <div class="text-sm text-gray-600">ID: ${course.id} | 时间: ${course.time} | 时长: ${course.duration}</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editCourse('${course.id}')" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">编辑</button>
+                <button onclick="deleteCourse('${course.id}')" class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">删除</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    if (courses.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-500 py-8">暂无课程数据</div>';
+    }
+}
+
+// 加载班级管理内容
+function loadClassesManager() {
+    const container = document.getElementById('classesList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    studentClasses.forEach(cls => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-3 bg-white border rounded-lg';
+        item.innerHTML = `
+            <div class="flex-1">
+                <div class="font-medium">${cls.name}</div>
+                <div class="text-sm text-gray-600">ID: ${cls.id} | 学生人数: ${cls.students.length}人</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="viewStudents('${cls.id}')" class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">查看学生</button>
+                <button onclick="editClass('${cls.id}')" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">编辑</button>
+                <button onclick="deleteClass('${cls.id}')" class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">删除</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    if (studentClasses.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-500 py-8">暂无班级数据</div>';
+    }
+}
+
+// 加载考场管理内容
+function loadRoomsManager() {
+    const container = document.getElementById('roomsList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    rooms.forEach(room => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-3 bg-white border rounded-lg';
+        item.innerHTML = `
+            <div class="flex-1">
+                <div class="font-medium">${room.name}</div>
+                <div class="text-sm text-gray-600">ID: ${room.id} | 布局: ${room.rows}行×${room.cols}列 | 总座位: ${room.rows * room.cols}个</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editRoom('${room.id}')" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">编辑</button>
+                <button onclick="deleteRoom('${room.id}')" class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">删除</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    if (rooms.length === 0) {
+        container.innerHTML = '<div class="text-center text-gray-500 py-8">暂无考场数据</div>';
+    }
+}
+
+/* ---------- 课程管理功能 ---------- */
+
+// 显示添加课程表单
+function showAddCourseForm() {
+    document.getElementById('addCourseForm').classList.remove('hidden');
+    // 清空表单
+    document.getElementById('courseId').value = '';
+    document.getElementById('courseName').value = '';
+    document.getElementById('courseTime').value = '';
+    document.getElementById('courseDuration').value = '';
+}
+
+// 取消添加课程
+function cancelAddCourse() {
+    document.getElementById('addCourseForm').classList.add('hidden');
+    // 恢复保存按钮
+    const saveBtn = document.querySelector('#addCourseForm button[onclick*="Course"]');
+    if (saveBtn) {
+        saveBtn.textContent = '保存';
+        saveBtn.onclick = saveCourse;
+    }
+}
+
+// 保存课程
+async function saveCourse() {
+    const id = document.getElementById('courseId').value.trim();
+    const name = document.getElementById('courseName').value.trim();
+    const time = document.getElementById('courseTime').value.trim();
+    const duration = document.getElementById('courseDuration').value.trim();
+    
+    if (!id || !name || !time || !duration) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    // 检查ID是否重复
+    if (courses.find(c => c.id === id)) {
+        alert('课程ID已存在');
+        return;
+    }
+    
+    const courseData = { id, name, time, duration };
+    
+    try {
+        // 保存到云端
+        const savedCourse = await saveCourseToCloud(courseData);
+        
+        // 添加到本地
+        courses.push(savedCourse);
+        
+        // 刷新界面
+        refreshCourseSelect();
+        loadCoursesManager();
+        cancelAddCourse();
+        
+        alert('课程添加成功');
+    } catch (error) {
+        console.error('保存课程失败:', error);
+        alert('保存失败');
+    }
+}
+
+// 编辑课程
+function editCourse(courseId) {
+    const course = courses.find(c => c.id === courseId);
+    if (!course) return;
+    
+    // 填充表单
+    document.getElementById('courseId').value = course.id;
+    document.getElementById('courseName').value = course.name;
+    document.getElementById('courseTime').value = course.time;
+    document.getElementById('courseDuration').value = course.duration;
+    
+    // 显示表单
+    showAddCourseForm();
+    
+    // 修改保存按钮功能
+    const saveBtn = document.querySelector('#addCourseForm button[onclick="saveCourse()"]');
+    saveBtn.textContent = '更新';
+    saveBtn.onclick = () => updateCourse(courseId);
+}
+
+// 更新课程
+async function updateCourse(originalId) {
+    const id = document.getElementById('courseId').value.trim();
+    const name = document.getElementById('courseName').value.trim();
+    const time = document.getElementById('courseTime').value.trim();
+    const duration = document.getElementById('courseDuration').value.trim();
+    
+    if (!id || !name || !time || !duration) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    const courseIndex = courses.findIndex(c => c.id === originalId);
+    if (courseIndex === -1) return;
+    
+    const updatedCourse = { ...courses[courseIndex], id, name, time, duration };
+    
+    try {
+        // 如果有云端数据，更新云端
+        if (isCloudConnected && updatedCourse.objectId) {
+            const Course = AV.Object.extend('Course');
+            const course = AV.Object.createWithoutData('Course', updatedCourse.objectId);
+            course.set('courseId', id);
+            course.set('name', name);
+            course.set('time', time);
+            course.set('duration', duration);
+            await course.save();
+        }
+        
+        // 更新本地
+        courses[courseIndex] = updatedCourse;
+        
+        // 刷新界面
+        refreshCourseSelect();
+        loadCoursesManager();
+        cancelAddCourse();
+        
+        alert('课程更新成功');
+    } catch (error) {
+        console.error('更新课程失败:', error);
+        alert('更新失败');
+    }
+}
+
+// 删除课程
+async function deleteCourse(courseId) {
+    if (!confirm('确定要删除这个课程吗？')) {
+        return;
+    }
+    
+    const courseIndex = courses.findIndex(c => c.id === courseId);
+    if (courseIndex === -1) return;
+    
+    const course = courses[courseIndex];
+    
+    try {
+        // 从云端删除
+        if (course.objectId) {
+            await deleteFromCloud('Course', course.objectId);
+        }
+        
+        // 从本地删除
+        courses.splice(courseIndex, 1);
+        
+        // 刷新界面
+        refreshCourseSelect();
+        loadCoursesManager();
+        
+        alert('课程删除成功');
+    } catch (error) {
+        console.error('删除课程失败:', error);
+        alert('删除失败');
+    }
+}
+
+/* ---------- 班级管理功能 ---------- */
+
+// 显示添加班级表单
+function showAddClassForm() {
+    document.getElementById('addClassForm').classList.remove('hidden');
+    // 清空表单
+    document.getElementById('classId').value = '';
+    document.getElementById('className').value = '';
+    document.getElementById('classStudents').value = '';
+}
+
+// 取消添加班级
+function cancelAddClass() {
+    document.getElementById('addClassForm').classList.add('hidden');
+    // 恢复保存按钮
+    const saveBtn = document.querySelector('#addClassForm button[onclick*="Class"]');
+    if (saveBtn) {
+        saveBtn.textContent = '保存';
+        saveBtn.onclick = saveClass;
+    }
+}
+
+// 保存班级（也需要相同的修改）
+async function saveClass() {
+    const id = document.getElementById('classId').value.trim();
+    const name = document.getElementById('className').value.trim();
+    const studentsText = document.getElementById('classStudents').value.trim();
+    
+    if (!id || !name || !studentsText) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    // 检查ID是否重复
+    if (studentClasses.find(c => c.id === id)) {
+        alert('班级ID已存在');
+        return;
+    }
+    
+    // 解析学生信息
+    const students = [];
+    const lines = studentsText.split('\n');
+    
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        
+        // 用空格分割，支持多个空格，并且支持姓名中有空格
+        const parts = line.split(/\s+/);
+        if (parts.length < 2) {
+            alert(`格式错误：${line}\n请使用格式：学号 姓名`);
+            return;
+        }
+        
+        const studentId = parts[0].trim();
+        const studentName = parts.slice(1).join(' ').trim(); // 将第二个及之后的部分用空格连接作为姓名
+        
+        if (!studentId || !studentName) {
+            alert(`学号或姓名不能为空：${line}`);
+            return;
+        }
+        
+        students.push({ id: studentId, name: studentName });
+    }
+    
+    if (students.length === 0) {
+        alert('请至少添加一个学生');
+        return;
+    }
+    
+    const classData = { id, name, students };
+    
+    try {
+        // 保存到云端
+        const savedClass = await saveClassToCloud(classData);
+        
+        // 添加到本地
+        studentClasses.push(savedClass);
+        
+        // 刷新界面
+        refreshClassSelect();
+        loadClassesManager();
+        cancelAddClass();
+        
+        alert(`班级添加成功，共${students.length}名学生`);
+    } catch (error) {
+        console.error('保存班级失败:', error);
+        alert('保存失败');
+    }
+}
+
+// 查看学生
+function viewStudents(classId) {
+    const cls = studentClasses.find(c => c.id === classId);
+    if (!cls) return;
+    
+    // 先检查实际学生数量
+    console.log(`班级 ${cls.name} 实际学生数量：`, cls.students.length);
+    
+    // 使用自定义模态框显示所有学生
+    let studentsHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="this.remove()">
+            <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">班级：${cls.name}</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+                </div>
+                <div class="overflow-y-auto max-h-96 border rounded p-3">
+                    <div class="space-y-1">
+    `;
+    
+    // 显示所有学生
+    cls.students.forEach((student, index) => {
+        studentsHtml += `
+            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+                <span>${index + 1}. ${student.name}</span>
+                <span class="text-gray-600 text-sm">${student.id}</span>
+            </div>
+        `;
+    });
+    
+    studentsHtml += `
+                    </div>
+                </div>
+                <div class="mt-4 text-center text-gray-600">
+                    总计 ${cls.students.length} 名学生
+                </div>
+                <button onclick="this.closest('.fixed').remove()" 
+                    class="mt-4 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    关闭
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // 添加到页面
+    const modalDiv = document.createElement('div');
+    modalDiv.innerHTML = studentsHtml;
+    document.body.appendChild(modalDiv.firstElementChild);
+}
+
+
+// 编辑班级
+function editClass(classId) {
+    const cls = studentClasses.find(c => c.id === classId);
+    if (!cls) return;
+    
+    // 填充表单
+    document.getElementById('classId').value = cls.id;
+    document.getElementById('className').value = cls.name;
+    
+    // 格式化学生信息 - 改为空格分隔
+    const studentsText = cls.students.map(s => `${s.id} ${s.name}`).join('\n');
+    document.getElementById('classStudents').value = studentsText;
+    
+    // 显示表单
+    showAddClassForm();
+    
+    // 修改保存按钮功能
+    const saveBtn = document.querySelector('#addClassForm button[onclick="saveClass()"]');
+    saveBtn.textContent = '更新';
+    saveBtn.onclick = () => updateClass(classId);
+}
+
+// 更新班级
+async function updateClass(originalId) {
+    const id = document.getElementById('classId').value.trim();
+    const name = document.getElementById('className').value.trim();
+    const studentsText = document.getElementById('classStudents').value.trim();
+    
+    if (!id || !name || !studentsText) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    // 解析学生信息
+    const students = [];
+    const lines = studentsText.split('\n');
+    
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        
+        // 用空格分割，支持多个空格，并且支持姓名中有空格
+        const parts = line.split(/\s+/);
+        if (parts.length < 2) {
+            alert(`格式错误：${line}\n请使用格式：学号 姓名`);
+            return;
+        }
+        
+        const studentId = parts[0].trim();
+        const studentName = parts.slice(1).join(' ').trim(); // 将第二个及之后的部分用空格连接作为姓名
+        
+        if (!studentId || !studentName) {
+            alert(`学号或姓名不能为空：${line}`);
+            return;
+        }
+        
+        students.push({ id: studentId, name: studentName });
+    }
+    
+    if (students.length === 0) {
+        alert('请至少添加一个学生');
+        return;
+    }
+    
+    const classIndex = studentClasses.findIndex(c => c.id === originalId);
+    if (classIndex === -1) return;
+    
+    const updatedClass = { ...studentClasses[classIndex], id, name, students };
+    
+    try {
+        // 如果有云端数据，更新云端
+        if (isCloudConnected && updatedClass.objectId) {
+            const StudentClass = AV.Object.extend('StudentClass');
+            const cls = AV.Object.createWithoutData('StudentClass', updatedClass.objectId);
+            cls.set('classId', id);
+            cls.set('name', name);
+            cls.set('students', students);
+            await cls.save();
+        }
+        
+        // 更新本地
+        studentClasses[classIndex] = updatedClass;
+        
+        // 刷新界面
+        refreshClassSelect();
+        loadClassesManager();
+        cancelAddClass();
+        
+        alert('班级更新成功');
+    } catch (error) {
+        console.error('更新班级失败:', error);
+        alert('更新失败');
+    }
+}
+
+// 删除班级
+async function deleteClass(classId) {
+    if (!confirm('确定要删除这个班级吗？')) {
+        return;
+    }
+    
+    const classIndex = studentClasses.findIndex(c => c.id === classId);
+    if (classIndex === -1) return;
+    
+    const cls = studentClasses[classIndex];
+    
+    try {
+        // 从云端删除
+        if (cls.objectId) {
+            await deleteFromCloud('StudentClass', cls.objectId);
+        }
+        
+        // 从本地删除
+        studentClasses.splice(classIndex, 1);
+        
+        // 刷新界面
+        refreshClassSelect();
+        loadClassesManager();
+        
+        alert('班级删除成功');
+    } catch (error) {
+        console.error('删除班级失败:', error);
+        alert('删除失败');
+    }
+}
+
+/* ---------- 考场管理功能 ---------- */
+
+// 显示添加考场表单
+function showAddRoomForm() {
+    document.getElementById('addRoomForm').classList.remove('hidden');
+    // 清空表单
+    document.getElementById('roomId').value = '';
+    document.getElementById('roomName').value = '';
+    document.getElementById('roomRows').value = '';
+    document.getElementById('roomCols').value = '';
+}
+
+// 取消添加考场
+function cancelAddRoom() {
+    document.getElementById('addRoomForm').classList.add('hidden');
+    // 恢复保存按钮
+    const saveBtn = document.querySelector('#addRoomForm button[onclick*="Room"]');
+    if (saveBtn) {
+        saveBtn.textContent = '保存';
+        saveBtn.onclick = saveRoom;
+    }
+}
+
+// 保存考场
+async function saveRoom() {
+    const id = document.getElementById('roomId').value.trim();
+    const name = document.getElementById('roomName').value.trim();
+    const rows = parseInt(document.getElementById('roomRows').value);
+    const cols = parseInt(document.getElementById('roomCols').value);
+    
+    if (!id || !name || !rows || !cols) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    if (rows < 1 || cols < 1) {
+        alert('行数和列数必须大于0');
+        return;
+    }
+    
+    // 检查ID是否重复
+    if (rooms.find(r => r.id === id)) {
+        alert('考场ID已存在');
+        return;
+    }
+    
+    const roomData = { id, name, rows, cols };
+    
+    try {
+        // 保存到云端
+        const savedRoom = await saveRoomToCloud(roomData);
+        
+        // 添加到本地
+        rooms.push(savedRoom);
+        
+        // 刷新界面
+        refreshRoomSelect();
+        loadRoomsManager();
+        cancelAddRoom();
+        
+        alert('考场添加成功');
+    } catch (error) {
+        console.error('保存考场失败:', error);
+        alert('保存失败');
+    }
+}
+
+// 编辑考场
+function editRoom(roomId) {
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return;
+    
+    // 填充表单
+    document.getElementById('roomId').value = room.id;
+    document.getElementById('roomName').value = room.name;
+    document.getElementById('roomRows').value = room.rows;
+    document.getElementById('roomCols').value = room.cols;
+    
+    // 显示表单
+    showAddRoomForm();
+    
+    // 修改保存按钮功能
+    const saveBtn = document.querySelector('#addRoomForm button[onclick="saveRoom()"]');
+    saveBtn.textContent = '更新';
+    saveBtn.onclick = () => updateRoom(roomId);
+}
+
+// 更新考场
+async function updateRoom(originalId) {
+    const id = document.getElementById('roomId').value.trim();
+    const name = document.getElementById('roomName').value.trim();
+    const rows = parseInt(document.getElementById('roomRows').value);
+    const cols = parseInt(document.getElementById('roomCols').value);
+    
+    if (!id || !name || !rows || !cols) {
+        alert('请填写所有必填字段');
+        return;
+    }
+    
+    if (rows < 1 || cols < 1) {
+        alert('行数和列数必须大于0');
+        return;
+    }
+    
+    const roomIndex = rooms.findIndex(r => r.id === originalId);
+    if (roomIndex === -1) return;
+    
+    const updatedRoom = { ...rooms[roomIndex], id, name, rows, cols };
+    
+    try {
+        // 如果有云端数据，更新云端
+        if (isCloudConnected && updatedRoom.objectId) {
+            const Room = AV.Object.extend('Room');
+            const room = AV.Object.createWithoutData('Room', updatedRoom.objectId);
+            room.set('roomId', id);
+            room.set('name', name);
+            room.set('rows', rows);
+            room.set('cols', cols);
+            await room.save();
+        }
+        
+        // 更新本地
+        rooms[roomIndex] = updatedRoom;
+        
+        // 刷新界面
+        refreshRoomSelect();
+        loadRoomsManager();
+        cancelAddRoom();
+        
+        alert('考场更新成功');
+    } catch (error) {
+        console.error('更新考场失败:', error);
+        alert('更新失败');
+    }
+}
+
+// 删除考场
+async function deleteRoom(roomId) {
+    if (!confirm('确定要删除这个考场吗？')) {
+        return;
+    }
+    
+    const roomIndex = rooms.findIndex(r => r.id === roomId);
+    if (roomIndex === -1) return;
+    
+    const room = rooms[roomIndex];
+    
+    try {
+        // 从云端删除
+        if (room.objectId) {
+            await deleteFromCloud('Room', room.objectId);
+        }
+        
+        // 从本地删除
+        rooms.splice(roomIndex, 1);
+        
+        // 刷新界面
+        refreshRoomSelect();
+        loadRoomsManager();
+        
+        alert('考场删除成功');
+    } catch (error) {
+        console.error('删除考场失败:', error);
+        alert('删除失败');
+    }
+}
+
+/* ---------- 界面刷新函数 ---------- */
+
+// 刷新课程选择框
+function refreshCourseSelect() {
+    const select = document.getElementById('courseSelect');
+    select.innerHTML = '<option value="">-- 请选择课程 --</option>';
+    
+    courses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course.id;
+        option.textContent = course.name;
+        select.appendChild(option);
+    });
+    
+    // 绑定变化事件
+    select.onchange = onCourseChange;
+}
+
+// 刷新班级选择框
+function refreshClassSelect() {
+    const select1 = document.getElementById('classSelect1');
+    const select2 = document.getElementById('classSelect2');
+    
+    // 清空选择框
+    select1.innerHTML = '<option value="">-- 请选择第一个班级 --</option>';
+    select2.innerHTML = '<option value="">-- 第二个班级（可选） --</option>';
+    
+    // 添加班级选项
+    studentClasses.forEach(cls => {
+        const option1 = document.createElement('option');
+        option1.value = cls.id;
+        option1.textContent = cls.name;
+        select1.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = cls.id;
+        option2.textContent = cls.name;
+        select2.appendChild(option2);
+    });
+    
+    // 绑定变化事件
+    select1.onchange = onClassChange;
+    select2.onchange = onClassChange;
+}
+
+// 刷新考场选择框
+function refreshRoomSelect() {
+    const select = document.getElementById('roomSelect');
+    select.innerHTML = '<option value="">-- 请选择考场 --</option>';
+    
+    rooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room.id;
+        option.textContent = `${room.name} (${room.rows}×${room.cols})`;
+        select.appendChild(option);
+    });
+    
+    // 绑定变化事件
+    select.onchange = onRoomChange;
+}
+
+/* ---------- 事件处理函数 ---------- */
+
+// 课程选择变化
+function onCourseChange() {
+    const courseId = document.getElementById('courseSelect').value;
+    const course = courses.find(c => c.id === courseId);
+    
+    if (course) {
+        // 显示实时考试信息面板
+        document.getElementById('examTimePanel').classList.remove('hidden');
+        
+        // 解析考试时间
+        if (course.time) {
+            const timeMatch = course.time.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2})-(\d{2}:\d{2})/);
+            if (timeMatch) {
+                const startTime = new Date(timeMatch[1]);
+                const endTimeStr = timeMatch[2];
+                const [endHour, endMinute] = endTimeStr.split(':');
+                const endTime = new Date(startTime);
+                endTime.setHours(parseInt(endHour), parseInt(endMinute));
+                
+                // 开始倒计时
+                startExamCountdown(startTime, endTime, course);
+            }
+        }
+    } else {
+        // 隐藏实时考试信息面板
+        document.getElementById('examTimePanel').classList.add('hidden');
+        stopExamCountdown();
+    }
+}
+
+// 班级选择变化
+function onClassChange() {
+    const classId1 = document.getElementById('classSelect1').value;
+    const classId2 = document.getElementById('classSelect2').value;
+    
+    // 更新班级1学生数据
+    if (classId1) {
+        const class1 = studentClasses.find(c => c.id === classId1);
+        currentStudents1 = class1 ? class1.students : [];
+        document.getElementById('studentCount1').textContent = currentStudents1.length;
+    } else {
+        currentStudents1 = [];
+        document.getElementById('studentCount1').textContent = '0';
+    }
+    
+    // 更新班级2学生数据
+    if (classId2) {
+        const class2 = studentClasses.find(c => c.id === classId2);
+        currentStudents2 = class2 ? class2.students : [];
+        document.getElementById('studentCount2').textContent = currentStudents2.length;
+    } else {
+        currentStudents2 = [];
+        document.getElementById('studentCount2').textContent = '0';
+    }
+    
+    // 更新总人数
+    const totalCount = currentStudents1.length + currentStudents2.length;
+    document.getElementById('totalStudentCount').textContent = totalCount;
+    
+    // 显示/隐藏混合选项
+    const mixingOptions = document.getElementById('mixingOptions');
+    if (currentStudents1.length > 0 && currentStudents2.length > 0) {
+        mixingOptions.classList.remove('hidden');
+    } else {
+        mixingOptions.classList.add('hidden');
+    }
+}
+
+// 考场选择变化
+function onRoomChange() {
+    const roomId = document.getElementById('roomSelect').value;
+    const room = rooms.find(r => r.id === roomId);
+    
+    if (room) {
+        document.getElementById('rowInput').value = room.rows;
+        document.getElementById('colInput').value = room.cols;
+    } else {
+        document.getElementById('rowInput').value = '';
+        document.getElementById('colInput').value = '';
+    }
+}
+
+// 清空班级选择
+function clearClasses() {
+    document.getElementById('classSelect1').value = '';
+    document.getElementById('classSelect2').value = '';
+    onClassChange();
+}
+
+/* ---------- 语音功能 ---------- */
+
+// 加载可用语音
+function loadVoices() {
+    if ('speechSynthesis' in window) {
+        // 等待语音加载完成
+        const loadVoicesTimer = setInterval(() => {
+            availableVoices = speechSynthesis.getVoices();
+            if (availableVoices.length > 0) {
+                clearInterval(loadVoicesTimer);
+                populateVoiceSelect();
+            }
+        }, 100);
+        
+        // 监听语音变化事件
+        speechSynthesis.onvoiceschanged = () => {
+            availableVoices = speechSynthesis.getVoices();
+            populateVoiceSelect();
+        };
+    }
+}
+
+// 填充语音选择框
+function populateVoiceSelect() {
+    const voiceSelect = document.getElementById('voiceSelect');
+    voiceSelect.innerHTML = '<option value="">选择语音...</option>';
+    
+    // 优先显示中文语音
+    const chineseVoices = availableVoices.filter(voice => 
+        voice.lang.includes('zh') || voice.lang.includes('CN')
+    );
+    
+    const otherVoices = availableVoices.filter(voice => 
+        !voice.lang.includes('zh') && !voice.lang.includes('CN')
+    );
+    
+    // 添加中文语音
+    if (chineseVoices.length > 0) {
+        const chineseGroup = document.createElement('optgroup');
+        chineseGroup.label = '中文语音';
+        chineseVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = availableVoices.indexOf(voice);
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.default) option.textContent += ' [默认]';
+            chineseGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(chineseGroup);
+        
+        // 默认选择第一个中文语音
+        if (!selectedVoice) {
+            selectedVoice = chineseVoices[0];
+            voiceSelect.value = availableVoices.indexOf(selectedVoice);
+        }
+    }
+    
+    // 添加其他语音
+    if (otherVoices.length > 0) {
+        const otherGroup = document.createElement('optgroup');
+        otherGroup.label = '其他语音';
+        otherVoices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = availableVoices.indexOf(voice);
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if (voice.default) option.textContent += ' [默认]';
+            otherGroup.appendChild(option);
+        });
+        voiceSelect.appendChild(otherGroup);
+    }
+}
+
+// 切换语音开关
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const button = document.getElementById('voiceToggle');
+    const status = document.getElementById('voiceStatus');
+    
+    if (voiceEnabled) {
+        button.textContent = '🔊 语音开启';
+        button.className = 'w-full px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm';
+        status.textContent = '语音提示已启用';
+    } else {
+        button.textContent = '🔇 语音关闭';
+        button.className = 'w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm';
+        status.textContent = '语音提示已禁用';
+    }
+}
+
+// 改变语音
+function changeVoice() {
+    const voiceSelect = document.getElementById('voiceSelect');
+    const voiceIndex = parseInt(voiceSelect.value);
+    
+    if (!isNaN(voiceIndex) && voiceIndex < availableVoices.length) {
+        selectedVoice = availableVoices[voiceIndex];
+        console.log('选择语音:', selectedVoice.name);
+    }
+}
+
+// 测试语音
+function testVoice() {
+    speakText('语音测试成功，系统运行正常');
+}
+
+// 语音播报
+function speakText(text) {
+    if (!voiceEnabled || !('speechSynthesis' in window)) {
+        return;
+    }
+    
+    // 停止当前语音
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // 设置语音参数
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
+    }
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // 播报
+    speechSynthesis.speak(utterance);
+}
+
+/* ---------- 实时时钟和倒计时 ---------- */
+
+// 开始实时时钟
+function startRealTimeClock() {
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+}
+
+// 更新当前时间
+function updateCurrentTime() {
+    const now = new Date();
+    const timeString = now.toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    
+    const timeElement = document.getElementById('currentTime');
+    if (timeElement) {
+        timeElement.textContent = timeString;
+    }
+}
+
+// 开始考试倒计时
+function startExamCountdown(startTime, endTime, course) {
+    stopExamCountdown();
+    
+    examTimer = setInterval(() => {
+        const now = new Date();
+        const countdownElement = document.getElementById('countdown');
+        const statusElement = document.getElementById('examStatus');
+        
+        if (now < startTime) {
+            // 考试未开始
+            const timeLeft = startTime - now;
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            countdownElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            countdownElement.className = 'text-2xl font-mono text-blue-600';
+            statusElement.textContent = '距离考试开始';
+            
+        } else if (now >= startTime && now <= endTime) {
+            // 考试进行中
+            const timeLeft = endTime - now;
+            const minutes = Math.floor(timeLeft / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 根据剩余时间改变颜色
+            if (minutes <= 5) {
+                countdownElement.className = 'text-2xl font-mono text-red-600 animate-pulse';
+            } else if (minutes <= 10) {
+                countdownElement.className = 'text-2xl font-mono text-orange-600';
+            } else {
+                countdownElement.className = 'text-2xl font-mono text-green-600';
+            }
+            
+            statusElement.textContent = '考试剩余时间';
+            
+            // 语音提醒
+            if (voiceAlerts.includes(minutes) && !alertedTimes.has(minutes)) {
+                alertedTimes.add(minutes);
+                speakText(`距离考试结束还有${minutes}分钟`);
+            }
+            
+        } else {
+            // 考试结束
+            countdownElement.textContent = '00:00';
+            countdownElement.className = 'text-2xl font-mono text-red-600';
+            statusElement.textContent = '考试已结束';
+            
+            if (!alertedTimes.has('end')) {
+                alertedTimes.add('end');
+                speakText('考试时间到，请停止答题');
+            }
+        }
+    }, 1000);
+}
+
+// 停止考试倒计时
+function stopExamCountdown() {
+    if (examTimer) {
+        clearInterval(examTimer);
+        examTimer = null;
+    }
+    alertedTimes.clear();
+}
+
+/* ---------- 座位安排核心功能 ---------- */
+
+// 生成座位表
+function generateSeating() {
+    // 验证输入
+    const courseId = document.getElementById('courseSelect').value;
+    const roomId = document.getElementById('roomSelect').value;
+    const rows = parseInt(document.getElementById('rowInput').value);
+    const cols = parseInt(document.getElementById('colInput').value);
+    
+    if (!courseId) {
+        alert('请选择考试课程');
+        return;
+    }
+    
+    if (!roomId) {
+        alert('请选择考场');
+        return;
+    }
+    
+    if (!rows || !cols || rows < 1 || cols < 1) {
+        alert('请输入有效的行数和列数');
+        return;
+    }
+    
+    const totalStudents = currentStudents1.length + currentStudents2.length;
+    const totalSeats = rows * cols;
+    
+    if (totalStudents === 0) {
+        alert('请至少选择一个班级');
+        return;
+    }
+    
+    if (totalStudents > totalSeats) {
+        alert(`学生总数(${totalStudents})超过座位数(${totalSeats})，请调整考场或班级`);
+        return;
+    }
+    
+    // 生成座位安排
+    const allStudents = combineStudents();
+    const seatingArrangement = arrangeSeats(allStudents, rows, cols);
+    
+    // 显示座位表
+    displaySeatingChart(seatingArrangement, rows, cols);
+    
+    // 显示考试信息
+    displayExamInfo(courseId, roomId, totalStudents, totalSeats);
+    
+    // 显示导出按钮
+    document.getElementById('exportButtons').classList.remove('hidden');
+    
+    // 保存当前座位安排
+    currentSeating = {
+        course: courses.find(c => c.id === courseId),
+        room: rooms.find(r => r.id === roomId),
+        arrangement: seatingArrangement,
+        rows: rows,
+        cols: cols,
+        students: allStudents
+    };
+}
+
+// 合并学生数据
+function combineStudents() {
+    let allStudents = [];
+    
+    if (currentStudents2.length === 0) {
+        // 只有一个班级
+        allStudents = [...currentStudents1];
+        shuffleArray(allStudents); // 单班级也随机排列
+    } else {
+        // 两个班级混合
+        const mixMode = document.querySelector('input[name="mixMode"]:checked').value;
+        
+        switch (mixMode) {
+            case 'random':
+                // 随机混合
+                allStudents = [...currentStudents1, ...currentStudents2];
+                shuffleArray(allStudents);
+                break;
+                
+            case 'alternate':
+                // 交替排列 - 先随机打乱各自班级，再交替
+                const shuffledClass1 = [...currentStudents1];
+                const shuffledClass2 = [...currentStudents2];
+                shuffleArray(shuffledClass1);
+                shuffleArray(shuffledClass2);
+                
+                const maxLength = Math.max(shuffledClass1.length, shuffledClass2.length);
+                for (let i = 0; i < maxLength; i++) {
+                    if (i < shuffledClass1.length) {
+                        allStudents.push({ ...shuffledClass1[i], className: '班级1' });
+                    }
+                    if (i < shuffledClass2.length) {
+                        allStudents.push({ ...shuffledClass2[i], className: '班级2' });
+                    }
+                }
+                break;
+                
+            case 'separate':
+                // 分区排列 - 各班级内部随机，但保持分区
+                const shuffledClass1Separate = [...currentStudents1];
+                const shuffledClass2Separate = [...currentStudents2];
+                shuffleArray(shuffledClass1Separate);
+                shuffleArray(shuffledClass2Separate);
+                
+                allStudents = [
+                    ...shuffledClass1Separate.map(s => ({ ...s, className: '班级1' })),
+                    ...shuffledClass2Separate.map(s => ({ ...s, className: '班级2' }))
+                ];
+                break;
+        }
+    }
+    
+    return allStudents;
+}
+
+// 打乱数组
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// 安排座位
+function arrangeSeats(students, rows, cols) {
+    const arrangement = [];
+    
+    // 初始化座位表
+    for (let i = 0; i < rows; i++) {
+        arrangement[i] = [];
+        for (let j = 0; j < cols; j++) {
+            arrangement[i][j] = null;
+        }
+    }
+    
+    const mixMode = document.querySelector('input[name="mixMode"]:checked').value;
+    
+    if (mixMode === 'separate' && currentStudents1.length > 0 && currentStudents2.length > 0) {
+        // 左右分区排列：左边放班级1，右边放班级2
+        const class1Students = students.filter(s => s.className === '班级1');
+        const class2Students = students.filter(s => s.className === '班级2');
+        
+        const midCol = Math.ceil(cols / 2);
+        let class1Index = 0;
+        let class2Index = 0;
+        
+        // 填充座位
+        for (let i = 0; i < rows; i++) {
+            // 左半部分放班级1
+            for (let j = 0; j < midCol && class1Index < class1Students.length; j++) {
+                arrangement[i][j] = {
+                    ...class1Students[class1Index],
+                    row: i + 1,
+                    col: j + 1,
+                    seatNumber: i * cols + j + 1
+                };
+                class1Index++;
+            }
+            
+            // 右半部分放班级2
+            for (let j = midCol; j < cols && class2Index < class2Students.length; j++) {
+                arrangement[i][j] = {
+                    ...class2Students[class2Index],
+                    row: i + 1,
+                    col: j + 1,
+                    seatNumber: i * cols + j + 1
+                };
+                class2Index++;
+            }
+        }
+        
+        // 如果还有学生没安排，继续填充空位
+        const remainingStudents = [
+            ...class1Students.slice(class1Index),
+            ...class2Students.slice(class2Index)
+        ];
+        
+        let remainingIndex = 0;
+        for (let i = 0; i < rows && remainingIndex < remainingStudents.length; i++) {
+            for (let j = 0; j < cols && remainingIndex < remainingStudents.length; j++) {
+                if (arrangement[i][j] === null) {
+                    arrangement[i][j] = {
+                        ...remainingStudents[remainingIndex],
+                        row: i + 1,
+                        col: j + 1,
+                        seatNumber: i * cols + j + 1
+                    };
+                    remainingIndex++;
+                }
+            }
+        }
+    } else {
+        // 普通排列方式（随机混合和交替排列）
+        let studentIndex = 0;
+        for (let i = 0; i < rows && studentIndex < students.length; i++) {
+            for (let j = 0; j < cols && studentIndex < students.length; j++) {
+                arrangement[i][j] = {
+                    ...students[studentIndex],
+                    row: i + 1,
+                    col: j + 1,
+                    seatNumber: i * cols + j + 1
+                };
+                studentIndex++;
+            }
+        }
+    }
+    
+    return arrangement;
+}
+
+
+// 显示座位表
+function displaySeatingChart(arrangement, rows, cols) {
+    const container = document.getElementById('seatingChart');
+    const showMode = document.querySelector('input[name="showMode"]:checked').value;
+    
+    let html = '<div class="seating-container">';
+    
+    // 讲台
+    html += '<div class="mb-4 text-center"><div class="bg-gray-800 text-white py-2 px-8 rounded-lg inline-block font-semibold">讲台</div></div>';
+    
+    // 座位表
+    html += '<div class="grid gap-2" style="grid-template-columns: repeat(' + cols + ', 1fr);">';
+    
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            const seat = arrangement[i][j];
+            
+            if (seat) {
+                let displayText = '';
+                let bgColor = 'bg-blue-100 border-blue-300';
+                let textColor = 'text-blue-800';
+                
+                // 根据显示模式设置文本
+                switch (showMode) {
+                    case 'last3':
+                        displayText = seat.id.slice(-3);
+                        break;
+                    case 'last5':
+                        displayText = seat.id.slice(-5);
+                        break;
+                    case 'name':
+                        displayText = seat.name;
+                        break;
+                    case 'seq':
+                        displayText = seat.seatNumber;
+                        break;
+                }
+                
+                // 根据班级设置颜色
+                if (seat.className === '班级1') {
+                    bgColor = 'bg-blue-100 border-blue-300';
+                    textColor = 'text-blue-800';
+                } else if (seat.className === '班级2') {
+                    bgColor = 'bg-purple-100 border-purple-300';
+                    textColor = 'text-purple-800';
+                }
+                
+                html += `<div class="seat ${bgColor} ${textColor} border-2 rounded-lg p-3 text-center font-medium text-sm min-h-16 flex items-center justify-center hover:shadow-md transition-shadow cursor-pointer" 
+                         title="座位${seat.seatNumber}: ${seat.name} (${seat.id})">
+                         ${displayText}
+                         </div>`;
+            } else {
+                html += '<div class="seat bg-gray-100 border-2 border-gray-300 rounded-lg p-3 text-center text-gray-400 min-h-16 flex items-center justify-center">空</div>';
+            }
+        }
+    }
+    
+    html += '</div></div>';
+    
+    container.innerHTML = html;
+}
+
+// 显示考试信息
+function displayExamInfo(courseId, roomId, totalStudents, totalSeats) {
+    const course = courses.find(c => c.id === courseId);
+    const room = rooms.find(r => r.id === roomId);
+    
+    const infoContainer = document.getElementById('examInfo');
+    infoContainer.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">考试信息</h3>
+                <p><span class="font-medium">课程：</span>${course.name}</p>
+                <p><span class="font-medium">时间：</span>${course.time}</p>
+                <p><span class="font-medium">时长：</span>${course.duration}</p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-800 mb-2">考场信息</h3>
+                <p><span class="font-medium">考场：</span>${room.name}</p>
+                <p><span class="font-medium">布局：</span>${room.rows}行 × ${room.cols}列</p>
+                <p><span class="font-medium">人数：</span>${totalStudents}/${totalSeats}</p>
+            </div>
+        </div>
+    `;
+}
+
+/* ---------- 导出和打印功能 ---------- */
+
+// 导出到Excel
+function exportToExcel() {
+    if (!currentSeating) {
+        alert('请先生成座位表');
+        return;
+    }
+    
+    // 创建工作簿
+    const wb = {
+        SheetNames: ['座位表'],
+        Sheets: {}
+    };
+    
+    // 创建座位表数据
+    const wsData = [];
+    
+    // 添加标题
+    wsData.push([`${currentSeating.course.name} - ${currentSeating.room.name}`]);
+    wsData.push([`考试时间：${currentSeating.course.time}`]);
+    wsData.push([`考试时长：${currentSeating.course.duration}`]);
+    wsData.push([]);
+    
+    // 添加座位表
+    wsData.push(['座位号', '学号', '姓名', '行', '列']);
+    
+    currentSeating.students.forEach((student, index) => {
+        if (student) {
+            const seatInfo = currentSeating.arrangement.flat().find(seat => seat && seat.id === student.id);
+            if (seatInfo) {
+                wsData.push([
+                    seatInfo.seatNumber,
+                    seatInfo.id,
+                    seatInfo.name,
+                    seatInfo.row,
+                    seatInfo.col
+                ]);
+            }
+        }
+    });
+    
+    // 创建工作表
+    wb.Sheets['座位表'] = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // 导出文件
+    const filename = `${currentSeating.course.name}_${currentSeating.room.id}_座位表.xlsx`;
+    
+    try {
+        XLSX.writeFile(wb, filename);
+        alert('Excel文件导出成功！');
+    } catch (error) {
+        console.error('导出Excel失败:', error);
+        
+        // 如果XLSX库未加载，使用CSV格式导出
+        exportToCSV();
+    }
+}
+
+// 导出到CSV
+function exportToCSV() {
+    if (!currentSeating) {
+        alert('请先生成座位表');
+        return;
+    }
+    
+    let csvContent = '';
+    
+    // 添加标题信息
+    csvContent += `${currentSeating.course.name} - ${currentSeating.room.name}\n`;
+    csvContent += `考试时间：${currentSeating.course.time}\n`;
+    csvContent += `考试时长：${currentSeating.course.duration}\n\n`;
+    
+    // 添加表头
+    csvContent += '座位号,学号,姓名,行,列\n';
+    
+    // 添加学生数据
+    currentSeating.students.forEach(student => {
+        if (student) {
+            const seatInfo = currentSeating.arrangement.flat().find(seat => seat && seat.id === student.id);
+            if (seatInfo) {
+                csvContent += `${seatInfo.seatNumber},${seatInfo.id},${seatInfo.name},${seatInfo.row},${seatInfo.col}\n`;
+            }
+        }
+    });
+    
+    // 创建下载链接
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${currentSeating.course.name}_${currentSeating.room.id}_座位表.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        alert('CSV文件导出成功！');
+    } else {
+        alert('您的浏览器不支持文件下载功能');
+    }
+}
+
+// 打印座位表
+function printSeating() {
+    if (!currentSeating) {
+        alert('请先生成座位表');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    const showMode = document.querySelector('input[name="showMode"]:checked').value;
+    
+    let printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>座位表 - ${currentSeating.course.name}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; margin-bottom: 30px; }
+                .info { margin-bottom: 20px; }
+                .seating-grid { 
+                    display: grid; 
+                    grid-template-columns: repeat(${currentSeating.cols}, 1fr); 
+                    gap: 5px; 
+                    max-width: 800px; 
+                    margin: 0 auto; 
+                }
+                .seat { 
+                    border: 2px solid #ccc; 
+                    padding: 10px; 
+                    text-align: center; 
+                    font-weight: bold; 
+                    min-height: 40px; 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    font-size: 12px;
+                }
+                .seat.occupied { background-color: #e3f2fd; border-color: #2196f3; }
+                .seat.empty { background-color: #f5f5f5; color: #999; }
+                .podium { 
+                    text-align: center; 
+                    background-color: #333; 
+                    color: white; 
+                    padding: 10px; 
+                    margin-bottom: 20px; 
+                    font-weight: bold; 
+                }
+                @media print {
+                    body { margin: 0; }
+                    .seating-grid { max-width: 100%; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>${currentSeating.course.name}</h1>
+                <h2>${currentSeating.room.name}</h2>
+            </div>
+            
+            <div class="info">
+                <p><strong>考试时间：</strong>${currentSeating.course.time}</p>
+                <p><strong>考试时长：</strong>${currentSeating.course.duration}</p>
+                <p><strong>考场布局：</strong>${currentSeating.rows}行 × ${currentSeating.cols}列</p>
+                <p><strong>参考人数：</strong>${currentSeating.students.length}人</p>
+            </div>
+            
+            <div class="podium">讲台</div>
+            
+            <div class="seating-grid">
+    `;
+    
+    // 生成座位表
+    for (let i = 0; i < currentSeating.rows; i++) {
+        for (let j = 0; j < currentSeating.cols; j++) {
+            const seat = currentSeating.arrangement[i][j];
+            
+            if (seat) {
+                let displayText = '';
+                switch (showMode) {
+                    case 'last3':
+                        displayText = seat.id.slice(-3);
+                        break;
+                    case 'last5':
+                        displayText = seat.id.slice(-5);
+                        break;
+                    case 'name':
+                        displayText = seat.name;
+                        break;
+                    case 'seq':
+                        displayText = seat.seatNumber;
+                        break;
+                }
+                
+                printContent += `<div class="seat occupied" title="${seat.name} (${seat.id})">${displayText}</div>`;
+            } else {
+                printContent += '<div class="seat empty">空</div>';
+            }
+        }
+    }
+    
+    printContent += `
+            </div>
+            
+            <div style="margin-top: 30px; font-size: 12px; color: #666;">
+                <p>生成时间：${new Date().toLocaleString('zh-CN')}</p>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // 等待内容加载完成后打印
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+}
+
+/* ---------- CSS样式 ---------- */
+
+// 添加自定义样式
+const style = document.createElement('style');
+style.textContent = `
+    .tab-button {
+        padding: 0.5rem 1rem;
+        border-bottom: 2px solid transparent;
+        font-medium: 500;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .tab-button:hover {
+        color: #374151;
+        border-bottom-color: #d1d5db;
+    }
+    
+    .tab-button.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+    }
+    
+    .seating-container {
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+    
+    .seat:hover {
+        transform: translateY(-1px);
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .animate-pulse {
+        animation: pulse 1s infinite;
+    }
+`;
+document.head.appendChild(style);
+
+/* ---------- 初始化 ---------- */
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    init();
+});
+
+// 为了兼容没有XLSX库的情况，尝试加载Excel导出库
+function loadXLSXLibrary() {
+    if (typeof XLSX === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        script.onload = function() {
+            console.log('XLSX库加载成功');
+        };
+        script.onerror = function() {
+            console.log('XLSX库加载失败，将使用CSV导出');
+        };
+        document.head.appendChild(script);
+    }
+}
+
+// 加载Excel库
+loadXLSXLibrary();
+
+</script>
+</body>
+</html>

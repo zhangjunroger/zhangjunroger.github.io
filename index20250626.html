@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <title>张俊的课程资源主页</title>
+  <style>
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0}body{font-family:Helvetica,arial,freesans,clean,sans-serif;font-size:14px;line-height:1.6;color:#333;background-color:#fff;padding:20px;max-width:960px;margin:0 auto}body>*:first-child{margin-top:0 !important}body>*:last-child{margin-bottom:0 !important}p,blockquote,ul,ol,dl,table,pre{margin:15px 0}h1,h2,h3,h4,h5,h6{margin:20px 0 10px;padding:0;font-weight:bold;-webkit-font-smoothing:antialiased}h1 tt,h1 code,h2 tt,h2 code,h3 tt,h3 code,h4 tt,h4 code,h5 tt,h5 code,h6 tt,h6 code{font-size:inherit}h1{font-size:28px;color:#000}h2{font-size:24px;border-bottom:1px solid #ccc;color:#000}h3{font-size:18px}h4{font-size:16px}h5{font-size:14px}h6{color:#777;font-size:14px}body>h2:first-child,body>h1:first-child,body>h1:first-child+h2,body>h3:first-child,body>h4:first-child,body>h5:first-child,body>h6:first-child{margin-top:0;padding-top:0}a:first-child h1,a:first-child h2,a:first-child h3,a:first-child h4,a:first-child h5,a:first-child h6{margin-top:0;padding-top:0}h1+p,h2+p,h3+p,h4+p,h5+p,h6+p{margin-top:10px}a{color:#4183c4;text-decoration:none}a:hover{text-decoration:underline}ul,ol{padding-left:30px}ul li>:first-child,ol li>:first-child,ul li ul:first-of-type,ol li ol:first-of-type,ul li ol:first-of-type,ol li ul:first-of-type{margin-top:0}ul ul,ul ol,ol ol,ol ul{margin-bottom:0}dl{padding:0}dl dt{font-size:14px;font-weight:bold;font-style:italic;padding:0;margin:15px 0 5px}dl dt:first-child{padding:0}dl dt>:first-child{margin-top:0}dl dt>:last-child{margin-bottom:0}dl dd{margin:0 0 15px;padding:0 15px}dl dd>:first-child{margin-top:0}dl dd>:last-child{margin-bottom:0}pre,code,tt{font-size:12px;font-family:Consolas,"Liberation Mono",Courier,monospace}code,tt{margin:0;padding:0;white-space:nowrap;border:1px solid #eaeaea;background-color:#f8f8f8;border-radius:3px}pre>code{margin:0;padding:0;white-space:pre;border:0;background:transparent}pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}pre code,pre tt{background-color:transparent;border:0}blockquote{border-left:4px solid #DDD;padding:0 15px;color:#777}blockquote>:first-child{margin-top:0}blockquote>:last-child{margin-bottom:0}hr{clear:both;margin:15px 0;height:0;overflow:hidden;border:0;background:transparent;border-bottom:4px solid #ddd;padding:0}table th{font-weight:bold}table th,table td{border:1px solid #ccc;padding:6px 13px}table tr{border-top:1px solid #ccc;background-color:#fff}table tr:nth-child(2n){background-color:#f8f8f8}img{max-width:100%}
+        #container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); /* 阴影效果 */
+            background: rgba(255, 255, 255, 0.1); /* 半透明背景 */
+            min-height: 100%;
+            margin:0 auto;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+            Roboto, "Helvetica Neue", Arial, sans-serif;
+
+        }
+
+        #clock_container {
+            margin: 10px;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5); /* 渐变背景 */
+            color: #fff; /* 字体颜色 */
+        }
+
+        .h0 {
+            text-align: center;
+            font-size: 50px;
+            margin-top: 50px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        #clock {
+            font-size: 64px; /* 增大字体 */
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); /* 字体阴影 */
+            animation: pulse 1s infinite; /* 动画效果 */
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+#app {  
+    background: white;  
+    padding: 20px;  
+    border-radius: 8px;  
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);  
+}  
+
+
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    /* 当屏幕宽度较小，自动换行 */
+    align-items: center;
+    gap: 0.5rem;
+    /* 表单元素之间的间距 */
+  }
+
+  label {
+    font-weight: 600;
+    font-size: 20px;
+    margin-right: 0.5rem;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="file"],
+  select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 20px;
+    flex: 1;
+    /* 让输入框或选择框能够灵活扩展宽度 */
+    min-width: 100px;
+    /* 避免过小 */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    
+  }
+
+  input[type="file"] {
+    flex: none;
+    /* 上传按钮大小通常固定 */
+  }
+
+
+  input[type="submit"],
+  select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 20px;
+    flex: 1;
+    /* 让输入框或选择框能够灵活扩展宽度 */
+    min-width: 100px;
+    /* 避免过小 */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    
+  }
+
+  /* 分割线美化 */
+  hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 2rem 0;
+  }
+
+  /* 通用按钮样式 */
+  .button {
+    padding: 10px 20px;
+    /* 幅度内边距 */
+    border: none;
+    /* 去掉边框 */
+    border-radius: 5px;
+    /* 圆角 */
+    background-color: #007bff;
+    /* 背景颜色 */
+    color: white;
+    /* 字体颜色 */
+    font-size: 16px;
+    /* 字体大小 */
+    cursor: pointer;
+    /* 鼠标指针 */
+    transition: background-color 0.3s;
+    /* 过渡效果 */
+    text-align: center;
+  }
+
+  /* 按钮悬停样式 */
+  .button:hover {
+    background-color: #0056b3;
+    /* 悬停时的背景颜色 */
+  }
+
+  /* 背景图片样式 */
+  body {
+    background-image: url('background.jpg');
+    /* 背景图片路径 */
+    background-size: cover;
+    /* 图片适应屏幕大小 */
+    background-repeat: repeat;
+    background-size: auto;                   /* 原尺寸；如想缩放可改 cover/contain */
+    background-position: top left;           /* 从左上开始平铺 */
+    /* 居中显示 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    /* 占满整个视口高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 表单容器居中，但内容左对齐 */
+  .form-container {
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: left !important;
+  }
+  
+  /* 确保表单内部元素左对齐 */
+  .form-container form {
+    text-align: left !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* 确保表单内文本元素左对齐 */
+  .form-container label, 
+  .form-container input {
+    text-align: left !important;
+  }
+  </style>
+</head>
+
+<body style="display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; max-width: 100% !important; margin: 0 auto !important;">
+
+<div class="h0" style="margin-top: 50px !important; text-align: center; font-size: 50px; margin-bottom: 10px;">张俊的课程资源主页</div>
+<hr>
+
+  <div align="center">  
+        <div id="clock_container">   
+            <div id="clock"></div> <!-- 用于显示时间的div -->  
+        </div>  
+    
+        <script>  
+            function updateTime() {  
+                const now = new Date();  
+                const beijingTime = new Date(now.getTime());  
+                const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };  
+                document.getElementById('clock').innerText = beijingTime.toLocaleTimeString('zh-CN', options);  
+            }  
+    
+            setInterval(updateTime, 1000);  
+            updateTime(); // 初始化显示时间  
+        </script>
+    
+    </div>
+
+<h1 id="梦在前方">梦在前方</h1>
+<div align="center"> 
+  <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=70525&auto=1&height=66">
+  </iframe>
+</div>
+
+<h1
+id="神经网络与深度学习虚拟仿真实验系统">《神经网络与深度学习》虚拟仿真实验系统</h1>
+<div data-align="center">
+<p><input type="button" name="7" id="7" style="background-color: red; color: white; font-size: 18px; padding: 10px 20px;" value="进入虚拟仿真实验系统！" onclick="window.location.href='../index1.html'" /></p>
+</div>
+<h1 id="常用软件下载">常用软件下载</h1>
+<div data-align="center">
+<p><input type="button" name="7" id="7" style="background-color: red; color: white; font-size: 18px; padding: 10px 20px;" value="常用软件下载！" onclick="window.location.href='../index2.html'" /></p>
+</div>
+<h1 id="教学模版文件下载">教学模版文件下载</h1>
+<div data-align="center">
+<p><input type="button" name="7" id="7" style="background-color: red; color: white; font-size: 18px; padding: 10px 20px;" value="教学模版文件下载！" onclick="window.location.href='../index3.html'" /></p>
+</div>
+<h1 id="作业提交">作业提交</h1>
+
+
+<!-- 新增一个居中的表单外层容器 -->
+<div class="form-container" style="width: 100%; max-width: 600px; margin-left: auto !important; margin-right: auto !important; text-align: left !important;">
+
+<body>
+  <form id="form1" name="form1" method="post" action="">
+    <label for="1">学号：</label>
+    <input name="1" type="text" id="1" value="221301100" />
+  </form>
+  
+  <form id="form2" name="form2" method="post" action="">
+    <label for="2">姓名：</label>
+    <input name="2" type="text" id="2" value="某某某" />
+  </form>
+  
+  <form id="form3" name="form3" method="post" action="">
+    <label for="3">专业：</label>
+    <input name="3" type="text" id="3" value="智能科学与技术" />
+  </form>
+  
+  <form id="form4" name="form4" method="post" action="">
+    <label for="4">课程：</label>
+    <input name="4" type="text" id="4" value="神经网络与深度学习" />
+  </form>
+  
+  <form id="form5" name="form5" enctype="multipart/form-data" method="post" action="">
+    <label for="5">文件：</label>
+    <input type="file" name="5" id="5" />
+   </form>
+  
+  <form id="form6" name="form6" method="post" action="">
+    <label for="6">提交：</label>
+    <input type="submit" name="6" id="6" value="提交文件" onclick="alert('开发中，敬请期待！...')" />
+   </form>
+  </body>
+
+</div>
+
+<h1 id="人工智能学院-教室实验室会议室-预定系统">人工智能学院-教室、实验室、会议室-预定系统！</h1>
+<div data-align="center">
+<p><input type="button" name="7" id="7" style="background-color: red; color: white; font-size: 18px; padding: 10px 20px;" value="会议室预定系统！" onclick="window.location.href='../index5.html'" /></p>
+</div>
+<h1 id="考试提示系统">考试提示系统！</h1>
+<div data-align="center">
+<p><input type="button" name="7" id="7" style="background-color: red; color: white; font-size: 18px; padding: 10px 20px;" value="考试提示系统！" onclick="window.location.href='../examapp.html'" /></p>
+</div>
+<h1 id="张俊的课程资源-1">张俊的课程资源</h1>
+<h2
+id="自动控制原理23级智能科学与技术专业本科生">自动控制原理（23级智能科学与技术专业本科生）</h2>
+<ol type="1">
+<li>教材PDF <a
+href="https://www.lanzoub.com/iiBo51lh7ptg">https://www.lanzoub.com/iiBo51lh7ptg</a></li>
+<li>PPT <a
+href="https://wwi.lanzoup.com/iyEBW20pv9dg">https://wwi.lanzoup.com/iyEBW20pv9dg</a></li>
+<li>控制理论MATLAB教程.pdf <a
+href="https://wwi.lanzoup.com/inmvf1lh88fg">https://wwi.lanzoup.com/inmvf1lh88fg</a></li>
+</ol>
+<h2
+id="神经网络与深度学习24级智能科学与技术工业智能专业本科生">神经网络与深度学习（24级智能科学与技术、工业智能专业本科生）</h2>
+<ol type="1">
+<li>教材PDF <a
+href="https://wwi.lanzoup.com/isO9O08c83xa">https://wwi.lanzoup.com/isO9O08c83xa</a></li>
+<li>Python入门 PPT <a
+href="https://wwi.lanzoup.com/i26pD08c83zc">https://wwi.lanzoup.com/i26pD08c83zc</a></li>
+<li>第1章 绪论 PPT <a
+href="https://wwi.lanzoup.com/ipC6N15kj1vi">https://wwi.lanzoup.com/ipC6N15kj1vi</a></li>
+<li>第2章 人工神经网络建模基础 PPT <a
+href="https://wwi.lanzoup.com/ikj4W08c843g">https://wwi.lanzoup.com/ikj4W08c843g</a></li>
+<li>第3章 感知器神经网络 PPT <a
+href="https://wwi.lanzoup.com/izPJY08c845i">https://wwi.lanzoup.com/izPJY08c845i</a></li>
+<li>第5章 径向基函数神经网络 PPT <a
+href="https://wwi.lanzoup.com/irxAY08c846j">https://wwi.lanzoup.com/irxAY08c846j</a></li>
+<li>第6章 反馈神经网络 PPT <a
+href="https://wwi.lanzoup.com/iJpGh08c847a">https://wwi.lanzoup.com/iJpGh08c847a</a></li>
+<li>第8章 深度神经网络 PPT <a
+href="https://wwi.lanzoup.com/iY75608c849c">https://wwi.lanzoup.com/iY75608c849c</a></li>
+<li>第8章 深度神经网络—堆栈式自动编码器 PPT <a
+href="https://wwi.lanzoup.com/iN90k08c84be">https://wwi.lanzoup.com/iN90k08c84be</a></li>
+<li>第8章 深度神经网络—受限玻尔兹曼机 PPT <a
+href="https://wwi.lanzoup.com/i45dH08c84fi">https://wwi.lanzoup.com/i45dH08c84fi</a></li>
+<li>第8章 深度神经网络—卷积神经网络 PPT <a
+href="https://wwi.lanzoup.com/iIAaG0i4ryba">https://wwi.lanzoup.com/iIAaG0i4ryba</a></li>
+<li>第9章 支持向量机基本原理 PPT <a
+href="https://wwi.lanzoup.com/iiaAb0i15nsb">https://wwi.lanzoup.com/iiaAb0i15nsb</a>]</li>
+<li>《神经网络与深度学习》上机指导书PDF <a
+href="https://wwi.lanzoup.com/iecrc08c868d">https://wwi.lanzoup.com/iecrc08c868d</a></li>
+<li>沈阳工业大学实验报告(计算机程序设计类) <a
+href="https://wwi.lanzoup.com/iEcxn08c86ch">https://wwi.lanzoup.com/iEcxn08c86ch</a></li>
+<li>数学基础PDF <a
+href="https://wwi.lanzoup.com/iPZOR08c86af">https://wwi.lanzoup.com/iPZOR08c86af</a></li>
+<li>参考书文件夹PDF <a
+href="https://wwi.lanzoup.com/b011utjof">https://wwi.lanzoup.com/b011utjof</a>
+密码:8jif</li>
+<li>Pycharm_2020.2 <a
+href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr">https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr</a></li>
+<li>Pycharm_2020.2激活包 <a
+href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf">https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf</a></li>
+<li>Pycharm_2023安装包与激活 <a
+href="https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt">https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt</a></li>
+<li>Anaconda3-2024.06-1-Windows-x86_64安装包 <a
+href="https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e">https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e</a></li>
+<li>vscode1.87.2安装包 <a
+href="https://wwfz.lanzouv.com/is57v2aqy5gj">https://wwfz.lanzouv.com/is57v2aqy5gj</a></li>
+<li>python3.12.4安装包 <a
+href="https://wwfz.lanzouv.com/iMM822aqy46d">https://wwfz.lanzouv.com/iMM822aqy46d</a></li>
+<li>python3.11.3安装包 <a
+href="https://wwfz.lanzouv.com/i8ikG2aqy3xe">https://wwfz.lanzouv.com/i8ikG2aqy3xe</a></li>
+<li>python3.10.4安装包 <a
+href="https://wwfz.lanzouv.com/iGzMG2aqy3qh">https://wwfz.lanzouv.com/iGzMG2aqy3qh</a></li>
+<li>python3.9.1安装包 <a
+href="https://wwfz.lanzouv.com/iD3yd2aqy3gh">https://wwfz.lanzouv.com/iD3yd2aqy3gh</a></li>
+<li>python3.8.5安装包 <a
+href="https://wwfz.lanzouv.com/i4WY92aqy38j">https://wwfz.lanzouv.com/i4WY92aqy38j</a></li>
+<li>python3.7.9安装包 <a
+href="https://wwfz.lanzouv.com/iW3s22aqy2yj">https://wwfz.lanzouv.com/iW3s22aqy2yj</a></li>
+<li>python3.6.4安装包 <a
+href="https://wwfz.lanzouv.com/iE59a2aqy2te">https://wwfz.lanzouv.com/iE59a2aqy2te</a></li>
+</ol>
+<h2
+id="计算机控制系统25级控制工程专业研究生">计算机控制系统（25级控制工程专业研究生）</h2>
+<ol type="1">
+<li>教材pdf <a
+href="https://wwi.lanzoup.com/iVDHI08cbgpi">https://wwi.lanzoup.com/iVDHI08cbgpi</a></li>
+<li>chap1_计算机控制系统概述 <a
+href="https://wwi.lanzoup.com/ivcdx0aaklah">https://wwi.lanzoup.com/ivcdx0aaklah</a></li>
+<li>chap2_信号转换与z变换 <a
+href="https://wwi.lanzoup.com/iC0BO0aaklbi">https://wwi.lanzoup.com/iC0BO0aaklbi</a></li>
+<li>chap3_数学描述与性能分析 <a
+href="https://wwi.lanzoup.com/ibgCf0aaklda">https://wwi.lanzoup.com/ibgCf0aaklda</a></li>
+<li>chap4_模拟化设计方法 <a
+href="https://wwi.lanzoup.com/isf5z0aaklfc">https://wwi.lanzoup.com/isf5z0aaklfc</a></li>
+<li>chap5_直接设计方法 <a
+href="https://wwi.lanzoup.com/iegfB0aaklhe">https://wwi.lanzoup.com/iegfB0aaklhe</a></li>
+<li>chap6_极点配置设计方法 <a
+href="https://wwi.lanzoup.com/iAwU10aakljg">https://wwi.lanzoup.com/iAwU10aakljg</a></li>
+<li>chap7_先进控制规律的设计方法 <a
+href="https://wwi.lanzoup.com/imrd30aaklkh">https://wwi.lanzoup.com/imrd30aaklkh</a></li>
+<li>课后习题参考答案 <a
+href="https://wwi.lanzoup.com/iFtO20bp0evc">https://wwi.lanzoup.com/iFtO20bp0evc</a></li>
+<li>matlab R2016b <a
+href="https://pan.baidu.com/s/1RlT2DVUtFCeExRtHrwoYPQ?pwd=zmuw">https://pan.baidu.com/s/1RlT2DVUtFCeExRtHrwoYPQ?pwd=zmuw</a></li>
+<li>matlab R2021a <a
+href="https://pan.baidu.com/s/1tpXTHPiqgKiu2w3uqTtjBA?pwd=p7yz">https://pan.baidu.com/s/1tpXTHPiqgKiu2w3uqTtjBA?pwd=p7yz</a></li>
+<li>matlab R2023b <a
+href="https://pan.baidu.com/s/1XLUOoRVMoposO2H9ZMDNtw?pwd=u8zt">https://pan.baidu.com/s/1XLUOoRVMoposO2H9ZMDNtw?pwd=u8zt</a></li>
+<li>matlab R2024a <a
+href="https://pan.baidu.com/s/1ahC_b4lUopp5SiBUgvmH1A?pwd=ow7u">https://pan.baidu.com/s/1ahC_b4lUopp5SiBUgvmH1A?pwd=ow7u</a></li>
+<li>matlab R2021a MAC <a
+href="https://pan.baidu.com/s/1QkMNaMm_STjYmasG5nf4zw?pwd=h6fg">https://pan.baidu.com/s/1QkMNaMm_STjYmasG5nf4zw?pwd=h6fg</a></li>
+</ol>
+<h2
+id="神经网络与强化学习25级研究生">神经网络与强化学习（25级研究生）</h2>
+<ol type="1">
+<li>教材pdf <a
+href="https://wwi.lanzoup.com/ifU7k08cbjmd">https://wwi.lanzoup.com/ifU7k08cbjmd</a></li>
+<li>Python入门 PPT <a
+href="https://wwfz.lanzouv.com/iKNKH2aqzgbg">https://wwfz.lanzouv.com/iKNKH2aqzgbg</a></li>
+<li>数学基础PDF <a
+href="https://wwi.lanzoup.com/iPZOR08c86af">https://wwi.lanzoup.com/iPZOR08c86af</a></li>
+<li>chap01-绪论 PPT <a
+href="https://wwfz.lanzouv.com/iDLW02aqzgqb">https://wwfz.lanzouv.com/iDLW02aqzgqb</a></li>
+<li>chap02-机器学习概述 PPT <a
+href="https://wwfz.lanzouv.com/is9SN2aqzguf">https://wwfz.lanzouv.com/is9SN2aqzguf</a></li>
+<li>chap03-线性模型 PPT <a
+href="https://wwfz.lanzouv.com/iVACQ2aqzgxi">https://wwfz.lanzouv.com/iVACQ2aqzgxi</a></li>
+<li>chap04-前馈神经网络 PPT <a
+href="https://wwfz.lanzouv.com/iby5c2aqzh2d">https://wwfz.lanzouv.com/iby5c2aqzh2d</a></li>
+<li>chap05-卷积神经网络 PPT <a
+href="https://wwfz.lanzouv.com/iHwfF2aqzhta">https://wwfz.lanzouv.com/iHwfF2aqzhta</a></li>
+<li>chap06-循环神经网络 PPT <a
+href="https://wwi.lanzoup.com/ijGHn08cbkyb">https://wwi.lanzoup.com/ijGHn08cbkyb</a></li>
+<li>chap14-深度强化学习 PPT <a
+href="https://wwfz.lanzouv.com/iw1Je2aqzi2j">https://wwfz.lanzouv.com/iw1Je2aqzi2j</a></li>
+<li>参考书文件夹PDF <a
+href="https://wwi.lanzoup.com/b011utjof">https://wwi.lanzoup.com/b011utjof</a>
+密码:8jif</li>
+<li>Pycharm_2020.2 <a
+href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr">https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr</a></li>
+<li>Pycharm_2020.2激活包 <a
+href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf">https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf</a></li>
+<li>Pycharm_2023安装包与激活 <a
+href="https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt">https://pan.baidu.com/s/1ZApmSs5zVBNXwOTUx_EpYQ?pwd=57zt</a></li>
+<li>Anaconda3-2024.06-1-Windows-x86_64安装包 <a
+href="https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e">https://pan.baidu.com/s/10w0IglXCHt8v6qqCns_zdw?pwd=be1e</a></li>
+<li>vscode1.87.2安装包 <a
+href="https://wwfz.lanzouv.com/is57v2aqy5gj">https://wwfz.lanzouv.com/is57v2aqy5gj</a></li>
+<li>python3.12.4安装包 <a
+href="https://wwfz.lanzouv.com/iMM822aqy46d">https://wwfz.lanzouv.com/iMM822aqy46d</a></li>
+<li>python3.11.3安装包 <a
+href="https://wwfz.lanzouv.com/i8ikG2aqy3xe">https://wwfz.lanzouv.com/i8ikG2aqy3xe</a></li>
+<li>python3.10.4安装包 <a
+href="https://wwfz.lanzouv.com/iGzMG2aqy3qh">https://wwfz.lanzouv.com/iGzMG2aqy3qh</a></li>
+<li>python3.9.1安装包 <a
+href="https://wwfz.lanzouv.com/iD3yd2aqy3gh">https://wwfz.lanzouv.com/iD3yd2aqy3gh</a></li>
+<li>python3.8.5安装包 <a
+href="https://wwfz.lanzouv.com/i4WY92aqy38j">https://wwfz.lanzouv.com/i4WY92aqy38j</a></li>
+<li>python3.7.9安装包 <a
+href="https://wwfz.lanzouv.com/iW3s22aqy2yj">https://wwfz.lanzouv.com/iW3s22aqy2yj</a></li>
+<li>python3.6.4安装包 <a
+href="https://wwfz.lanzouv.com/iE59a2aqy2te">https://wwfz.lanzouv.com/iE59a2aqy2te</a></li>
+</ol>
+<h2
+id="深度学习理论及应用25级人工智能学院博士研究生">深度学习理论及应用（25级人工智能学院博士研究生）</h2>
+<ol type="1">
+<li>教材pdf <a
+href="https://wwi.lanzoup.com/ifU7k08cbjmd">https://wwi.lanzoup.com/ifU7k08cbjmd</a></li>
+<li>Python入门 PPT <a
+href="https://wwi.lanzoup.com/i26pD08c83zc">https://wwi.lanzoup.com/i26pD08c83zc</a></li>
+<li>数学基础PDF <a
+href="https://wwi.lanzoup.com/iPZOR08c86af">https://wwi.lanzoup.com/iPZOR08c86af</a></li>
+<li>chap01-绪论 PPT <a
+href="https://wwi.lanzoup.com/iZwi308cbjxe">https://wwi.lanzoup.com/iZwi308cbjxe</a></li>
+<li>chap02-机器学习概述 PPT <a
+href="https://wwi.lanzoup.com/itHeD08cbk5c">https://wwi.lanzoup.com/itHeD08cbk5c</a></li>
+<li>chap03-线性模型 PPT <a
+href="https://wwi.lanzoup.com/i0oT308cbkeb">https://wwi.lanzoup.com/i0oT308cbkeb</a></li>
+<li>chap04-前馈神经网络 PPT <a
+href="https://wwi.lanzoup.com/imTV508cbkkh">https://wwi.lanzoup.com/imTV508cbkkh</a></li>
+<li>chap05-卷积神经网络 PPT <a
+href="https://wwi.lanzoup.com/iqiet0i4s1mj">https://wwi.lanzoup.com/iqiet0i4s1mj</a></li>
+<li>chap06-循环神经网络 PPT <a
+href="https://wwi.lanzoup.com/ijGHn08cbkyb">https://wwi.lanzoup.com/ijGHn08cbkyb</a></li>
+<li>参考书文件夹PDF <a
+href="https://wwi.lanzoup.com/b011utjof">https://wwi.lanzoup.com/b011utjof</a>
+密码:8jif</li>
+<li>Pycharm_2020.2 <a
+href="https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr">https://pan.baidu.com/s/147mqO_oPQy3VhwCclMD7Dw?pwd=lrgr</a></li>
+<li>Pycharm_2020.2激活包 <a
+href="https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf">https://pan.baidu.com/s/1yWBgTj5Yj3j8oYTUZdwJSQ?pwd=kaqf</a></li>
+</ol>
+<!-- 以下代码请放入前端html文件的body内 --> <script src="https://agi-dev-platform-web.bj.bcebos.com/ai_apaas/embed/output/embedLiteSDK.js?responseExpires=0"></script> <script> new EmbedLiteSDK({appId: 'cdafed31-a250-4bbd-84c7-8ed45a2d61fc', code: 'embedxy79XVuC6qu3hzQQ4gzY'}); </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>  
+<html lang="zh-CN">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>考试信息设置（已增加Excel上传功能）</title>  
+    <!-- Tailwind CSS -->  
+    <script src="https://cdn.tailwindcss.com"></script>  
+    <!-- 新增：添加xlsx解析所需库（可选：若需本地文件则另行引入） -->  
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>  
+</head>  
+<body class="bg-gradient-to-r from-blue-50 to-blue-100 min-h-screen flex items-center justify-center">  
+    <div class="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8 flex flex-col items-center text-center">  
+        <h1 class="text-4xl font-bold text-blue-700 mb-8">考试信息设置</h1>  
+        <!-- 表单部分 -->  
+        <form class="w-full max-w-md space-y-6">  
+            <div>  
+                <label for="subject" class="block text-lg font-medium text-gray-700 mb-2">考试科目</label>  
+                <input type="text" id="subject" placeholder="请输入考试科目" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <div>  
+                <label for="startTime" class="block text-lg font-medium text-gray-700 mb-2">考试开始时间</label>  
+                <input type="datetime-local" id="startTime" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <div>  
+                <label for="endTime" class="block text-lg font-medium text-gray-700 mb-2">考试结束时间</label>  
+                <input type="datetime-local" id="endTime" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <div>  
+                <label for="studentCount" class="block text-lg font-medium text-gray-700 mb-2">学生人数</label>  
+                <input type="number" id="studentCount" placeholder="请输入学生人数" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <div>  
+                <label for="rowCount" class="block text-lg font-medium text-gray-700 mb-2">行数</label>  
+                <input type="number" id="rowCount" placeholder="请输入行数" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <div>  
+                <label for="columnCount" class="block text-lg font-medium text-gray-700 mb-2">列数</label>  
+                <input type="number" id="columnCount" placeholder="请输入列数" min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 text-center">  
+            </div>  
+            <!-- 原有的显示选项保留 -->  
+            <div>  
+                <label class="block text-lg font-medium text-gray-700 mb-2">显示选项</label>  
+                <div class="flex justify-center space-x-4">  
+                    <label class="flex items-center">  
+                        <input type="radio" name="displayOption" value="id" checked class="mr-2">  
+                        显示座位号  
+                    </label>  
+                    <label class="flex items-center">  
+                        <input type="radio" name="displayOption" value="name" class="mr-2">  
+                        显示姓名  
+                    </label>  
+                </div>  
+            </div>  
+            <!-- 新增：上传Excel文件 -->  
+            <div>  
+                <label for="excelFile" class="block text-lg font-medium text-gray-700 mb-2">上传Excel文件（两列：学号、姓名）</label>  
+                <input type="file" id="excelFile" accept=".xlsx" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 bg-white" />  
+            </div>  
+            <!-- 新增：随机排座方式 -->  
+            <div>  
+                <label class="block text-lg font-medium text-gray-700 mb-2">随机排座类别</label>  
+                <div class="flex justify-center space-x-4">  
+                    <label class="flex items-center">  
+                        <input type="radio" name="randomType" value="undergraduate" checked class="mr-2">  
+                        按学号后3位  
+                    </label>  
+                    <label class="flex items-center">  
+                        <input type="radio" name="randomType" value="graduate" class="mr-2">  
+                        按学号后5位  
+                    </label>  
+                    <label class="flex items-center">  
+                        <input type="radio" name="randomType" value="name" class="mr-2">  
+                        按姓名  
+                    </label>  
+                </div>  
+            </div>  
+            <div class="flex flex-col space-y-4">  
+                <button type="button" onclick="startExam()" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">开始考试</button>  
+                <button type="button" onclick="generateSeating()" class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">生成座位安排</button>  
+            </div>  
+        </form>  
+        <!-- 信息展示 -->  
+        <div id="info" class="w-full mt-8 p-6 bg-gray-100 rounded-lg shadow text-center"></div>  
+        <!-- 座位表 -->  
+        <div id="seatingChart" class="w-full mt-8 p-6 bg-gray-100 rounded-lg shadow text-center"></div>  
+    </div>  
+
+    <script>  
+        let timer;  
+        const reminderTimes = [30, 20, 10, 5]; // 提醒时间点（分钟）  
+        const reminded = new Set(); // 已提醒的时间点  
+
+        // 新增：存储Excel解析后的学生数据  
+        let studentDataFromExcel = [];  
+
+        // 新增：文件选择处理，读取Excel  
+        document.getElementById('excelFile').addEventListener('change', handleFile, false);  
+        function handleFile(e) {  
+            const file = e.target.files[0];  
+            if (!file) return;  
+            const reader = new FileReader();  
+            reader.onload = function (evt) {  
+                const data = evt.target.result;  
+                const workbook = XLSX.read(data, { type: 'binary' });  
+                const sheetName = workbook.SheetNames[0];  
+                const sheet = workbook.Sheets[sheetName];  
+                // 读取所有行的数据  
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });  
+                // 格式：每行两列：第一列为学号，第二列为姓名  
+                studentDataFromExcel = [];  
+                for (let i = 0; i < jsonData.length; i++) {  
+                    const row = jsonData[i];  
+                    if (row.length >= 2) {  
+                        studentDataFromExcel.push({  
+                            id: String(row[0] || "").trim(),  
+                            name: String(row[1] || "").trim()  
+                        });  
+                    }  
+                }  
+                // 同步更新到“学生人数”输入框  
+                document.getElementById('studentCount').value = studentDataFromExcel.length;  
+                alert("Excel文件读取成功，学生人数：" + studentDataFromExcel.length);  
+            };  
+            reader.readAsBinaryString(file);  
+        }  
+
+        function startExam() {  
+            const subject = document.getElementById("subject").value;  
+            const startTime = new Date(document.getElementById("startTime").value);  
+            const endTime = new Date(document.getElementById("endTime").value);  
+            const now = new Date();  
+
+            if (!subject || !startTime || !endTime) {  
+                alert("请填写完整的考试信息！");  
+                return;  
+            }  
+
+            if (startTime <= now) {  
+                alert("考试开始时间必须在当前时间之后！");  
+                return;  
+            }  
+
+            if (endTime <= startTime) {  
+                alert("考试结束时间必须在开始时间之后！");  
+                return;  
+            }  
+
+            clearInterval(timer);  
+            updateInfo(subject, startTime, endTime);  
+            reminded.clear();  
+            timer = setInterval(() => updateInfo(subject, startTime, endTime), 1000);  
+        }  
+
+        function updateInfo(subject, startTime, endTime) {  
+            const now = new Date();  
+            const remainingTime = endTime - now;  
+            const remainingMinutes = Math.floor(remainingTime / 60000);  
+
+            document.getElementById("info").innerHTML = `  
+                <p><strong>当前时间：</strong>${now.toLocaleTimeString()}</p>  
+                <p><strong>考试科目：</strong>${subject}</p>  
+                <p><strong>剩余时间：</strong>${formatTime(remainingTime)}</p>  
+                <p><strong>考试开始时间：</strong>${startTime.toLocaleString()}</p>  
+                <p><strong>考试结束时间：</strong>${endTime.toLocaleString()}</p>  
+            `;  
+
+            // 语音提醒  
+            reminderTimes.forEach(minutes => {  
+                if (remainingMinutes === minutes && !reminded.has(minutes)) {  
+                    speak(`距离${subject}考试结束还剩 ${minutes} 分钟，请注意时间！`);  
+                    reminded.add(minutes);  
+                }  
+            });  
+
+            if (remainingTime <= 0) {  
+                clearInterval(timer);  
+                speak("考试结束！");  
+                document.getElementById("info").innerHTML += "<p>考试已结束。</p>";  
+            }  
+        }  
+
+        function formatTime(ms) {  
+            const totalSeconds = Math.max(0, Math.floor(ms / 1000));  
+            const hours = Math.floor(totalSeconds / 3600);  
+            const minutes = Math.floor((totalSeconds % 3600) / 60);  
+            const seconds = totalSeconds % 60;  
+
+            return `${hours} 小时 ${minutes} 分钟 ${seconds} 秒`;  
+        }  
+
+        function speak(text) {  
+            const speech = new SpeechSynthesisUtterance();  
+            speech.text = text;  
+            speech.lang = "zh-CN"; // 设置为中文  
+            window.speechSynthesis.speak(speech);  
+        }  
+
+        // 修改：生成座位安排逻辑，增加从Excel读取的学生数据及随机方式  
+        function generateSeating() {  
+            const studentCount = parseInt(document.getElementById("studentCount").value);  
+            const rowCount = parseInt(document.getElementById("rowCount").value);  
+            const columnCount = parseInt(document.getElementById("columnCount").value);  
+            const displayOption = document.querySelector('input[name="displayOption"]:checked').value;  
+            const randomType = document.querySelector('input[name="randomType"]:checked').value;  
+
+            if (!studentCount || !rowCount || !columnCount) {  
+                alert("请填写完整的座位安排信息！");  
+                return;  
+            }  
+
+            const totalSeats = rowCount * columnCount;  
+            if (studentCount > totalSeats) {  
+                alert("学生人数超过了可用座位数！");  
+                return;  
+            }  
+
+            // 如果没有选择文件或解析为空（表示未用Excel），则用默认生成的数据  
+            let seatAssignments = [];  
+            if (studentDataFromExcel.length === 0) {  
+                seatAssignments = Array.from({ length: studentCount }, (_, i) => ({  
+                    id: (i + 1).toString().padStart(2, '0'),  
+                    name: `学生${i + 1}`  
+                }));  
+            } else {  
+                seatAssignments = studentDataFromExcel.slice(0, studentCount);  
+            }  
+
+            // 随机打乱  
+            shuffleArray(seatAssignments);  
+
+            // 生成最终座位制表数据  
+            const seatingMatrix = [];  
+            let index = 0;  
+            for (let i = 0; i < rowCount; i++) {  
+                const row = [];  
+                for (let j = 0; j < columnCount; j++) {  
+                    if (index < seatAssignments.length) {  
+                        const student = seatAssignments[index++];  
+                        // 根据randomType确定显示内容  
+                        let seatLabel = "";  
+                        if (randomType === "undergraduate") {  
+                            seatLabel = student.id.slice(-3); // 学号后3位  
+                        } else if (randomType === "graduate") {  
+                            seatLabel = student.id.slice(-5); // 学号后5位  
+                        } else {  
+                            seatLabel = student.name; // 姓名  
+                        }  
+
+                        // 原有displayOption决定最终显示  
+                        // - 如选择“显示座位号”，则显示 seatLabel  
+                        // - 如选择“显示姓名”，则依然显示姓名  
+                        let finalText = displayOption === "id" ? seatLabel : student.name;  
+                        row.push({ occupied: true, text: finalText });  
+                    } else {  
+                        row.push({ occupied: false });  
+                    }  
+                }  
+                seatingMatrix.push(row);  
+            }  
+
+            renderSeatingChart(seatingMatrix);  
+        }  
+
+        function renderSeatingChart(seatingMatrix) {  
+            const seatingChartDiv = document.getElementById("seatingChart");  
+            let html = `<h2 class="text-2xl font-bold mb-4 text-blue-700">座位安排</h2><table class="mx-auto border-collapse">`;  
+            seatingMatrix.forEach(row => {  
+                html += "<tr>";  
+                row.forEach(seat => {  
+                    if (seat.occupied) {  
+                        html += `<td class="border border-gray-300 p-4 bg-green-100">${seat.text}</td>`;  
+                    } else {  
+                        html += `<td class="border border-gray-300 p-4 bg-gray-200"></td>`;  
+                    }  
+                });  
+                html += "</tr>";  
+            });  
+            html += "</table>";  
+            seatingChartDiv.innerHTML = html;  
+        }  
+
+        function shuffleArray(array) {  
+            for (let i = array.length - 1; i > 0; i--) {  
+                const j = Math.floor(Math.random() * (i + 1));  
+                [array[i], array[j]] = [array[j], array[i]];  
+            }  
+        }  
+    </script>  
+</body>  
+</html>  

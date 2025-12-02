@@ -1,0 +1,629 @@
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>人工智能学院—教室、会议室、实验室—预定系统</title>  
+    <link rel="stylesheet" href="styles.css">
+    <!-- 引入 LeanCloud SDK -->  
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
+    <script>
+    // LeanCloud 配置  
+    AV.init({  
+    appId: "PeXHg9gv4y7OXBT718FEmrZj-gzGzoHsz",  // 替换为您的 LeanCloud 应用 ID  
+    appKey: "dZH0g9anm4up0RNWL0iIqc2P", // 替换为您的 LeanCloud 应用 Key
+    serverURL: 'https://avoscloud.com' // CN 服务地域特定的 URL
+   //   masterKey: 'NN9e44P2DDaULOUxhvurUl7b' // 使用 Master Key  
+   });  
+   </script>    
+    <style>  
+body {
+        max-width: 800px; /* 限制内容最大宽度 */
+        margin: 0 auto; /* 左右边距自动，实现水平居中 */
+        padding: 20px; /* 页面内边距 */
+        font-family: Arial, sans-serif; /* 更好看的字体 */
+    }
+    
+    #app {
+        width: 100%; /* 容器宽度 */
+        box-sizing: border-box; /* 盒模型计算方式 */
+    }
+    
+    input, select {
+        width: 100%; /* 输入框和下拉框宽度 */
+        padding: 8px; /* 输入框内边距 */
+        margin-bottom: 15px; /* 底部间距 */
+        box-sizing: border-box; /* 盒模型计算方式 */
+    }
+    
+    button {
+        padding: 10px 15px; /* 按钮内边距 */
+        margin: 5px 5px 15px 0; /* 按钮外边距 */
+        background-color: #4CAF50; /* 按钮背景色 */
+        color: white; /* 按钮文字颜色 */
+        border: none; /* 移除边框 */
+        cursor: pointer; /* 鼠标样式 */
+    }    
+       
+    #booking-info {  
+        max-height: 300px; /* 设置容器的最大高度 */  
+        overflow-y: auto;  /*
+        启用垂直滚动条 */  
+        border: 1px solid #ccc; /* 为容器添加边框 */  
+        padding: 10px; /* 为容器添加内边距 */
+        margin-top: 20px; /* 顶部间距 */
+    }  
+    
+    table {  
+        width: 100%; /* 表格宽度100% */  
+        border-collapse: collapse; /* 合并边框 */  
+    }  
+    
+    th, td {  
+        border: 1px solid #ddd; /* 表格单元格边框 */  
+        padding: 8px; /* 单元格内边距 */  
+        text-align: center; /* 左对齐 */  
+    }  
+    
+    th {  
+        background-color: #f2f2f2; /* 表头背景色 */  
+    }
+    
+    h1, h2 {
+        text-align: center; /* 标题居中 */
+        color: #333; /* 标题颜色 */
+    }
+    
+    /* 高亮行样式 */
+    tr.highlight td {
+        background-color: #e6f7ff;
+        font-weight: bold;
+    }
+
+    /* 模态窗口基础样式 */
+    .modal {
+        display: none;
+        /* 默认隐藏 */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        width: 50%;
+        max-width: 600px;
+        /* 增大最大宽度，让大屏幕显示更多内容 */
+        max-height: 90vh;
+        overflow-y: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        /* 半透明背景 */
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* 模态内容样式 */
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        margin: auto;
+        /* 居中 */
+        position: relative;
+    }
+
+    .modal-content input {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    /* 其余样式保持不变 */
+    .close-modal {
+        color: #aaa !important;
+        float: right !important;
+        font-size: 28px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+    }
+
+    .close-modal:hover {
+        color: #000 !important;
+    }
+    </style>  
+</head>  
+
+<body>
+    <div id="app">  
+        <h1 style="font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif; color: #003366; text-align: center; margin: 20px 0 5px 0; padding-bottom: 8px; font-weight: 700; font-size: 2.2rem; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">人工智能学院—教室、会议室、实验室</h1>
+        <h1 style="font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif; color: #003366; text-align: center; margin: 20px 0 5px 0; padding-bottom: 8px; font-weight: 700; font-size: 2.2rem; letter-spacing: 1px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);">预定系统</h1>   
+        <div id="auth">
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">账号（邮箱）</p>   
+            <input type="email" id="email" placeholder="邮箱">
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">密码</p>   
+            <input type="password" id="password" placeholder="密码">
+            <div style="text-align: center;">  
+                <p style="color: red; font-weight: bold;">只有在注册账号时需要填写下面信息！</p>  
+            </div>  
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">姓名</p> 
+            <input type="text" id="name" placeholder="姓名">
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">工号</p>   
+            <input type="text" id="employeeId" placeholder="工号">  
+            <button onclick="register()">注册</button>  
+            <button style="background-color: #0189ff; " onclick="login()">登录</button>
+            <button style="background-color: #ff0101; " onclick="deleteUser()">注销账号</button>
+            <button style="background-color: #ffa601; " id="forgotPasswordLink">找回密码？</button>
+        </div>  
+        <div id="booking" style="display:none;">  
+            <h2>预定房间</h2>
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">日期</p>   
+            <input type="date" id="date" placeholder="时间">
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">节次</p>   
+            <select id="period" placeholder="节次">  
+                <option value="1-2">1-2</option>  
+                <option value="3-4">3-4</option>  
+                <option value="5-6">5-6</option>  
+                <option value="7-8">7-8</option>  
+                <option value="9-10">9-10</option>  
+            </select>
+            <p style="color: rgb(0, 42, 255); font-weight: bold;">房间号</p>   
+            <select id="classroom" placeholder="房间号">  
+                <option value="108--党建活动室/党员活动中心（工业智能专业学术交流室）">108--党建活动室/党员活动中心（工业智能专业学术交流室）</option>  
+                <option value="112--工业智能本科专业实验室">112--工业智能本科专业实验室</option>  
+                <option value="113--智能科学与技术本科专业实验室">113--智能科学与技术本科专业实验室</option>  
+                <option value="216--机器人工程专业学术交流室">216--机器人工程专业学术交流室</option>  
+                <option value="217--智能科学与技术专业学术交流室">217--智能科学与技术专业学术交流室</option> 
+            </select>  
+            <button onclick="bookClassroom()">预定</button>
+            <button onclick="checknow()">查看预定情况</button>
+        </div>
+        <div id="booking-info">  
+            <h2>预定情况</h2>  
+            <table id="booking-entries" border="1">  
+                <thead>  
+                    <tr>  
+                        <th>日期</th>  
+                        <th>星期</th> <!-- 新增星期列 -->  
+                        <th>节次</th>  
+                        <th>房间号</th>  
+                        <th>姓名</th>  
+                        <th>工号</th>  
+                        <th>操作</th> <!-- 新增操作列 -->  
+                    </tr>  
+                </thead>  
+                <tbody>  
+                    <!-- 预订信息将动态插入这里 -->  
+                </tbody>  
+            </table>  
+        </div>  
+    </div>
+    
+    <!-- 忘记密码模态框 -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>重置密码</h2>
+
+            <!-- 步骤1：输入邮箱 -->
+            <div id="emailVerificationStep">
+                <h2>请输入您注册时使用的邮箱</h2>
+                <form id="emailVerificationForm">
+                    <div class="form-group">
+                        <label for="resetEmail">邮箱地址</label>
+                        <input type="email" id="resetEmail" required>
+                    </div>
+                    <div id="emailError" class="error-message"></div>
+                    <button type="submit" id="sendVerificationCodeBtn">发送修改密码链接</button>
+                </form>
+            </div>
+
+            <!-- 步骤2：输入验证码 -->
+            <div id="verificationCodeStep" style="display: none;">
+                <p>修改密码的链接已发送到 <span id="maskedEmail"></span>！</p>
+                <form id="verificationCodeForm">
+                    <button type="button" id="resendCodeBtn">重新发送</button>
+                </form>
+            </div>
+        </div>
+    </div>    
+
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+            const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+            const closeModalBtn = document.querySelector('.close-modal');
+
+            // 打开忘记密码模态框  
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                forgotPasswordModal.style.display = 'block';
+                resetToEmailVerificationStep();
+            });
+
+            // 关闭模态框  
+            closeModalBtn.addEventListener('click', () => {
+                forgotPasswordModal.style.display = 'none';
+            });
+
+            // 发送验证码  
+            document.getElementById('emailVerificationForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                const emailError = document.getElementById('emailError');
+
+                // 清除之前的错误  
+                emailError.textContent = '';
+
+                try {
+                    const response = await fetch('/api/send-verification-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // 隐藏邮箱输入步骤，显示验证码输入步骤  
+                        document.getElementById('emailVerificationStep').style.display = 'none';
+                        document.getElementById('verificationCodeStep').style.display = 'block';
+                        document.getElementById('maskedEmail').textContent = data.maskedEmail;
+                    } else {
+                        emailError.textContent = data.error || '发送验证码失败';
+                    }
+                } catch (error) {
+                    console.error('发送验证码错误:', error);
+                    emailError.textContent = '网络错误，请稍后重试';
+                }
+            });
+
+            // 验证验证码  
+            document.getElementById('verificationCodeForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                const verificationCode = document.getElementById('verificationCode').value;
+                const codeError = document.getElementById('codeError');
+
+                // 清除之前的错误  
+                codeError.textContent = '';
+
+                try {
+                    const response = await fetch('/api/verify-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, verificationCode })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // 隐藏验证码输入步骤，显示重置密码步骤  
+                        document.getElementById('verificationCodeStep').style.display = 'none';
+                        document.getElementById('resetPasswordStep').style.display = 'block';
+                    } else {
+                        codeError.textContent = data.error || '验证码错误';
+                    }
+                } catch (error) {
+                    console.error('验证码验证错误:', error);
+                    codeError.textContent = '网络错误，请稍后重试';
+                }
+            });
+
+            // 重置密码  
+            document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const passwordError = document.getElementById('passwordError');
+
+                // 清除之前的错误  
+                passwordError.textContent = '';
+
+                // 密码验证  
+                if (newPassword.length < 6) {
+                    passwordError.textContent = '密码长度必须至少为6个字符';
+                    return;
+                }
+
+                if (newPassword !== confirmPassword) {
+                    passwordError.textContent = '两次输入的密码不一致';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, newPassword })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert('密码重置成功，请使用新密码登录');
+                        forgotPasswordModal.style.display = 'none';
+                    } else {
+                        passwordError.textContent = data.error || '密码重置失败';
+                    }
+                } catch (error) {
+                    console.error('重置密码错误:', error);
+                    passwordError.textContent = '网络错误，请稍后重试';
+                }
+            });
+
+            // 重新发送验证码  
+            document.getElementById('resendCodeBtn').addEventListener('click', async () => {
+                const email = document.getElementById('resetEmail').value;
+                const codeError = document.getElementById('codeError');
+
+                // 清除之前的错误  
+                codeError.textContent = '';
+
+                try {
+                    const response = await fetch('/api/resend-verification-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert('验证码已重新发送');
+                    } else {
+                        codeError.textContent = data.error || '重新发送验证码失败';
+                    }
+                } catch (error) {
+                    console.error('重新发送验证码错误:', error);
+                    codeError.textContent = '网络错误，请稍后重试';
+                }
+            });
+
+            // 重置到邮箱验证步骤的函数  
+            function resetToEmailVerificationStep() {
+                document.getElementById('emailVerificationStep').style.display = 'block';
+                document.getElementById('verificationCodeStep').style.display = 'none';
+                document.getElementById('resetPasswordStep').style.display = 'none';
+                document.getElementById('resetEmail').value = '';
+                document.getElementById('emailError').textContent = '';
+            }
+        });
+
+
+// Register function  
+function register() {  
+    const email = document.getElementById('email').value;  
+    const password = document.getElementById('password').value;  
+    const name = document.getElementById('name').value;  
+    const employeeId = document.getElementById('employeeId').value;  
+
+    const user = new AV.User();  
+    user.setUsername(email);  
+    user.setPassword(password);  
+    user.setEmail(email);  
+    user.set('name', name);  
+    user.set('employeeId', employeeId);  
+
+    user.signUp().then(() => {  
+        alert('注册成功！');  
+        document.getElementById('auth').style.display = 'none';  
+        document.getElementById('booking').style.display = 'block';  
+    }).catch(error => {  
+        alert(error.message);  
+    });  
+}
+
+
+// Login function  
+function login() {  
+    const email = document.getElementById('email').value;  
+    const password = document.getElementById('password').value;  
+
+    AV.User.logIn(email, password).then(() => {  
+        alert('登录成功！');  
+        document.getElementById('auth').style.display = 'none';  
+        document.getElementById('booking').style.display = 'block';  
+    }).catch(error => {  
+        alert(error.message);  
+    });  
+}
+
+
+// 删除用户功能  
+function deleteUser() {  
+    const email = document.getElementById('email').value;  
+    const password = document.getElementById('password').value;  
+
+    // 登录验证  
+    AV.User.logIn(email, password).then(user => {  
+        // 登录成功，确认删除  
+        const confirmDelete = confirm("确定要删除您的账户吗？操作不可撤销！");  
+        if (confirmDelete) {  
+            user.destroy().then(() => {  
+                alert('账户已成功删除！');  
+                // 清除本地界面或重定向至主页  
+                document.getElementById('auth').reset();  
+            }).catch(error => {  
+                alert('删除账户失败：' + error.message);  
+            });  
+        } else {  
+            alert('已取消删除操作。');  
+        }  
+    }).catch(error => {  
+        alert('登录失败：' + error.message);  
+    });  
+}  
+
+
+// Book classroom function  
+function bookClassroom() {  
+    const dateInput = document.getElementById('date').value;  
+    const period = document.getElementById('period').value;  
+    const classroom = document.getElementById('classroom').value;  
+    const user = AV.User.current();  
+
+    if (!user) {  
+        alert('请先登录！');  
+        return;  
+    }  
+
+    const selectedDate = new Date(dateInput);  
+    const now = new Date();  
+    
+    if (isNaN(selectedDate)) {  
+        alert('请选择一个有效的日期！');  
+        return;  
+    }  
+    
+    if (selectedDate < now.setHours(0, 0, 0, 0)) {  
+        alert('不能预定历史日期，请选择一个正确日期！');  
+        return;  
+    }  
+
+    const Booking = AV.Object.extend('Booking');  
+    const query = new AV.Query('Booking');  
+    query.equalTo('date', dateInput);  
+    query.equalTo('period', period);  
+    query.equalTo('classroom', classroom);  
+
+    query.first().then(existingBooking => {  
+        if (existingBooking) {  
+            alert('当前日期节次该房间已被预定，请重新选择！');  
+        } else {  
+            const booking = new Booking();  
+            booking.set('userId', user.id);  
+            booking.set('name', user.get('name'));  // 存储用户姓名  
+            booking.set('employeeId', user.get('employeeId'));  // 存储员工 ID  
+            booking.set('date', dateInput);  
+            booking.set('period', period);  
+            booking.set('classroom', classroom);  
+
+            booking.save().then(() => {
+                checknow();  
+                alert('房间预定成功！');  
+            }).catch(error => {  
+                alert(error.message);  
+            });  
+        }  
+    }).catch(error => {  
+        alert('检查房间预定冲突时出错：' + error.message);  
+    });  
+}
+
+// 查看预定情况
+function checknow() {  
+    const bookingTableBody = document.getElementById('booking-entries').querySelector('tbody');  
+    if (!bookingTableBody) {  
+        console.error('Element not found: #booking-entries tbody');  
+        return;  
+    }  
+    bookingTableBody.innerHTML = ''; // 清空当前表格内容  
+
+    const now = new Date();  
+    now.setHours(0, 0, 0, 0); // 设定为当天的零点以避免时间误差  
+    const query = new AV.Query('Booking');
+    
+    query.limit(1000); // 增加结果数量上限
+    query.ascending('date'); // 确保按日期排序
+
+    // 获取当前用户
+    const currentUser = AV.User.current();
+    const currentUserId = currentUser ? currentUser.id : null;
+
+
+    query.greaterThanOrEqualTo('date', now.toISOString().split('T')[0]);  
+    query.find().then(results => {  
+        if (results.length === 0) {  
+            alert('没有找到相关预定数据。');  
+            return;  
+        }  
+        const bookings = results.map(booking => {  
+            const attributes = booking.attributes;  
+            return {  
+                id: booking.id,  
+                ...attributes  
+            };  
+        });  
+
+        bookings.sort((a, b) => new Date(a.date) - new Date(b.date));  
+
+        let currentDisplayDate = '';  
+        bookings.forEach(booking => {  
+            console.log('Processing booking:', booking);  
+            const formattedDate = new Date(booking.date).toISOString().split('T')[0]; // 格式化日期  
+
+            if (formattedDate !== currentDisplayDate) {  
+                currentDisplayDate = formattedDate;  
+                const dateRow = document.createElement('tr');  
+                dateRow.className = 'highlight';  
+                dateRow.innerHTML = `<td colspan="7">${formattedDate} (${getWeekday(booking.date)})</td>`;  
+                bookingTableBody.appendChild(dateRow);  
+            }  
+
+           // 检查当前用户是否是预订人
+            const isBookingOwner = currentUserId && booking.userId === currentUserId;
+            
+            // 根据用户权限决定操作列内容
+            const actionCell = isBookingOwner 
+                ? `<button onclick="deleteBooking('${booking.id}')" style="background-color: #ff0101;" >删除</button>`
+                : `<span>无权限!</span>`;
+
+
+
+            const row = document.createElement('tr');  
+            row.innerHTML = `  
+                <td>${formattedDate}</td>  
+                <td>${getWeekday(booking.date)}</td>  
+                <td>${booking.period}</td>  
+                <td>${booking.classroom}</td>  
+                <td>${booking.name}</td>  <!-- 显示用户姓名 -->  
+                <td>${booking.employeeId}</td>  <!-- 显示员工 ID -->  
+                <td>${actionCell}</td>  
+            `;  
+            bookingTableBody.appendChild(row);  
+        });  
+    }).catch(error => {  
+        alert('获取预定信息失败：' + error.message);  
+    });  
+}  
+
+
+// 删除预定  
+function deleteBooking(bookingId) {  
+    const user = AV.User.current();  
+    if (!user) {  
+        alert('请先登录！');  
+        return;  
+    }  
+
+    const booking = AV.Object.createWithoutData('Booking', bookingId);  
+    booking.fetch().then(() => {  
+        if (booking.get('userId') === user.id) {  
+            return booking.destroy().then(() => {  
+                alert('预定删除成功！');  
+                checknow();  
+            });  
+        } else {  
+            alert('你没有权限删除此预定！');  
+        }  
+    }).catch(error => {  
+        alert('删除失败：' + error.message);  
+    });  
+}  
+
+// 辅助函数：获取日期的星期几  
+function getWeekday(dateString) {  
+    const date = new Date(dateString);  
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];  
+    return weekdays[date.getUTCDay()];  
+}
+
+</script>
+
+</body>  
+</html>
