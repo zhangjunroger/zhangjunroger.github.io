@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>沈阳工业大学-人工智能学院-教研成果采集平台</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- LeanCloud JS SDK -->
+  <script src="https://unpkg.com/leancloud-storage@4.15.2/dist/av-min.js"></script>
+
+  <!-- SheetJS（Excel 导出） -->
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root{ --app-bg:#f4f6fb; }
+    body{ background:var(--app-bg); }
+    .app-topbar{ background:linear-gradient(90deg,#0b1220 0%,#101c33 100%); }
+    .app-brand-badge{
+      width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+      border-radius:12px;background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);font-weight:700;
+    }
+    .card{ border:0; box-shadow:0 12px 30px rgba(2,6,23,.08); }
+    .table thead th{ white-space:nowrap; }
+    .nowrap{ white-space:nowrap; }
+    .muted-hint{ color:rgba(255,255,255,.70); }
+    .auth-wrap{ max-width:560px; }
+    .truncate-2{
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    }
+    .file-url{ font-size:12px; color:#6c757d; }
+  </style>
+</head>
+
+<body>
+  <!-- Top bar -->
+  <div class="app-topbar text-white">
+    <div class="container-fluid px-3 px-md-4 py-3">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-3">
+          <div class="app-brand-badge">教研</div>
+          <div>
+            <div class="fw-semibold fs-5">沈阳工业大学-人工智能学院-教研成果采集平台</div>
+            <div class="small muted-hint">科研 / 教学 / 其它成果</div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <div id="whoami" class="small text-white-50"></div>
+
+          <button id="btnGoChangePwd" class="btn btn-sm btn-outline-light d-none">
+            <i class="bi bi-shield-lock me-1"></i>修改密码
+          </button>
+
+          <button id="btnLogout" class="btn btn-sm btn-outline-light d-none">
+            <i class="bi bi-box-arrow-right me-1"></i>退出
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="position-fixed top-0 end-0 p-3" style="z-index:1080">
+    <div id="liveToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div id="toastBody" class="toast-body">提示</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config alert -->
+  <div class="container-fluid px-3 px-md-4 pt-3">
+    <div id="cfgWarn" class="alert alert-warning d-none mb-0"></div>
+  </div>
+
+  <!-- Auth Panel -->
+  <section id="authPanel" class="container-fluid px-3 px-md-4 py-4">
+    <div class="mx-auto auth-wrap">
+      <div class="text-center mb-3">
+        <div class="fw-semibold fs-4">欢迎使用</div>
+        <div class="text-secondary small">请登录后进入系统</div>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-4 p-md-4">
+
+          <!-- Login -->
+          <div class="authView" id="viewLogin">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="fw-semibold">登录</div>
+              <span class="badge text-bg-light border text-secondary">教师/管理员</span>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">用户名</label>
+              <input id="loginUsername" class="form-control" placeholder="工号/拼音">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">密码</label>
+              <input id="loginPassword" type="password" class="form-control" placeholder="请输入密码">
+            </div>
+
+            <button id="btnLogin" class="btn btn-primary w-100">
+              <i class="bi bi-box-arrow-in-right me-1"></i>登录
+            </button>
+            <div id="loginMsg" class="small mt-2"></div>
+
+            <div class="d-flex justify-content-between mt-3">
+              <button class="btn btn-link px-0" id="goRegister">注册账号</button>
+              <button class="btn btn-link px-0" id="goForgot">找回密码（邮箱）</button>
+            </div>
+          </div>
+
+          <!-- Register -->
+          <div class="authView d-none" id="viewRegister">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="fw-semibold">注册（默认教师）</div>
+              <button class="btn btn-sm btn-outline-secondary" id="backToLogin1">
+                <i class="bi bi-arrow-left me-1"></i>返回
+              </button>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">用户名</label>
+              <input id="regUsername" class="form-control" placeholder="至少 3 位">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">密码</label>
+              <input id="regPassword" type="password" class="form-control" placeholder="至少 6 位">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">姓名（可选）</label>
+              <input id="regDisplayName" class="form-control" placeholder="张三">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">邮箱（必填，用于找回密码）</label>
+              <input id="regEmail" type="email" class="form-control" placeholder="name@example.com" required>
+            </div>
+
+            <button id="btnRegister" class="btn btn-dark w-100">
+              <i class="bi bi-person-plus me-1"></i>注册并登录
+            </button>
+            <div id="regMsg" class="small mt-2"></div>
+
+            <div class="small text-secondary mt-3">
+              注册后默认 <code>role=teacher</code>。如需管理员，请在 LeanCloud 控制台把该用户的 <code>role</code> 改为 <code>admin</code>。
+            </div>
+          </div>
+
+          <!-- Forgot password -->
+          <div class="authView d-none" id="viewForgot">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="fw-semibold">找回密码（邮箱重置）</div>
+              <button class="btn btn-sm btn-outline-secondary" id="backToLogin2">
+                <i class="bi bi-arrow-left me-1"></i>返回
+              </button>
+            </div>
+
+            <div class="alert alert-warning small">
+              将向该邮箱发送重置密码邮件。请确保注册时填写过邮箱且可正常收信。
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">邮箱</label>
+              <input id="fpEmail" type="email" class="form-control" placeholder="name@example.com">
+            </div>
+            <button id="btnForgot" class="btn btn-primary w-100">
+              <i class="bi bi-envelope me-1"></i>发送重置邮件
+            </button>
+            <div id="fpMsg" class="small mt-2"></div>
+          </div>
+
+          <!-- Change password -->
+          <div class="authView d-none" id="viewChangePwd">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="fw-semibold">修改密码（已登录）</div>
+              <button class="btn btn-sm btn-outline-secondary" id="backToLogin3">
+                <i class="bi bi-arrow-left me-1"></i>返回
+              </button>
+            </div>
+
+            <div class="alert alert-info small">
+              修改密码需要先处于登录状态。修改成功后会要求重新登录。
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">旧密码</label>
+              <input id="cpOld" type="password" class="form-control" placeholder="请输入旧密码">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">新密码</label>
+              <input id="cpNew" type="password" class="form-control" placeholder="至少 6 位">
+            </div>
+
+            <button id="btnChangePwd" class="btn btn-primary w-100">
+              <i class="bi bi-shield-lock me-1"></i>确认修改
+            </button>
+            <div id="cpMsg" class="small mt-2"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Panel -->
+  <section id="appPanel" class="container-fluid px-3 px-md-4 py-4 d-none">
+    <!-- Quick stats -->
+    <div class="row g-3 mb-3 align-items-stretch">
+      <div class="col-12 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-secondary small">当前范围</div>
+            <div id="scopeHint" class="fw-semibold mt-1">教师：仅显示本人数据</div>
+            <div id="roleHint" class="small text-secondary mt-2"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-secondary small">当前列表</div>
+            <div class="d-flex align-items-end gap-2 mt-1">
+              <div id="statCount" class="fw-semibold" style="font-size:34px;line-height:1;">0</div>
+              <div class="text-secondary mb-1">条</div>
+            </div>
+            <div class="text-secondary small mt-2" id="count">共 0 条</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="text-secondary small">操作</div>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              <button id="btnNew" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>新增成果
+              </button>
+              <button id="btnRefresh" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise me-1"></i>搜索
+              </button>
+
+              <div class="btn-group">
+                <button id="btnExportXlsx" class="btn btn-success">
+                  <i class="bi bi-file-earmark-excel me-1"></i>导出 Excel
+                </button>
+                <button id="btnExportCsv" class="btn btn-outline-success">
+                  <i class="bi bi-filetype-csv me-1"></i>导出 CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="text-secondary small mt-2">
+              导出为“当前列表”（包含筛选/搜索结果）。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-lg-6">
+            <label class="form-label">搜索</label>
+            <input id="q" class="form-control" placeholder="标题 / 期刊 / 等级 / 类别 / 来源 / 姓名 / 时间…（回车搜索）">
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label">年度</label>
+            <input id="year" class="form-control" placeholder="例如：2025（回车搜索）">
+          </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label">大类</label>
+            <select id="domain" class="form-select">
+              <option value="">全部</option>
+              <option value="科研类">科研类</option>
+              <option value="教学类">教学类</option>
+              <option value="其它">其它</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div id="formWrap" class="card mb-3 d-none">
+      <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <div>
+          <div id="formTitle" class="fw-semibold">新增成果</div>
+          <div class="small text-secondary">请尽量填写完整字段，便于检索与统计。</div>
+        </div>
+        <button id="btnCloseForm" class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>关闭
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12 col-lg-8">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">大类</label>
+                <select id="fDomain" class="form-select">
+                  <option value="科研类">科研类</option>
+                  <option value="教学类">教学类</option>
+                  <option value="其它">其它</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">小类</label>
+                <select id="fType" class="form-select"></select>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">获批/发表时间</label>
+                <input id="fDate" type="date" class="form-control">
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">年度</label>
+                <input id="fYear" class="form-control" placeholder="自动从日期提取，可修改">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">名称</label>
+                <input id="fTitle" class="form-control" placeholder="必填：项目/论文/成果名称">
+              </div>
+
+              <!-- 项目来源 -->
+              <div class="col-12 d-none" id="fieldProjectSource">
+                <label class="form-label">项目来源</label>
+                <input id="fProjectSource" class="form-control" placeholder="例如：国家自然科学基金/省科技厅/校内项目…">
+              </div>
+
+              <!-- 论文 -->
+              <div class="col-12 d-none" id="fieldJournal">
+                <label class="form-label">期刊名称</label>
+                <input id="fJournal" class="form-control" placeholder="论文类填写">
+              </div>
+
+              <div class="col-12 col-md-6 d-none" id="fieldIndexLevel">
+                <label class="form-label">检索级别</label>
+                <select id="fIndexLevel" class="form-select">
+                  <option value="">请选择</option>
+                  <option value="中科院一区">中科院一区</option>
+                  <option value="中科院二区">中科院二区</option>
+                  <option value="中科院三区">中科院三区</option>
+                  <option value="中科院四区">中科院四区</option>
+                  <option value="JCR一区">JCR一区</option>
+                  <option value="JCR二区">JCR二区</option>
+                  <option value="JCR三区">JCR三区</option>
+                  <option value="JCR四区">JCR四区</option>
+                  <option value="EI">EI</option>
+                  <option value="SSCI">SSCI</option>
+                  <option value="CSSCI">CSSCI</option>
+                  <option value="中文核心">中文核心</option>
+                  <option value="其它">其它</option>
+                </select>
+              </div>
+
+              <!-- 项目等级 -->
+              <div class="col-12 col-md-6 d-none" id="fieldProjectLevel">
+                <label class="form-label">等级</label>
+                <select id="fLevel" class="form-select">
+                  <option value="">请选择</option>
+                  <option value="国家级">国家级</option>
+                  <option value="省部级">省部级</option>
+                  <option value="市级">市级</option>
+                  <option value="校级">校级</option>
+                  <option value="其它">其它</option>
+                </select>
+              </div>
+
+              <div class="col-12 d-none" id="fieldCategory">
+                <label class="form-label">类别</label>
+                <input id="fCategory" class="form-control" placeholder="其它类填写：平台/教材/专利/获奖…">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">备注</label>
+                <textarea id="fNote" class="form-control" rows="3" placeholder="编号、作者排序、项目编号等"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="border rounded-3 p-3">
+              <div class="fw-semibold">附件</div>
+              <div class="small text-secondary mt-1">附件保存到云端，可多选上传。</div>
+
+              <input id="fFiles" type="file" multiple class="form-control mt-3">
+              <div id="fileList" class="mt-3 vstack gap-2"></div>
+
+              <div class="d-flex gap-2 mt-3">
+                <button id="btnSave" class="btn btn-primary flex-fill">
+                  <i class="bi bi-check2-circle me-1"></i>保存
+                </button>
+                <button id="btnDelete" class="btn btn-danger d-none">
+                  <i class="bi bi-trash3 me-1"></i>删除
+                </button>
+              </div>
+
+              <div id="formMsg" class="small mt-2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="card">
+      <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <div>
+          <div class="fw-semibold">成果列表</div>
+          <div id="loadingHint" class="small text-secondary d-none">加载中…</div>
+        </div>
+        <div class="small text-secondary">最多显示 1000 条</div>
+      </div>
+
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="nowrap">时间</th>
+                <th class="nowrap">年度</th>
+                <th class="nowrap">姓名</th>
+                <th class="nowrap">大类</th>
+                <th class="nowrap">小类</th>
+                <th style="min-width:360px;">名称</th>
+                <th style="min-width:240px;">期刊/类别/来源</th>
+                <th class="nowrap">等级/检索</th>
+                <th style="min-width:240px;">附件</th>
+                <th class="nowrap">操作</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="emptyState" class="p-5 text-center d-none">
+          <div class="fw-semibold">暂无数据</div>
+          <div class="text-secondary small mt-1">请点击“新增成果”开始录入，或调整筛选条件。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<script>
+/** ======================
+ *  1) LeanCloud 配置
+ *  ====================== */
+const LC = {
+  APP_ID: "F7OuPCY5PstTmFBeMB6708qQ-gzGzoHsz",
+  APP_KEY: "F31DpzZVgnFAS3nYeqDbmiNu",
+  SERVER_URL: "https://f7oupcy5.lc-cn-n1-shared.com"
+};
+
+/** ======================
+ *  2) 工具/状态
+ *  ====================== */
+let currentUser = null;
+let editingId = null;
+let cachedRows = [];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return (s ?? "").toString().replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toYearFromDate(dateStr){
+  if(!dateStr) return "";
+  const y = new Date(dateStr).getFullYear();
+  return Number.isFinite(y) ? String(y) : "";
+}
+function setMsg(el, text, ok=true){
+  if(!el) return;
+  el.textContent = text || "";
+  el.className = "small mt-2 " + (ok ? "text-success" : "text-danger");
+}
+function toast(text){
+  $("toastBody").textContent = text || "提示";
+  const t = bootstrap.Toast.getOrCreateInstance($("liveToast"), { delay: 2500 });
+  t.show();
+}
+function requireConfig(){
+  const missing = [];
+  if(!LC.APP_ID) missing.push("APP_ID");
+  if(!LC.APP_KEY) missing.push("APP_KEY");
+
+  if(missing.length){
+    $("cfgWarn").classList.remove("d-none");
+    $("cfgWarn").innerHTML = `请先配置 LeanCloud：缺少 <b>${missing.join(", ")}</b>`;
+    return false;
+  }
+  if(!LC.SERVER_URL || LC.SERVER_URL.includes("avoscloud.com")){
+    $("cfgWarn").classList.remove("d-none");
+    $("cfgWarn").innerHTML = `<b>SERVER_URL 配置不正确：</b><code>${esc(LC.SERVER_URL||"")}</code><br>请改成控制台的 Server URL（形如：<code>https://xxxx.lc-cn-n1-shared.com</code>）。`;
+    return false;
+  }
+  return true;
+}
+
+/** ======================
+ *  3) 初始化 AV
+ *  ====================== */
+if(requireConfig()){
+  AV.init({ appId: LC.APP_ID, appKey: LC.APP_KEY, serverURL: LC.SERVER_URL });
+}
+
+/** ======================
+ *  4) 角色：从 _User.role 读取
+ *  ====================== */
+function getRoleOf(user){
+  const role = ((user?.get?.("role") || "teacher") + "").toLowerCase();
+  const isAdmin = (role === "admin" || role === "administrator");
+  const label = isAdmin ? "管理员" : "教师";
+  return { role, isAdmin, label };
+}
+
+/** ======================
+ *  5) Auth 视图切换
+ *  ====================== */
+function showAuthView(id){
+  document.querySelectorAll(".authView").forEach(v=>v.classList.add("d-none"));
+  $(id).classList.remove("d-none");
+  ["loginMsg","regMsg","fpMsg","cpMsg"].forEach(x=>{
+    const el=$(x); if(el){ el.textContent=""; el.className="small mt-2"; }
+  });
+}
+$("goRegister").onclick = ()=>showAuthView("viewRegister");
+$("goForgot").onclick = ()=>showAuthView("viewForgot");
+$("backToLogin1").onclick = $("backToLogin2").onclick = $("backToLogin3").onclick = ()=>showAuthView("viewLogin");
+
+$("btnGoChangePwd").onclick = ()=>{
+  showAuthView("viewChangePwd");
+  $("authPanel").classList.remove("d-none");
+  $("appPanel").classList.add("d-none");
+};
+
+/** ======================
+ *  6) 类型 & 字段展示
+ *  ====================== */
+const TYPE_OPTIONS = {
+  "科研类": ["项目", "论文", "其它"],
+  "教学类": ["教改项目", "教改论文", "教学成果奖", "其它"],
+  "其它": ["其它"]
+};
+
+function refreshTypeOptions(){
+  const d = $("fDomain").value;
+  const sel = $("fType");
+  sel.innerHTML = "";
+  (TYPE_OPTIONS[d] || ["其它"]).forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t; opt.textContent = t;
+    sel.appendChild(opt);
+  });
+  applyFieldVisibility();
+}
+
+function applyFieldVisibility(){
+  const type = $("fType").value;
+  const isPaper = (type === "论文" || type === "教改论文");
+  const isProject = (type === "项目" || type === "教改项目");
+
+  $("fieldJournal").classList.toggle("d-none", !isPaper);
+  $("fieldIndexLevel").classList.toggle("d-none", !isPaper);
+
+  $("fieldProjectSource").classList.toggle("d-none", !isProject);
+  $("fieldProjectLevel").classList.toggle("d-none", !isProject);
+
+  const showCategory = (type === "其它" || $("fDomain").value === "其它" || type === "教学成果奖");
+  $("fieldCategory").classList.toggle("d-none", !showCategory);
+}
+
+/** ======================
+ *  7) 数据表
+ *  ====================== */
+const Achievement = AV.Object.extend("Achievement");
+
+/** ======================
+ *  8) Session UI
+ *  ====================== */
+async function updateSessionUI(){
+  currentUser = AV.User.current();
+  if(currentUser){
+    $("authPanel").classList.add("d-none");
+    $("appPanel").classList.remove("d-none");
+    $("btnLogout").classList.remove("d-none");
+    $("btnGoChangePwd").classList.remove("d-none");
+
+    const uname = currentUser.getUsername();
+    const dname = (currentUser.get("displayName") || "").trim();
+
+    const { isAdmin, label } = getRoleOf(currentUser);
+
+    // 顶部显示：用户名（姓名）（教师/管理员）
+    $("whoami").textContent = `当前用户：${uname}${dname ? `（${dname}）` : ""}（${label}）`;
+
+    // 面板提示跟随角色变化
+    $("roleHint").textContent = isAdmin ? "当前权限：管理员" : "当前权限：教师";
+    $("scopeHint").textContent = isAdmin ? "管理员：可查看全部数据" : "教师：仅显示本人数据";
+
+    await refreshList();
+  }else{
+    $("authPanel").classList.remove("d-none");
+    $("appPanel").classList.add("d-none");
+    $("btnLogout").classList.add("d-none");
+    $("btnGoChangePwd").classList.add("d-none");
+    $("whoami").textContent = "";
+    showAuthView("viewLogin");
+  }
+}
+
+/** ======================
+ *  9) Auth：登录/注册/退出/找回/改密
+ *  ====================== */
+$("btnRegister").addEventListener("click", async () => {
+  try{
+    if(!requireConfig()) return;
+    const username = $("regUsername").value.trim();
+    const password = $("regPassword").value;
+    const displayName = $("regDisplayName").value.trim();
+    const email = $("regEmail").value.trim();
+
+    if(username.length < 3) return setMsg($("regMsg"), "用户名至少 3 位。", false);
+    if((password||"").length < 6) return setMsg($("regMsg"), "密码至少 6 位。", false);
+    if(!email) return setMsg($("regMsg"), "邮箱为必填，用于找回密码。", false);
+
+    const u = new AV.User();
+    u.setUsername(username);
+    u.setPassword(password);
+    if(displayName) u.set("displayName", displayName);
+    u.setEmail(email);
+
+    // ✅ 默认写入 _User 字段：teacher（字段标记）
+    u.set("role", "teacher");
+    u.set("isTeacher", true);
+
+    await u.signUp();
+    setMsg($("regMsg"), "注册成功，已自动登录。", true);
+    toast("注册成功");
+    await updateSessionUI();
+  }catch(e){
+    console.error(e);
+    setMsg($("regMsg"), e.message || "注册失败。", false);
+  }
+});
+
+$("btnLogin").addEventListener("click", async () => {
+  try{
+    if(!requireConfig()) return;
+    const username = $("loginUsername").value.trim();
+    const password = $("loginPassword").value;
+
+    await AV.User.logIn(username, password);
+    // ✅ 关键：拉取最新 user 字段（避免 role/displayName 还是旧缓存）
+    await AV.User.current().fetch();
+
+    setMsg($("loginMsg"), "登录成功。", true);
+    toast("登录成功");
+    await updateSessionUI();
+  }catch(e){
+    console.error(e);
+    setMsg($("loginMsg"), e.message || "登录失败。", false);
+  }
+});
+
+$("btnLogout").addEventListener("click", async () => {
+  await AV.User.logOut();
+  toast("已退出登录");
+  await updateSessionUI();
+});
+
+$("btnForgot").addEventListener("click", async ()=>{
+  try{
+    if(!requireConfig()) return;
+    const email = $("fpEmail").value.trim();
+    if(!email) return setMsg($("fpMsg"), "请输入邮箱。", false);
+
+    await AV.User.requestPasswordReset(email);
+    setMsg($("fpMsg"), "已发送重置邮件，请查收。", true);
+    toast("重置邮件已发送");
+  }catch(e){
+    console.error(e);
+    setMsg($("fpMsg"), e.message || "发送失败。", false);
+  }
+});
+
+$("btnChangePwd").addEventListener("click", async ()=>{
+  try{
+    const u = AV.User.current();
+    if(!u) return setMsg($("cpMsg"), "请先登录后再修改密码。", false);
+
+    const oldPwd = $("cpOld").value;
+    const newPwd = $("cpNew").value;
+    if((newPwd||"").length < 6) return setMsg($("cpMsg"), "新密码至少 6 位。", false);
+
+    await AV.User.logIn(u.getUsername(), oldPwd);
+
+    const user = AV.User.current();
+    user.setPassword(newPwd);
+    await user.save();
+
+    setMsg($("cpMsg"), "密码修改成功，请重新登录。", true);
+    toast("密码已修改，请重新登录");
+    await AV.User.logOut();
+    await updateSessionUI();
+    showAuthView("viewLogin");
+  }catch(e){
+    console.error(e);
+    setMsg($("cpMsg"), e.message || "修改失败。", false);
+  }
+});
+
+$("backToLogin3").onclick = async ()=>{
+  const u = AV.User.current();
+  if(u){
+    $("authPanel").classList.add("d-none");
+    $("appPanel").classList.remove("d-none");
+  }else{
+    showAuthView("viewLogin");
+  }
+};
+
+/** ======================
+ *  10) 表单
+ *  ====================== */
+$("btnNew").addEventListener("click", () => openFormForNew());
+$("btnCloseForm").addEventListener("click", () => closeForm());
+$("fDomain").addEventListener("change", () => refreshTypeOptions());
+$("fType").addEventListener("change", () => applyFieldVisibility());
+$("fDate").addEventListener("change", () => { if(!$("fYear").value.trim()) $("fYear").value = toYearFromDate($("fDate").value); });
+
+function resetForm(){
+  editingId = null;
+  $("formTitle").textContent = "新增成果";
+  $("btnDelete").classList.add("d-none");
+  $("formMsg").textContent = "";
+  $("formMsg").className = "small mt-2";
+
+  $("fDomain").value = "科研类";
+  refreshTypeOptions();
+
+  $("fDate").value = "";
+  $("fYear").value = "";
+  $("fTitle").value = "";
+
+  $("fProjectSource").value = "";
+
+  $("fJournal").value = "";
+  $("fIndexLevel").value = "";
+  $("fLevel").value = "";
+  $("fCategory").value = "";
+  $("fNote").value = "";
+
+  $("fFiles").value = "";
+  $("fileList").innerHTML = "";
+}
+
+function openFormForNew(){
+  resetForm();
+  $("formWrap").classList.remove("d-none");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function closeForm(){
+  $("formWrap").classList.add("d-none");
+}
+
+function renderExistingFiles(files){
+  const wrap = $("fileList");
+  wrap.innerHTML = "";
+  (files || []).forEach((f, idx) => {
+    const url = f.url;
+    const name = f.name || ("附件" + (idx+1));
+    const row = document.createElement("div");
+    row.className = "d-flex align-items-start justify-content-between gap-2 border rounded-3 p-2";
+    row.innerHTML = `
+      <div class="min-w-0">
+        <div class="small fw-semibold text-truncate" title="${esc(name)}">${esc(name)}</div>
+        <div class="file-url text-truncate" title="${esc(url)}">${esc(url)}</div>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary" href="${esc(url)}" target="_blank" rel="noreferrer">
+        <i class="bi bi-box-arrow-up-right me-1"></i>打开
+      </a>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+async function uploadFiles(fileInput){
+  const files = Array.from(fileInput.files || []);
+  const out = [];
+  for(const f of files){
+    const lcFile = new AV.File(f.name, f);
+    await lcFile.save();
+    out.push({ name: lcFile.get("name"), url: lcFile.url(), objectId: lcFile.id });
+  }
+  return out;
+}
+
+$("btnSave").addEventListener("click", async () => {
+  try{
+    setMsg($("formMsg"), "保存中…", true);
+    const u = AV.User.current();
+    if(!u) return setMsg($("formMsg"), "未登录。", false);
+
+    const domain = $("fDomain").value;
+    const type = $("fType").value;
+    const date = $("fDate").value || null;
+    const year = ($("fYear").value.trim() || toYearFromDate(date) || "").trim();
+    const title = $("fTitle").value.trim();
+
+    const projectSource = $("fProjectSource").value.trim();
+
+    const journal = $("fJournal").value.trim();
+    const indexLevel = $("fIndexLevel").value;
+    const level = $("fLevel").value;
+    const category = $("fCategory").value.trim();
+    const note = $("fNote").value.trim();
+
+    if(!title) return setMsg($("formMsg"), "名称为必填。", false);
+
+    const { isAdmin } = getRoleOf(u);
+
+    let obj;
+    if(editingId){
+      obj = await new AV.Query("Achievement").get(editingId);
+
+      // ✅ 管理员可编辑全部；教师仅能编辑本人
+      if(!isAdmin && obj.get("ownerId") !== u.id) return setMsg($("formMsg"), "无权限编辑他人数据。", false);
+    }else{
+      obj = new Achievement();
+      obj.set("ownerId", u.id);
+      obj.set("ownerUsername", u.getUsername());
+      obj.set("ownerDisplayName", u.get("displayName") || "");
+      // ✅ 不设置对象 ACL（按你的要求：简单；但注意这不是安全隔离）
+    }
+
+    const oldFiles = obj.get("files") || [];
+    const newFiles = await uploadFiles($("fFiles"));
+    const mergedFiles = oldFiles.concat(newFiles);
+
+    obj.set("domain", domain);
+    obj.set("type", type);
+    obj.set("date", date);
+    obj.set("year", year);
+    obj.set("title", title);
+
+    obj.set("projectSource", projectSource);
+
+    obj.set("journal", journal);
+    obj.set("indexLevel", indexLevel);
+    obj.set("level", level);
+    obj.set("category", category);
+    obj.set("note", note);
+    obj.set("files", mergedFiles);
+
+    await obj.save();
+    setMsg($("formMsg"), "保存成功。", true);
+    toast("保存成功");
+    closeForm();
+    await refreshList();
+  }catch(e){
+    console.error(e);
+    setMsg($("formMsg"), e.message || "保存失败。", false);
+  }
+});
+
+$("btnDelete").addEventListener("click", async () => {
+  try{
+    if(!editingId) return;
+    const u = AV.User.current();
+    const { isAdmin } = getRoleOf(u);
+
+    const obj = await new AV.Query("Achievement").get(editingId);
+
+    // ✅ 管理员可删全部；教师仅能删本人
+    if(!isAdmin && obj.get("ownerId") !== u.id) return setMsg($("formMsg"), "无权限删除他人数据。", false);
+
+    await obj.destroy();
+    toast("已删除");
+    closeForm();
+    await refreshList();
+  }catch(e){
+    console.error(e);
+    setMsg($("formMsg"), e.message || "删除失败。", false);
+  }
+});
+
+/** ======================
+ *  11) 列表/检索：教师仅查本人；管理员查全部
+ *  ====================== */
+$("btnRefresh").addEventListener("click", refreshList);
+$("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") refreshList(); });
+$("year").addEventListener("keydown", (e)=>{ if(e.key==="Enter") refreshList(); });
+$("domain").addEventListener("change", refreshList);
+
+async function refreshList(){
+  const u = AV.User.current();
+  if(!u) return;
+
+  const { isAdmin } = getRoleOf(u);
+
+  $("loadingHint").classList.remove("d-none");
+  $("emptyState").classList.add("d-none");
+  $("tbody").innerHTML = "";
+
+  const keyword = $("q").value.trim();
+  const year = $("year").value.trim();
+  const domain = $("domain").value;
+
+  try{
+    let rows = [];
+
+    if(keyword){
+      const fields = ["title","journal","indexLevel","level","category","projectSource","ownerUsername","ownerDisplayName","date","year","type","domain","note"];
+      const qs = fields.map(field=>{
+        const sub = new AV.Query("Achievement");
+        if(!isAdmin) sub.equalTo("ownerId", u.id);
+        if(domain) sub.equalTo("domain", domain);
+        if(year) sub.equalTo("year", year);
+        sub.contains(field, keyword);
+        return sub;
+      });
+      const orQ = AV.Query.or(...qs);
+      orQ.descending("createdAt");
+      orQ.limit(1000);
+      rows = await orQ.find();
+    }else{
+      const query = new AV.Query("Achievement");
+      if(!isAdmin) query.equalTo("ownerId", u.id);
+      if(domain) query.equalTo("domain", domain);
+      if(year) query.equalTo("year", year);
+      query.descending("createdAt");
+      query.limit(1000);
+      rows = await query.find();
+    }
+
+    cachedRows = rows;
+    renderRows(rows);
+  }catch(e){
+    console.error(e);
+    toast("加载失败：" + (e.message || "未知错误"));
+    cachedRows = [];
+    renderRows([]);
+  }finally{
+    $("loadingHint").classList.add("d-none");
+  }
+}
+
+function renderRows(rows){
+  $("statCount").textContent = String(rows.length);
+  $("count").textContent = `共 ${rows.length} 条`;
+
+  const tb = $("tbody");
+  tb.innerHTML = "";
+
+  if(!rows.length){
+    $("emptyState").classList.remove("d-none");
+    return;
+  }
+
+  for(const obj of rows){
+    const date = obj.get("date") || "";
+    const year = obj.get("year") || "";
+    const owner = obj.get("ownerDisplayName") || obj.get("ownerUsername") || "";
+    const domain = obj.get("domain") || "";
+    const type = obj.get("type") || "";
+    const title = obj.get("title") || "";
+
+    const projectSource = obj.get("projectSource") || "";
+    const journal = obj.get("journal") || "";
+    const category = obj.get("category") || "";
+
+    let mid = "";
+    if(type === "论文" || type === "教改论文"){
+      mid = journal || "";
+    }else if(type === "项目" || type === "教改项目"){
+      mid = projectSource || "";
+    }else{
+      mid = category || "";
+    }
+
+    const levelOrIndex = obj.get("level") || obj.get("indexLevel") || "";
+    const files = obj.get("files") || [];
+
+    const fileLinks = files.slice(0,3).map((f,i)=> {
+      const nm = esc(f.name || ("附件"+(i+1)));
+      const url = esc(f.url || "");
+      return `<a href="${url}" target="_blank" rel="noreferrer" class="link-primary text-decoration-underline">${nm}</a>`;
+    }).join("<br/>") + (files.length>3 ? `<div class="small text-secondary mt-1">…等 ${files.length} 个</div>` : "");
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="nowrap">${esc(date)}</td>
+      <td class="nowrap">${esc(year)}</td>
+      <td class="nowrap">${esc(owner)}</td>
+      <td class="nowrap">${esc(domain)}</td>
+      <td class="nowrap">${esc(type)}</td>
+      <td>
+        <div class="fw-semibold">${esc(title)}</div>
+        ${obj.get("note") ? `<div class="small text-secondary truncate-2 mt-1">${esc(obj.get("note"))}</div>` : ""}
+      </td>
+      <td>${esc(mid)}</td>
+      <td class="nowrap">${esc(levelOrIndex)}</td>
+      <td>${fileLinks || "<span class='text-secondary small'>无</span>"}</td>
+      <td class="nowrap">
+        <button class="btn btn-sm btn-outline-primary btnEdit" data-id="${esc(obj.id)}">
+          <i class="bi bi-pencil-square me-1"></i>编辑
+        </button>
+      </td>
+    `;
+    tb.appendChild(tr);
+  }
+
+  tb.querySelectorAll(".btnEdit").forEach(btn=>{
+    btn.addEventListener("click", ()=> openFormForEdit(btn.dataset.id));
+  });
+}
+
+async function openFormForEdit(id){
+  const obj = await new AV.Query("Achievement").get(id);
+  const u = AV.User.current();
+  const { isAdmin } = getRoleOf(u);
+
+  if(!isAdmin && obj.get("ownerId") !== u.id){
+    toast("无权限编辑他人数据");
+    return;
+  }
+
+  editingId = id;
+  $("formTitle").textContent = "编辑成果";
+  $("btnDelete").classList.remove("d-none");
+  $("formWrap").classList.remove("d-none");
+
+  $("fDomain").value = obj.get("domain") || "科研类";
+  refreshTypeOptions();
+  $("fType").value = obj.get("type") || $("fType").value;
+  applyFieldVisibility();
+
+  $("fDate").value = obj.get("date") || "";
+  $("fYear").value = obj.get("year") || "";
+  $("fTitle").value = obj.get("title") || "";
+
+  $("fProjectSource").value = obj.get("projectSource") || "";
+
+  $("fJournal").value = obj.get("journal") || "";
+  $("fIndexLevel").value = obj.get("indexLevel") || "";
+  $("fLevel").value = obj.get("level") || "";
+  $("fCategory").value = obj.get("category") || "";
+  $("fNote").value = obj.get("note") || "";
+
+  $("fFiles").value = "";
+  renderExistingFiles(obj.get("files") || []);
+  setMsg($("formMsg"), "可新增附件（会追加，不会覆盖旧附件）。", true);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/** ======================
+ *  12) 导出：Excel + CSV
+ *  ====================== */
+function safeFileName(s){ return (s || "导出").replace(/[\\/:*?"<>|]/g, "_"); }
+
+$("btnExportXlsx").addEventListener("click", async () => {
+  const btn = $("btnExportXlsx");
+  const old = btn.innerHTML;
+
+  try{
+    if(typeof XLSX === "undefined" || !XLSX?.utils){
+      toast("Excel 组件未加载（XLSX）。可用 CSV 导出或检查网络。");
+      return;
+    }
+
+    const rows = cachedRows || [];
+    if(!rows.length){ toast("当前列表没有数据可导出。"); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span>导出中…`;
+
+    const data = rows.map(obj => ({
+      "时间": obj.get("date") || "",
+      "年度": obj.get("year") || "",
+      "姓名": obj.get("ownerDisplayName") || obj.get("ownerUsername") || "",
+      "用户名": obj.get("ownerUsername") || "",
+      "大类": obj.get("domain") || "",
+      "小类": obj.get("type") || "",
+      "名称": obj.get("title") || "",
+      "项目来源": obj.get("projectSource") || "",
+      "期刊名称": obj.get("journal") || "",
+      "检索级别": obj.get("indexLevel") || "",
+      "等级": obj.get("level") || "",
+      "类别": obj.get("category") || "",
+      "备注": obj.get("note") || "",
+      "附件数量": (obj.get("files") || []).length,
+      "附件链接": (obj.get("files") || []).map(f => f.url).join(" ; ")
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws["!cols"] = [
+      { wch:12 }, { wch:8 }, { wch:10 }, { wch:12 },
+      { wch:10 }, { wch:10 }, { wch:36 }, { wch:22 },
+      { wch:22 }, { wch:12 }, { wch:12 }, { wch:14 },
+      { wch:28 }, { wch:8 }, { wch:50 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "成果");
+
+    const y = $("year").value.trim();
+    const d = $("domain").value || "全部";
+    const fname = safeFileName(`教研成果_${d}_${y || "全部年度"}_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+    XLSX.writeFile(wb, fname);
+    toast("已导出 Excel");
+  }catch(e){
+    console.error(e);
+    toast("导出失败：" + (e.message || "未知错误"));
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = old;
+  }
+});
+
+$("btnExportCsv").addEventListener("click", () => {
+  const rows = cachedRows || [];
+  if(!rows.length){ toast("当前列表没有数据可导出。"); return; }
+
+  const header = ["时间","年度","姓名","用户名","大类","小类","名称","项目来源","期刊名称","检索级别","等级","类别","备注","附件数量","附件链接"];
+  const lines = [header];
+
+  for(const obj of rows){
+    const row = [
+      obj.get("date") || "",
+      obj.get("year") || "",
+      obj.get("ownerDisplayName") || obj.get("ownerUsername") || "",
+      obj.get("ownerUsername") || "",
+      obj.get("domain") || "",
+      obj.get("type") || "",
+      obj.get("title") || "",
+      obj.get("projectSource") || "",
+      obj.get("journal") || "",
+      obj.get("indexLevel") || "",
+      obj.get("level") || "",
+      obj.get("category") || "",
+      obj.get("note") || "",
+      String((obj.get("files") || []).length),
+      (obj.get("files") || []).map(f => f.url).join(" ; ")
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`);
+    lines.push(row);
+  }
+
+  const csv = "\uFEFF" + lines.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = safeFileName(`教研成果_${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("已导出 CSV");
+});
+
+/** ======================
+ *  13) 启动
+ *  ====================== */
+refreshTypeOptions();
+updateSessionUI();
+</script>
+</body>
+</html>
