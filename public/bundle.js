@@ -91,6 +91,9 @@ var app = (function () {
             attr(node, prop, value);
         }
     }
+    function xlink_attr(node, attribute, value) {
+        node.setAttributeNS('http://www.w3.org/1999/xlink', attribute, value);
+    }
     function to_number(value) {
         return value === '' ? null : +value;
     }
@@ -1917,7 +1920,7 @@ var app = (function () {
     		c: function create() {
     			div1 = element("div");
     			div0 = element("div");
-    			t0 = text("Input (");
+    			t0 = text("输入 (");
     			t1 = text(t1_value);
     			t2 = text(", ");
     			t3 = text(t3_value);
@@ -1932,7 +1935,7 @@ var app = (function () {
     			t8 = space();
     			div4 = element("div");
     			div3 = element("div");
-    			t9 = text("Output (");
+    			t9 = text("输出 (");
     			t10 = text(t10_value);
     			t11 = text(", ");
     			t12 = text(t12_value);
@@ -1944,11 +1947,11 @@ var app = (function () {
     			attr_dev(div1, "class", "column has-text-centered svelte-gz7a6i");
     			add_location(div1, file$2, 105, 0, 3977);
     			attr_dev(div2, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div2, file$2, 114, 0, 4416);
+    			add_location(div2, file$2, 114, 0, 4413);
     			attr_dev(div3, "class", "header-text");
-    			add_location(div3, file$2, 122, 2, 4961);
+    			add_location(div3, file$2, 122, 2, 4958);
     			attr_dev(div4, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div4, file$2, 121, 0, 4920);
+    			add_location(div4, file$2, 121, 0, 4917);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -2467,7 +2470,7 @@ var app = (function () {
     			div9 = element("div");
     			div5 = element("div");
     			div0 = element("div");
-    			div0.textContent = "Convolution";
+    			div0.textContent = "卷积";
     			t1 = space();
     			div4 = element("div");
     			div1 = element("div");
@@ -2486,39 +2489,39 @@ var app = (function () {
     			t6 = space();
     			div7 = element("div");
     			span = element("span");
-    			span.textContent = "Hover over";
-    			t8 = text(" the matrices to change kernel position.");
+    			span.textContent = "悬停";
+    			t8 = text("在矩阵上以改变卷积核位置。");
     			attr_dev(div0, "class", "title-text svelte-1j8mhv0");
     			add_location(div0, file$3, 132, 8, 2833);
     			attr_dev(i0, "class", "fas fa-info-circle");
-    			add_location(i0, file$3, 138, 12, 3033);
+    			add_location(i0, file$3, 138, 12, 3024);
     			attr_dev(div1, "class", "control-button svelte-1j8mhv0");
     			attr_dev(div1, "title", "Jump to article section");
-    			add_location(div1, file$3, 137, 10, 2936);
+    			add_location(div1, file$3, 137, 10, 2927);
     			attr_dev(div2, "class", "play-button control-button svelte-1j8mhv0");
     			attr_dev(div2, "title", "Play animation");
-    			add_location(div2, file$3, 141, 10, 3096);
+    			add_location(div2, file$3, 141, 10, 3087);
     			attr_dev(i1, "class", "fas control-icon fa-times-circle");
-    			add_location(i1, file$3, 148, 12, 3455);
+    			add_location(i1, file$3, 148, 12, 3446);
     			attr_dev(div3, "class", "delete-button control-button svelte-1j8mhv0");
     			attr_dev(div3, "title", "Close");
-    			add_location(div3, file$3, 147, 10, 3362);
+    			add_location(div3, file$3, 147, 10, 3353);
     			attr_dev(div4, "class", "buttons svelte-1j8mhv0");
-    			add_location(div4, file$3, 136, 8, 2904);
+    			add_location(div4, file$3, 136, 8, 2895);
     			attr_dev(div5, "class", "control-pannel svelte-1j8mhv0");
     			add_location(div5, file$3, 130, 6, 2795);
     			attr_dev(div6, "class", "container is-centered svelte-1j8mhv0");
-    			add_location(div6, file$3, 153, 6, 3556);
+    			add_location(div6, file$3, 153, 6, 3547);
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/pointer.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "pointer icon");
     			attr_dev(img, "class", "svelte-1j8mhv0");
-    			add_location(img, file$3, 162, 8, 3950);
+    			add_location(img, file$3, 162, 8, 3941);
     			set_style(span, "font-weight", "600");
-    			add_location(span, file$3, 164, 10, 4063);
+    			add_location(span, file$3, 164, 10, 4054);
     			attr_dev(div7, "class", "annotation-text");
-    			add_location(div7, file$3, 163, 8, 4023);
+    			add_location(div7, file$3, 163, 8, 4014);
     			attr_dev(div8, "class", "annotation svelte-1j8mhv0");
-    			add_location(div8, file$3, 161, 6, 3917);
+    			add_location(div8, file$3, 161, 6, 3908);
     			attr_dev(div9, "class", "box svelte-1j8mhv0");
     			add_location(div9, file$3, 128, 4, 2770);
     			attr_dev(div10, "class", "container svelte-1j8mhv0");
@@ -2980,7 +2983,7 @@ var app = (function () {
     		c: function create() {
     			div1 = element("div");
     			div0 = element("div");
-    			t0 = text("Input (");
+    			t0 = text("输入 (");
     			t1 = text(t1_value);
     			t2 = text(", ");
     			t3 = text(t3_value);
@@ -2999,7 +3002,7 @@ var app = (function () {
     			t10 = space();
     			div4 = element("div");
     			div3 = element("div");
-    			t11 = text("Output (");
+    			t11 = text("输出 (");
     			t12 = text(t12_value);
     			t13 = text(", ");
     			t14 = text(t14_value);
@@ -3010,13 +3013,13 @@ var app = (function () {
     			add_location(div0, file$4, 85, 2, 3124);
     			attr_dev(div1, "class", "column has-text-centered svelte-gz7a6i");
     			add_location(div1, file$4, 84, 0, 3083);
-    			add_location(span, file$4, 92, 2, 3491);
+    			add_location(span, file$4, 92, 2, 3488);
     			attr_dev(div2, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div2, file$4, 91, 0, 3450);
+    			add_location(div2, file$4, 91, 0, 3447);
     			attr_dev(div3, "class", "header-text");
-    			add_location(div3, file$4, 106, 2, 3993);
+    			add_location(div3, file$4, 106, 2, 3990);
     			attr_dev(div4, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div4, file$4, 105, 0, 3952);
+    			add_location(div4, file$4, 105, 0, 3949);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -3413,7 +3416,7 @@ var app = (function () {
     			div9 = element("div");
     			div5 = element("div");
     			div0 = element("div");
-    			div0.textContent = "ReLU Activation";
+    			div0.textContent = "ReLU激活函数";
     			t1 = space();
     			div4 = element("div");
     			div1 = element("div");
@@ -3432,39 +3435,40 @@ var app = (function () {
     			t6 = space();
     			div7 = element("div");
     			span = element("span");
-    			span.textContent = "Hover over";
-    			t8 = text(" the matrices to change pixel.");
+    			span.textContent = "悬停";
+    			t8 = text(" 在矩阵上可改变像素。");
     			attr_dev(div0, "class", "title-text svelte-1lq7956");
     			add_location(div0, file$5, 100, 8, 1810);
     			attr_dev(i0, "class", "fas fa-info-circle");
-    			add_location(i0, file$5, 107, 12, 2015);
+    			add_location(i0, file$5, 107, 12, 2008);
     			attr_dev(div1, "class", "control-button svelte-1lq7956");
     			attr_dev(div1, "title", "Jump to article section");
-    			add_location(div1, file$5, 106, 10, 1918);
+    			add_location(div1, file$5, 106, 10, 1911);
     			attr_dev(div2, "class", "play-button control-button svelte-1lq7956");
     			attr_dev(div2, "title", "Play animation");
-    			add_location(div2, file$5, 110, 10, 2078);
+    			add_location(div2, file$5, 110, 10, 2071);
     			attr_dev(i1, "class", "fas control-icon fa-times-circle");
-    			add_location(i1, file$5, 117, 14, 2439);
+    			add_location(i1, file$5, 117, 14, 2432);
     			attr_dev(div3, "class", "delete-button control-button svelte-1lq7956");
     			attr_dev(div3, "title", "Close");
-    			add_location(div3, file$5, 116, 10, 2344);
+    			add_location(div3, file$5, 116, 10, 2337);
     			attr_dev(div4, "class", "buttons svelte-1lq7956");
-    			add_location(div4, file$5, 104, 8, 1885);
+    			add_location(div4, file$5, 104, 8, 1878);
     			attr_dev(div5, "class", "control-pannel svelte-1lq7956");
     			add_location(div5, file$5, 98, 6, 1772);
     			attr_dev(div6, "class", "container is-centered is-vcentered svelte-1lq7956");
-    			add_location(div6, file$5, 123, 6, 2541);
+    			add_location(div6, file$5, 123, 6, 2534);
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/pointer.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "pointer icon");
     			attr_dev(img, "class", "svelte-1lq7956");
-    			add_location(img, file$5, 130, 8, 2806);
+    			add_location(img, file$5, 130, 8, 2799);
     			set_style(span, "font-weight", "600");
-    			add_location(span, file$5, 132, 10, 2919);
+    			set_style(span, "color", "blue");
+    			add_location(span, file$5, 132, 10, 2912);
     			attr_dev(div7, "class", "annotation-text");
-    			add_location(div7, file$5, 131, 8, 2879);
+    			add_location(div7, file$5, 131, 8, 2872);
     			attr_dev(div8, "class", "annotation svelte-1lq7956");
-    			add_location(div8, file$5, 129, 6, 2773);
+    			add_location(div8, file$5, 129, 6, 2766);
     			attr_dev(div9, "class", "box svelte-1lq7956");
     			add_location(div9, file$5, 96, 4, 1747);
     			attr_dev(div10, "class", "container svelte-1lq7956");
@@ -3857,7 +3861,7 @@ var app = (function () {
     		c: function create() {
     			div1 = element("div");
     			div0 = element("div");
-    			t0 = text("Input (");
+    			t0 = text("输入 (");
     			t1 = text(t1_value);
     			t2 = text(", ");
     			t3 = text(t3_value);
@@ -3874,7 +3878,7 @@ var app = (function () {
     			t9 = space();
     			div4 = element("div");
     			div3 = element("div");
-    			t10 = text("Output (");
+    			t10 = text("输出 (");
     			t11 = text(t11_value);
     			t12 = text(", ");
     			t13 = text(t13_value);
@@ -3885,13 +3889,13 @@ var app = (function () {
     			add_location(div0, file$6, 99, 2, 3722);
     			attr_dev(div1, "class", "column has-text-centered svelte-gz7a6i");
     			add_location(div1, file$6, 98, 0, 3681);
-    			add_location(span, file$6, 107, 2, 4103);
+    			add_location(span, file$6, 107, 2, 4100);
     			attr_dev(div2, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div2, file$6, 106, 0, 4062);
+    			add_location(div2, file$6, 106, 0, 4059);
     			attr_dev(div3, "class", "header-text");
-    			add_location(div3, file$6, 118, 2, 4553);
+    			add_location(div3, file$6, 118, 2, 4550);
     			attr_dev(div4, "class", "column has-text-centered svelte-gz7a6i");
-    			add_location(div4, file$6, 117, 0, 4512);
+    			add_location(div4, file$6, 117, 0, 4509);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -4364,7 +4368,7 @@ var app = (function () {
     			div9 = element("div");
     			div5 = element("div");
     			div0 = element("div");
-    			div0.textContent = "Max Pooling";
+    			div0.textContent = "最大池化";
     			t1 = space();
     			div4 = element("div");
     			div1 = element("div");
@@ -4383,39 +4387,39 @@ var app = (function () {
     			t6 = space();
     			div7 = element("div");
     			span = element("span");
-    			span.textContent = "Hover over";
-    			t8 = text(" the matrices to change kernel position.");
+    			span.textContent = "悬停";
+    			t8 = text("在矩阵上以改变卷积核位置。");
     			attr_dev(div0, "class", "title-text svelte-kahisg");
     			add_location(div0, file$7, 160, 8, 3597);
     			attr_dev(i0, "class", "fas fa-info-circle");
-    			add_location(i0, file$7, 167, 12, 3798);
+    			add_location(i0, file$7, 167, 12, 3791);
     			attr_dev(div1, "class", "control-button svelte-kahisg");
     			attr_dev(div1, "title", "Jump to article section");
-    			add_location(div1, file$7, 166, 10, 3701);
+    			add_location(div1, file$7, 166, 10, 3694);
     			attr_dev(div2, "class", "play-button control-button svelte-kahisg");
     			attr_dev(div2, "title", "Play animation");
-    			add_location(div2, file$7, 170, 10, 3861);
+    			add_location(div2, file$7, 170, 10, 3854);
     			attr_dev(i1, "class", "fas control-icon fa-times-circle");
-    			add_location(i1, file$7, 177, 12, 4220);
+    			add_location(i1, file$7, 177, 12, 4213);
     			attr_dev(div3, "class", "delete-button control-button svelte-kahisg");
     			attr_dev(div3, "title", "Close");
-    			add_location(div3, file$7, 176, 10, 4127);
+    			add_location(div3, file$7, 176, 10, 4120);
     			attr_dev(div4, "class", "buttons svelte-kahisg");
-    			add_location(div4, file$7, 164, 8, 3668);
+    			add_location(div4, file$7, 164, 8, 3661);
     			attr_dev(div5, "class", "control-pannel svelte-kahisg");
     			add_location(div5, file$7, 158, 6, 3553);
     			attr_dev(div6, "class", "container is-centered is-vcentered svelte-kahisg");
-    			add_location(div6, file$7, 183, 6, 4322);
+    			add_location(div6, file$7, 183, 6, 4315);
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/pointer.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "pointer icon");
     			attr_dev(img, "class", "svelte-kahisg");
-    			add_location(img, file$7, 191, 8, 4662);
+    			add_location(img, file$7, 191, 8, 4655);
     			set_style(span, "font-weight", "600");
-    			add_location(span, file$7, 193, 12, 4779);
+    			add_location(span, file$7, 193, 12, 4772);
     			attr_dev(div7, "class", "annotation-text");
-    			add_location(div7, file$7, 192, 10, 4737);
+    			add_location(div7, file$7, 192, 10, 4730);
     			attr_dev(div8, "class", "annotation svelte-kahisg");
-    			add_location(div8, file$7, 190, 6, 4629);
+    			add_location(div8, file$7, 190, 6, 4622);
     			attr_dev(div9, "class", "box svelte-kahisg");
     			add_location(div9, file$7, 156, 4, 3528);
     			attr_dev(div10, "class", "container svelte-kahisg");
@@ -4792,7 +4796,7 @@ var app = (function () {
     			i1 = element("i");
     			t1 = space();
     			div3 = element("div");
-    			t2 = text("Softmax Score for ");
+    			t2 = text("Softmax分数对于 ");
     			i2 = element("i");
     			t3 = text("\"");
     			t4 = text(/*outputName*/ ctx[0]);
@@ -4805,8 +4809,8 @@ var app = (function () {
     			t8 = space();
     			div4 = element("div");
     			span = element("span");
-    			span.textContent = "Hover over";
-    			t10 = text(" the numbers to highlight logit circles.");
+    			span.textContent = "悬停";
+    			t10 = text("在数值上以突出显示神经元。");
     			attr_dev(i0, "class", "fas fa-info-circle");
     			add_location(i0, file$8, 261, 8, 6863);
     			attr_dev(div0, "class", "control-button svelte-1uac4ng");
@@ -4819,24 +4823,24 @@ var app = (function () {
     			add_location(div1, file$8, 264, 6, 6918);
     			attr_dev(div2, "class", "buttons svelte-1uac4ng");
     			add_location(div2, file$8, 259, 4, 6742);
-    			add_location(i2, file$8, 270, 24, 7134);
+    			add_location(i2, file$8, 270, 18, 7128);
     			attr_dev(div3, "class", "title-text svelte-1uac4ng");
     			add_location(div3, file$8, 269, 4, 7085);
     			attr_dev(svg_1, "id", "softmax-svg");
     			attr_dev(svg_1, "width", "470");
     			attr_dev(svg_1, "height", "105");
     			attr_dev(svg_1, "class", "svelte-1uac4ng");
-    			add_location(svg_1, file$8, 273, 4, 7172);
+    			add_location(svg_1, file$8, 273, 4, 7166);
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/pointer.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "pointer icon");
     			attr_dev(img, "class", "svelte-1uac4ng");
-    			add_location(img, file$8, 276, 6, 7257);
+    			add_location(img, file$8, 276, 6, 7251);
     			set_style(span, "font-weight", "600");
-    			add_location(span, file$8, 278, 8, 7366);
+    			add_location(span, file$8, 278, 8, 7360);
     			attr_dev(div4, "class", "annotation-text");
-    			add_location(div4, file$8, 277, 6, 7328);
+    			add_location(div4, file$8, 277, 6, 7322);
     			attr_dev(div5, "class", "annotation svelte-1uac4ng");
-    			add_location(div5, file$8, 275, 4, 7226);
+    			add_location(div5, file$8, 275, 4, 7220);
     			attr_dev(div6, "class", "box svelte-1uac4ng");
     			add_location(div6, file$8, 257, 2, 6719);
     			attr_dev(div7, "class", "container");
@@ -5270,7 +5274,7 @@ var app = (function () {
     			div7 = element("div");
     			header = element("header");
     			p = element("p");
-    			p.textContent = "Add Input Image";
+    			p.textContent = "新增输入图像";
     			t2 = space();
     			button0 = element("button");
     			t3 = space();
@@ -5294,7 +5298,7 @@ var app = (function () {
     			i1 = element("i");
     			t9 = space();
     			span2 = element("span");
-    			span2.textContent = "Upload";
+    			span2.textContent = "上传";
     			t11 = space();
     			footer = element("footer");
     			div5 = element("div");
@@ -5302,78 +5306,78 @@ var app = (function () {
     			t13 = space();
     			div6 = element("div");
     			button1 = element("button");
-    			button1.textContent = "Cancel";
+    			button1.textContent = "取消";
     			t15 = space();
     			button2 = element("button");
-    			button2.textContent = "Add";
+    			button2.textContent = "新增";
     			t17 = space();
     			img = element("img");
     			attr_dev(div0, "class", "modal-background");
-    			add_location(div0, file$9, 151, 4, 3288);
+    			add_location(div0, file$9, 151, 4, 3219);
     			attr_dev(p, "class", "modal-card-title svelte-1o5lxfe");
-    			add_location(p, file$9, 155, 8, 3426);
+    			add_location(p, file$9, 155, 8, 3357);
     			attr_dev(button0, "class", "delete");
     			attr_dev(button0, "aria-label", "close");
-    			add_location(button0, file$9, 156, 8, 3482);
+    			add_location(button0, file$9, 156, 8, 3404);
     			attr_dev(header, "class", "modal-card-head svelte-1o5lxfe");
-    			add_location(header, file$9, 154, 6, 3385);
+    			add_location(header, file$9, 154, 6, 3316);
     			attr_dev(input0, "class", "input small-font svelte-1o5lxfe");
     			attr_dev(input0, "type", "url");
-    			attr_dev(input0, "placeholder", "Paste URL of image...");
-    			add_location(input0, file$9, 164, 12, 3746);
+    			attr_dev(input0, "placeholder", "粘贴图像URL...");
+    			add_location(input0, file$9, 164, 12, 3668);
     			attr_dev(i0, "class", "fas fa-link");
-    			add_location(i0, file$9, 169, 14, 3944);
+    			add_location(i0, file$9, 169, 14, 3855);
     			attr_dev(span0, "class", "icon small-font is-left svelte-1o5lxfe");
-    			add_location(span0, file$9, 168, 12, 3891);
+    			add_location(span0, file$9, 168, 12, 3802);
     			attr_dev(div1, "class", "control has-icons-left svelte-1o5lxfe");
     			toggle_class(div1, "is-loading", /*showLoading*/ ctx[3]);
-    			add_location(div1, file$9, 161, 10, 3653);
+    			add_location(div1, file$9, 161, 10, 3575);
     			attr_dev(div2, "class", "or-label svelte-1o5lxfe");
-    			add_location(div2, file$9, 174, 10, 4021);
+    			add_location(div2, file$9, 174, 10, 3932);
     			attr_dev(input1, "class", "file-input");
     			attr_dev(input1, "type", "file");
     			attr_dev(input1, "name", "image");
     			attr_dev(input1, "accept", ".png,.jpeg,.tiff,.jpg,.png");
-    			add_location(input1, file$9, 178, 14, 4135);
+    			add_location(input1, file$9, 178, 14, 4046);
     			attr_dev(i1, "class", "fas fa-upload");
-    			add_location(i1, file$9, 184, 18, 4422);
+    			add_location(i1, file$9, 184, 18, 4333);
     			attr_dev(span1, "class", "file-icon");
-    			add_location(span1, file$9, 183, 16, 4379);
+    			add_location(span1, file$9, 183, 16, 4290);
     			attr_dev(span2, "class", "file-label");
-    			add_location(span2, file$9, 186, 16, 4492);
+    			add_location(span2, file$9, 186, 16, 4403);
     			attr_dev(span3, "class", "file-cta small-font svelte-1o5lxfe");
-    			add_location(span3, file$9, 182, 14, 4328);
+    			add_location(span3, file$9, 182, 14, 4239);
     			attr_dev(label, "class", "file-label");
-    			add_location(label, file$9, 177, 12, 4094);
+    			add_location(label, file$9, 177, 12, 4005);
     			attr_dev(div3, "class", "file");
-    			add_location(div3, file$9, 176, 10, 4063);
+    			add_location(div3, file$9, 176, 10, 3974);
     			attr_dev(div4, "class", "field svelte-1o5lxfe");
-    			add_location(div4, file$9, 160, 8, 3623);
+    			add_location(div4, file$9, 160, 8, 3545);
     			attr_dev(section, "class", "modal-card-body");
-    			add_location(section, file$9, 159, 6, 3581);
+    			add_location(section, file$9, 159, 6, 3503);
     			attr_dev(div5, "class", "error-message svelte-1o5lxfe");
     			toggle_class(div5, "hidden", !/*errorInfo*/ ctx[5].show);
-    			add_location(div5, file$9, 199, 8, 4710);
+    			add_location(div5, file$9, 199, 8, 4617);
     			attr_dev(button1, "class", "button is-smaller svelte-1o5lxfe");
-    			add_location(button1, file$9, 205, 10, 4872);
+    			add_location(button1, file$9, 205, 10, 4779);
     			attr_dev(button2, "class", "button is-success is-smaller svelte-1o5lxfe");
-    			add_location(button2, file$9, 210, 10, 4993);
+    			add_location(button2, file$9, 210, 10, 4896);
     			attr_dev(div6, "class", "button-container");
-    			add_location(div6, file$9, 204, 8, 4831);
+    			add_location(div6, file$9, 204, 8, 4738);
     			attr_dev(footer, "class", "modal-card-foot svelte-1o5lxfe");
-    			add_location(footer, file$9, 197, 6, 4668);
+    			add_location(footer, file$9, 197, 6, 4575);
     			attr_dev(div7, "class", "modal-card svelte-1o5lxfe");
-    			add_location(div7, file$9, 153, 4, 3354);
+    			add_location(div7, file$9, 153, 4, 3285);
     			attr_dev(div8, "class", "modal");
     			attr_dev(div8, "id", "input-modal");
     			toggle_class(div8, "is-active", /*modalInfo*/ ctx[6].show);
-    			add_location(div8, file$9, 147, 2, 3205);
+    			add_location(div8, file$9, 147, 2, 3136);
     			set_style(img, "display", "none");
     			attr_dev(img, "id", "vali-image");
     			attr_dev(img, "alt", "hidden image");
-    			add_location(img, file$9, 223, 2, 5236);
+    			add_location(img, file$9, 223, 2, 5138);
     			attr_dev(div9, "class", "modal-component");
-    			add_location(div9, file$9, 144, 0, 3143);
+    			add_location(div9, file$9, 144, 0, 3074);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -5503,14 +5507,7 @@ var app = (function () {
     		$$invalidate(3, showLoading = false);
 
     		$$invalidate(5, errorInfo.show = true, errorInfo);
-
-    		$$invalidate(
-    			5,
-    			errorInfo.error = usingURL
-    			? "We can't find the image at that URL."
-    			: "Not a valid image file.",
-    			errorInfo
-    		);
+    		$$invalidate(5, errorInfo.error = usingURL ? " URL地址无图片" : "非法图片文件", errorInfo);
     	};
 
     	const loadCallback = () => {
@@ -5540,7 +5537,7 @@ var app = (function () {
     			$$invalidate(3, showLoading = false);
 
     			$$invalidate(5, errorInfo.show = true, errorInfo);
-    			$$invalidate(5, errorInfo.error = "No permission to load this image.", errorInfo);
+    			$$invalidate(5, errorInfo.error = "非法加载此图片。", errorInfo);
     		}
     	};
 
@@ -6072,7 +6069,7 @@ var app = (function () {
     			div6 = element("div");
     			div2 = element("div");
     			div0 = element("div");
-    			t0 = text("Input (");
+    			t0 = text("输入 (");
     			t1 = text(t1_value);
     			t2 = text(", ");
     			t3 = text(t3_value);
@@ -6080,7 +6077,7 @@ var app = (function () {
     			br = element("br");
     			t5 = space();
     			div1 = element("div");
-    			t6 = text("After-padding (");
+    			t6 = text("补0后 (");
     			t7 = text(t7_value);
     			t8 = text(", ");
     			t9 = text(t9_value);
@@ -6090,7 +6087,7 @@ var app = (function () {
     			t12 = space();
     			div5 = element("div");
     			div3 = element("div");
-    			t13 = text("Output (");
+    			t13 = text("输出 (");
     			t14 = text(t14_value);
     			t15 = text(", ");
     			t16 = text(t16_value);
@@ -6100,20 +6097,20 @@ var app = (function () {
     			div4.textContent = " ";
     			t20 = space();
     			create_component(hyperparameterdataview1.$$.fragment);
-    			add_location(br, file$b, 107, 73, 3648);
+    			add_location(br, file$b, 107, 70, 3645);
     			attr_dev(div0, "class", "header-text svelte-w25jpk");
     			add_location(div0, file$b, 106, 4, 3549);
     			attr_dev(div1, "class", "header-sub-text svelte-w25jpk");
-    			add_location(div1, file$b, 109, 4, 3669);
+    			add_location(div1, file$b, 109, 4, 3666);
     			attr_dev(div2, "class", "column has-text-centered svelte-w25jpk");
     			add_location(div2, file$b, 105, 2, 3506);
     			attr_dev(div3, "class", "header-text svelte-w25jpk");
     			set_style(div3, "padding-top", "27px");
-    			add_location(div3, file$b, 116, 4, 4023);
+    			add_location(div3, file$b, 116, 4, 4010);
     			attr_dev(div4, "class", "header-sub-text svelte-w25jpk");
-    			add_location(div4, file$b, 119, 4, 4139);
+    			add_location(div4, file$b, 119, 4, 4122);
     			attr_dev(div5, "class", "column has-text-centered svelte-w25jpk");
-    			add_location(div5, file$b, 115, 2, 3980);
+    			add_location(div5, file$b, 115, 2, 3967);
     			attr_dev(div6, "class", "wrapper svelte-w25jpk");
     			add_location(div6, file$b, 104, 0, 3482);
     		},
@@ -6604,7 +6601,7 @@ var app = (function () {
     			div2 = element("div");
     			div1 = element("div");
     			label0 = element("label");
-    			label0.textContent = "Input Size:";
+    			label0.textContent = "输入大小:";
     			t2 = space();
     			input0 = element("input");
     			t3 = space();
@@ -6614,7 +6611,7 @@ var app = (function () {
     			div5 = element("div");
     			div4 = element("div");
     			label1 = element("label");
-    			label1.textContent = "Padding:";
+    			label1.textContent = "补0:";
     			t6 = space();
     			input2 = element("input");
     			t7 = space();
@@ -6624,7 +6621,7 @@ var app = (function () {
     			div8 = element("div");
     			div7 = element("div");
     			label2 = element("label");
-    			label2.textContent = "Kernel Size:";
+    			label2.textContent = "卷积核大小:";
     			t10 = space();
     			input4 = element("input");
     			t11 = space();
@@ -6634,7 +6631,7 @@ var app = (function () {
     			div11 = element("div");
     			div10 = element("div");
     			label3 = element("label");
-    			label3.textContent = "Stride:";
+    			label3.textContent = "步长:";
     			t14 = space();
     			input6 = element("input");
     			t15 = space();
@@ -6648,8 +6645,8 @@ var app = (function () {
     			t18 = space();
     			div14 = element("div");
     			span = element("span");
-    			span.textContent = "Hover over";
-    			t20 = text(" the matrices to change kernel position.");
+    			span.textContent = "悬停";
+    			t20 = text("在矩阵上可改变卷积核位置。");
     			attr_dev(div0, "class", "control-button svelte-159efdy");
     			add_location(div0, file$c, 151, 6, 3082);
     			attr_dev(label0, "class", "label svelte-159efdy");
@@ -6660,86 +6657,87 @@ var app = (function () {
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "min", /*kernelSize*/ ctx[1]);
     			attr_dev(input0, "max", input0_max_value = 7);
-    			add_location(input0, file$c, 165, 12, 3564);
+    			add_location(input0, file$c, 165, 12, 3558);
     			attr_dev(div2, "class", "field is-horizontal svelte-159efdy");
     			add_location(div2, file$c, 161, 10, 3396);
     			attr_dev(input1, "type", "range");
     			attr_dev(input1, "min", /*kernelSize*/ ctx[1]);
     			attr_dev(input1, "max", input1_max_value = 7);
     			attr_dev(input1, "class", "svelte-159efdy");
-    			add_location(input1, file$c, 169, 10, 3704);
+    			add_location(input1, file$c, 169, 10, 3698);
     			attr_dev(div3, "class", "input-row");
     			add_location(div3, file$c, 160, 8, 3362);
     			attr_dev(label1, "class", "label svelte-159efdy");
-    			add_location(label1, file$c, 176, 14, 3939);
+    			add_location(label1, file$c, 176, 14, 3933);
     			attr_dev(div4, "class", "field-label is-normal svelte-159efdy");
-    			add_location(div4, file$c, 175, 12, 3889);
+    			add_location(div4, file$c, 175, 12, 3883);
     			attr_dev(input2, "class", "input is-very-small svelte-159efdy");
     			attr_dev(input2, "type", "number");
     			attr_dev(input2, "min", input2_min_value = 0);
     			attr_dev(input2, "max", input2_max_value = /*kernelSize*/ ctx[1] - 1);
-    			add_location(input2, file$c, 178, 12, 4008);
+    			add_location(input2, file$c, 178, 12, 3997);
     			attr_dev(div5, "class", "field is-horizontal svelte-159efdy");
-    			add_location(div5, file$c, 174, 10, 3843);
+    			add_location(div5, file$c, 174, 10, 3837);
     			attr_dev(input3, "type", "range");
     			attr_dev(input3, "min", input3_min_value = 0);
     			attr_dev(input3, "max", input3_max_value = /*kernelSize*/ ctx[1] - 1);
     			attr_dev(input3, "class", "svelte-159efdy");
-    			add_location(input3, file$c, 182, 10, 4150);
+    			add_location(input3, file$c, 182, 10, 4139);
     			attr_dev(div6, "class", "input-row");
-    			add_location(div6, file$c, 173, 8, 3809);
+    			add_location(div6, file$c, 173, 8, 3803);
     			attr_dev(label2, "class", "label svelte-159efdy");
-    			add_location(label2, file$c, 189, 14, 4387);
+    			add_location(label2, file$c, 189, 14, 4376);
     			attr_dev(div7, "class", "field-label is-normal svelte-159efdy");
-    			add_location(div7, file$c, 188, 12, 4337);
+    			add_location(div7, file$c, 188, 12, 4326);
     			attr_dev(input4, "class", "input is-very-small svelte-159efdy");
     			attr_dev(input4, "type", "number");
     			attr_dev(input4, "min", input4_min_value = /*padding*/ ctx[2] + 1);
     			attr_dev(input4, "max", /*inputSizeWithPadding*/ ctx[6]);
-    			add_location(input4, file$c, 191, 12, 4460);
+    			add_location(input4, file$c, 191, 12, 4443);
     			attr_dev(div8, "class", "field is-horizontal svelte-159efdy");
-    			add_location(div8, file$c, 187, 10, 4291);
+    			add_location(div8, file$c, 187, 10, 4280);
     			attr_dev(input5, "type", "range");
     			attr_dev(input5, "min", input5_min_value = /*padding*/ ctx[2] + 1);
     			attr_dev(input5, "max", /*inputSizeWithPadding*/ ctx[6]);
     			attr_dev(input5, "class", "svelte-159efdy");
-    			add_location(input5, file$c, 195, 10, 4621);
+    			add_location(input5, file$c, 195, 10, 4604);
     			attr_dev(div9, "class", "input-row");
-    			add_location(div9, file$c, 186, 8, 4257);
+    			add_location(div9, file$c, 186, 8, 4246);
     			attr_dev(label3, "class", "label svelte-159efdy");
-    			add_location(label3, file$c, 202, 14, 4877);
+    			add_location(label3, file$c, 202, 14, 4860);
     			attr_dev(div10, "class", "field-label is-normal svelte-159efdy");
-    			add_location(div10, file$c, 201, 12, 4827);
+    			add_location(div10, file$c, 201, 12, 4810);
     			attr_dev(input6, "class", "input is-very-small svelte-159efdy");
     			attr_dev(input6, "type", "number");
     			attr_dev(input6, "id", "strideNumber");
     			attr_dev(input6, "min", "1");
     			attr_dev(input6, "max", input6_max_value = Math.max(/*inputSizeWithPadding*/ ctx[6] - /*kernelSize*/ ctx[1] + 1, 2));
-    			add_location(input6, file$c, 204, 12, 4945);
+    			add_location(input6, file$c, 204, 12, 4924);
     			attr_dev(div11, "class", "field is-horizontal svelte-159efdy");
-    			add_location(div11, file$c, 200, 10, 4781);
+    			add_location(div11, file$c, 200, 10, 4764);
     			attr_dev(input7, "type", "range");
     			attr_dev(input7, "min", "1");
     			attr_dev(input7, "max", input7_max_value = Math.max(/*inputSizeWithPadding*/ ctx[6] - /*kernelSize*/ ctx[1] + 1, 2));
     			attr_dev(input7, "class", "svelte-159efdy");
-    			add_location(input7, file$c, 208, 10, 5136);
+    			add_location(input7, file$c, 208, 10, 5115);
     			attr_dev(div12, "class", "input-row");
-    			add_location(div12, file$c, 199, 8, 4747);
+    			add_location(div12, file$c, 199, 8, 4730);
     			attr_dev(div13, "class", "left-part svelte-159efdy");
     			add_location(div13, file$c, 158, 6, 3329);
     			if (!src_url_equal(img.src, img_src_value = "/assets/img/pointer.svg")) attr_dev(img, "src", img_src_value);
     			attr_dev(img, "alt", "pointer icon");
     			attr_dev(img, "width", "25px");
     			attr_dev(img, "class", "svelte-159efdy");
-    			add_location(img, file$c, 219, 12, 5618);
+    			add_location(img, file$c, 219, 12, 5597);
     			set_style(span, "font-weight", "600");
-    			add_location(span, file$c, 221, 14, 5758);
+    			set_style(span, "color", "blue");
+    			add_location(span, file$c, 221, 14, 5737);
     			attr_dev(div14, "class", "annotation-text-hyper svelte-159efdy");
-    			add_location(div14, file$c, 220, 12, 5708);
+    			add_location(div14, file$c, 220, 12, 5687);
     			attr_dev(div15, "class", "annotation svelte-159efdy");
-    			add_location(div15, file$c, 218, 10, 5581);
+    			add_location(div15, file$c, 218, 10, 5560);
     			attr_dev(div16, "class", "right-part svelte-159efdy");
-    			add_location(div16, file$c, 213, 8, 5289);
+    			add_location(div16, file$c, 213, 8, 5268);
     			attr_dev(div17, "class", "content-container svelte-159efdy");
     			add_location(div17, file$c, 157, 4, 3291);
     			attr_dev(div18, "class", "box svelte-159efdy");
@@ -7309,7 +7307,7 @@ var app = (function () {
 
     function create_fragment$e(ctx) {
     	let body;
-    	let div9;
+    	let div8;
     	let h20;
     	let t1;
     	let p0;
@@ -7323,1031 +7321,731 @@ var app = (function () {
     	let t9;
     	let ol0;
     	let li0;
-    	let t10;
     	let strong0;
+    	let t11;
     	let t12;
-    	let t13;
     	let li1;
-    	let t14;
     	let strong1;
-    	let t16;
+    	let t14;
     	let span0;
-    	let t18;
+    	let t16;
     	let span1;
-    	let t20;
+    	let t18;
     	let strong2;
-    	let t22;
-    	let t23;
+    	let t20;
+    	let t21;
     	let li2;
-    	let t24;
     	let strong3;
-    	let t26;
-    	let t27;
+    	let t23;
+    	let t24;
     	let li3;
     	let strong4;
-    	let t29;
+    	let t26;
     	let span2;
-    	let t31;
+    	let t28;
     	let span3;
-    	let t33;
+    	let t30;
     	let em2;
-    	let t35;
+    	let t32;
     	let em3;
-    	let t37;
-    	let t38;
+    	let t34;
+    	let t35;
     	let li4;
-    	let t39;
     	let strong5;
-    	let t41;
-    	let strong6;
-    	let t43;
-    	let t44;
+    	let t37;
+    	let em4;
+    	let t39;
+    	let t40;
     	let p2;
+    	let t41;
+    	let em5;
+    	let t43;
+    	let em6;
     	let t45;
-    	let a0;
+    	let em7;
     	let t47;
-    	let t48;
-    	let p3;
+    	let em8;
     	let t49;
-    	let a1;
+    	let t50;
+    	let p3;
     	let t51;
-    	let t52;
-    	let h21;
+    	let em9;
+    	let t53;
     	let t54;
-    	let p4;
+    	let h21;
     	let t56;
-    	let h40;
+    	let p4;
     	let t58;
+    	let h40;
+    	let t60;
     	let p5;
-    	let t59;
+    	let t61;
     	let img0;
     	let img0_src_value;
-    	let t60;
-    	let t61;
-    	let h41;
+    	let t62;
     	let t63;
-    	let p6;
+    	let h41;
     	let t65;
-    	let p7;
+    	let p6;
     	let t67;
-    	let p8;
+    	let p7;
     	let t69;
+    	let p8;
+    	let t71;
     	let div1;
     	let img1;
     	let img1_src_value;
-    	let t70;
-    	let div0;
     	let t72;
-    	let p9;
+    	let div0;
     	let t74;
+    	let p9;
+    	let t76;
     	let div3;
     	let img2;
     	let img2_src_value;
-    	let t75;
-    	let div2;
     	let t77;
-    	let p10;
+    	let div2;
     	let t79;
-    	let p11;
+    	let p10;
     	let t81;
-    	let h60;
+    	let p11;
     	let t83;
+    	let h60;
+    	let t85;
     	let p12;
     	let hyperparameterview;
-    	let t84;
+    	let t86;
     	let ol1;
     	let li5;
-    	let strong7;
-    	let t86;
-    	let a2;
+    	let strong6;
     	let t88;
-    	let a3;
-    	let t90;
-    	let a4;
-    	let t92;
-    	let t93;
+    	let t89;
     	let li6;
-    	let strong8;
-    	let t95;
-    	let a5;
-    	let t97;
-    	let t98;
+    	let strong7;
+    	let t91;
+    	let t92;
     	let li7;
-    	let strong9;
-    	let t100;
-    	let t101;
+    	let strong8;
+    	let t94;
+    	let t95;
     	let h42;
-    	let t103;
+    	let t97;
     	let h61;
-    	let t105;
+    	let t99;
     	let p13;
-    	let t106;
-    	let a6;
-    	let t108;
-    	let em4;
-    	let t110;
-    	let a7;
-    	let t112;
-    	let t113;
+    	let t101;
     	let p14;
-    	let t116;
+    	let t104;
     	let div5;
     	let img3;
     	let img3_src_value;
-    	let t117;
+    	let t105;
     	let div4;
-    	let t119;
+    	let t107;
     	let p15;
-    	let t121;
+    	let t109;
     	let h62;
-    	let t123;
+    	let t111;
     	let p16;
-    	let t124;
-    	let t125;
+    	let t112;
+    	let t113;
     	let span4;
-    	let t127;
+    	let t115;
     	let span5;
-    	let t129;
-    	let t130;
+    	let t117;
+    	let t118;
     	let p17;
-    	let t132;
+    	let t120;
     	let div7;
     	let img4;
     	let img4_src_value;
-    	let t133;
+    	let t121;
     	let div6;
-    	let t134;
-    	let em5;
-    	let t136;
-    	let t137;
+    	let t122;
+    	let strong9;
+    	let t124;
+    	let t125;
     	let h43;
-    	let t139;
+    	let t127;
     	let p18;
-    	let t141;
+    	let t129;
     	let p19;
-    	let t143;
+    	let t131;
     	let p20;
-    	let t145;
+    	let t133;
     	let h44;
-    	let t147;
+    	let t135;
     	let p21;
-    	let t149;
+    	let t137;
     	let h22;
-    	let t151;
+    	let t139;
     	let ol2;
     	let li8;
     	let strong10;
-    	let t153;
+    	let t141;
+    	let em10;
+    	let t143;
     	let img5;
     	let img5_src_value;
-    	let t154;
-    	let t155;
+    	let t144;
+    	let t145;
     	let li9;
     	let strong11;
-    	let t157;
+    	let t147;
+    	let em11;
     	let img6;
     	let img6_src_value;
-    	let t158;
-    	let t159;
+    	let t149;
+    	let t150;
     	let li10;
     	let strong12;
-    	let t161;
+    	let t152;
+    	let em12;
     	let img7;
     	let img7_src_value;
-    	let t162;
-    	let t163;
+    	let t154;
+    	let t155;
     	let li11;
     	let strong13;
-    	let t165;
+    	let t157;
+    	let em13;
     	let img8;
     	let img8_src_value;
-    	let t166;
-    	let em6;
-    	let t168;
-    	let t169;
+    	let t159;
+    	let em14;
+    	let t161;
+    	let t162;
     	let li12;
     	let strong14;
-    	let t171;
+    	let t164;
+    	let em15;
     	let img9;
     	let img9_src_value;
-    	let t172;
-    	let em7;
-    	let t174;
-    	let t175;
-    	let h23;
-    	let t177;
-    	let ul;
-    	let li13;
-    	let t178;
-    	let small0;
-    	let t180;
-    	let li14;
-    	let em8;
-    	let t182;
-    	let small1;
-    	let t184;
-    	let li15;
-    	let t185;
-    	let em9;
-    	let t187;
-    	let small2;
-    	let t189;
-    	let li16;
-    	let t190;
-    	let em10;
-    	let t192;
-    	let small3;
-    	let t194;
-    	let li17;
-    	let t195;
-    	let em11;
-    	let t197;
-    	let small4;
-    	let t199;
-    	let li18;
-    	let t200;
-    	let em12;
-    	let t202;
-    	let small5;
-    	let t204;
-    	let li19;
-    	let t205;
-    	let small6;
-    	let t207;
-    	let li20;
-    	let t208;
-    	let small7;
-    	let t210;
-    	let div8;
-    	let youtube;
-    	let t211;
-    	let h24;
-    	let t213;
-    	let p22;
-    	let t214;
-    	let a8;
-    	let em13;
-    	let t216;
-    	let a9;
-    	let em14;
-    	let t218;
-    	let a10;
-    	let em15;
-    	let t220;
-    	let t221;
-    	let h25;
-    	let t223;
-    	let p23;
-    	let t224;
-    	let a11;
-    	let t226;
-    	let a12;
-    	let t228;
-    	let a13;
-    	let t230;
-    	let a14;
-    	let t232;
-    	let a15;
-    	let t234;
-    	let a16;
-    	let t236;
-    	let a17;
-    	let t238;
-    	let a18;
-    	let t240;
+    	let t166;
     	let current;
-    	let mounted;
-    	let dispose;
     	hyperparameterview = new Hyperparameterview({ $$inline: true });
-
-    	let youtube_props = {
-    		videoId: "HnWIHWFbuUQ",
-    		playerId: "demo_video"
-    	};
-
-    	youtube = new Youtube({ props: youtube_props, $$inline: true });
-    	/*youtube_binding*/ ctx[3](youtube);
 
     	const block = {
     		c: function create() {
     			body = element("body");
-    			div9 = element("div");
+    			div8 = element("div");
     			h20 = element("h2");
-    			h20.textContent = "What is a Convolutional Neural Network?";
+    			h20.textContent = "什么是卷积神经网络?";
     			t1 = space();
     			p0 = element("p");
-    			t2 = text("In machine learning, a classifier assigns a class label to a data point.  For example, an ");
+    			t2 = text("在机器学习中，分类器会给数据点分配一个类别标签。例如，");
     			em0 = element("em");
-    			em0.textContent = "image classifier";
-    			t4 = text(" produces a class label (e.g, bird, plane) for what objects exist within an image.  A ");
+    			em0.textContent = "图像分类器";
+    			t4 = text("会为图像中的目标对象输出一个类别标签（如鸟、飞机）。");
     			em1 = element("em");
-    			em1.textContent = "convolutional neural network";
-    			t6 = text(", or CNN for short, is a type of classifier, which excels at solving this problem!");
+    			em1.textContent = "卷积神经网络（CNN）";
+    			t6 = text("便是一种擅长解决上述问题的分类器！");
     			t7 = space();
     			p1 = element("p");
-    			p1.textContent = "A CNN is a neural network: an algorithm used to recognize patterns in data. Neural Networks in general are composed of a collection of neurons that are organized in layers, each with their own learnable weights and biases.  Let’s break down a CNN into its basic building blocks.";
+    			p1.textContent = "CNN是一种神经网络：一种用于在数据中识别模式的算法。神经网络通常由若干神经元组成，按层组织，每层都有自己的可学习权重和偏置。下面详细介绍CNN的基本组成部分。";
     			t9 = space();
     			ol0 = element("ol");
     			li0 = element("li");
-    			t10 = text("A ");
     			strong0 = element("strong");
-    			strong0.textContent = "tensor";
-    			t12 = text(" can be thought of as an n-dimensional matrix.  In the CNN above, tensors will be 3-dimensional with the exception of the output layer.");
-    			t13 = space();
+    			strong0.textContent = "张量";
+    			t11 = text(" 可以被视为一个n维矩阵。在上面的CNN中，张量将是3维的，输出层除外。");
+    			t12 = space();
     			li1 = element("li");
-    			t14 = text("A ");
     			strong1 = element("strong");
-    			strong1.textContent = "neuron";
-    			t16 = text(" can be thought of as a function that takes in multiple inputs and yields a single output.  The outputs of neurons are represented above as the ");
+    			strong1.textContent = "神经元";
+    			t14 = text(" 可以被视为一个接收多个输入并产生单个输出的函数。上图中神经元的输出以");
     			span0 = element("span");
-    			span0.textContent = "red";
-    			t18 = text(" → ");
+    			span0.textContent = "红色";
+    			t16 = text(" → ");
     			span1 = element("span");
-    			span1.textContent = "blue";
-    			t20 = space();
+    			span1.textContent = "蓝色";
+    			t18 = space();
     			strong2 = element("strong");
-    			strong2.textContent = "activation maps";
-    			t22 = text(".");
-    			t23 = space();
+    			strong2.textContent = "的激活映射表示。";
+    			t20 = text(".");
+    			t21 = space();
     			li2 = element("li");
-    			t24 = text("A ");
     			strong3 = element("strong");
-    			strong3.textContent = "layer";
-    			t26 = text(" is simply a collection of neurons with the same operation, including the same hyperparameters.");
-    			t27 = space();
+    			strong3.textContent = "层";
+    			t23 = text(" 只是具有相同运算和相同超参数的一组神经元。");
+    			t24 = space();
     			li3 = element("li");
     			strong4 = element("strong");
-    			strong4.textContent = "Kernel weights and biases";
-    			t29 = text(", while unique to each neuron, are tuned during the training phase, and allow the classifier to adapt to the problem and dataset provided.  They are encoded in the visualization with a ");
+    			strong4.textContent = "卷积核权重和偏置";
+    			t26 = text("虽然对每个神经元都是独一无二的，但在训练阶段会被调整，使分类器能够适应所给的问题和数据集。它们在可视化中用");
     			span2 = element("span");
-    			span2.textContent = "yellow";
-    			t31 = text(" → ");
+    			span2.textContent = "黄色";
+    			t28 = text(" → ");
     			span3 = element("span");
-    			span3.textContent = "green";
-    			t33 = text(" diverging colorscale.  The specific values can be viewed in the ");
+    			span3.textContent = "绿色";
+    			t30 = text("的发散色标表示。具体数值可以在");
     			em2 = element("em");
-    			em2.textContent = "Interactive Formula View";
-    			t35 = text(" by clicking a neuron or by hovering over the kernel/bias in the ");
+    			em2.textContent = "交互式公式视图";
+    			t32 = text("点击某个神经元，或在");
     			em3 = element("em");
-    			em3.textContent = "Convolutional Elastic Explanation View";
-    			t37 = text(".");
-    			t38 = space();
+    			em3.textContent = "卷积弹性解释视图";
+    			t34 = text("中悬停卷积核/偏置来查看。");
+    			t35 = space();
     			li4 = element("li");
-    			t39 = text("A CNN conveys a ");
     			strong5 = element("strong");
-    			strong5.textContent = "differentiable score function";
-    			t41 = text(", which is represented as ");
-    			strong6 = element("strong");
-    			strong6.textContent = "class scores";
-    			t43 = text(" in the visualization on the output layer.");
-    			t44 = space();
+    			strong5.textContent = "CNN";
+    			t37 = text("输出一个");
+    			em4 = element("em");
+    			em4.textContent = "可微分的打分函数";
+    			t39 = text("，在输出层的可视化中表现为类别分数。");
+    			t40 = space();
     			p2 = element("p");
-    			t45 = text("If you have studied neural networks before, these terms may sound familiar to you.  So what makes a CNN different? CNNs utilize a special type of layer, aptly named a convolutional layer, that makes them well-positioned to learn from image and image-like data.  Regarding image data, CNNs can be used for many different computer vision tasks, such as ");
-    			a0 = element("a");
-    			a0.textContent = "image processing, classification, segmentation, and object detection";
-    			t47 = text(".");
-    			t48 = space();
+    			t41 = text("如果你之前学过神经网络，这些术语听起来可能很熟悉。那么，CNN有何不同？CNN使用一种特殊类型的层，恰如其名为卷积层，使它们在从图像及类似图像的数据中学习时表现出色。关于图像数据，CNN可以用于多种计算机视觉任务，如");
+    			em5 = element("em");
+    			em5.textContent = "图像处理";
+    			t43 = text("、");
+    			em6 = element("em");
+    			em6.textContent = "分类";
+    			t45 = text("、");
+    			em7 = element("em");
+    			em7.textContent = "分割";
+    			t47 = text("和");
+    			em8 = element("em");
+    			em8.textContent = "目标检测";
+    			t49 = text("。");
+    			t50 = space();
     			p3 = element("p");
-    			t49 = text("In CNN Explainer, you can see how a simple CNN can be used for image classification.  Because of the network’s simplicity, its performance isn’t perfect, but that’s okay! The network architecture, ");
-    			a1 = element("a");
-    			a1.textContent = "Tiny VGG";
-    			t51 = text(", used in CNN Explainer contains many of the same layers and operations used in state-of-the-art CNNs today, but on a smaller scale.  This way, it will be easier to understand getting started.");
-    			t52 = space();
-    			h21 = element("h2");
-    			h21.textContent = "What does each layer of the network do?";
+    			t51 = text("在CNN可视化中，你可以看到一个简单的CNN如何用于图像分类。由于网络结构的简单性，其性能并非完美无缺，但没关系！该示例中使用的网络结构");
+    			em9 = element("em");
+    			em9.textContent = "Tiny VGG";
+    			t53 = text("，包含了如今最先进的CNN所使用的许多相同层和操作，但规模更小。这样更易于上手理解。");
     			t54 = space();
-    			p4 = element("p");
-    			p4.textContent = "Let’s walk through each layer in the network.  Feel free to interact with the visualization above by clicking and hovering over various parts of it as you read.";
+    			h21 = element("h2");
+    			h21.textContent = "网络的每一层做什么？";
     			t56 = space();
-    			h40 = element("h4");
-    			h40.textContent = "Input Layer";
+    			p4 = element("p");
+    			p4.textContent = "让我们逐层了解网络。你可以通过点击和悬停在可视化的不同部分来互动。";
     			t58 = space();
+    			h40 = element("h4");
+    			h40.textContent = "输入层";
+    			t60 = space();
     			p5 = element("p");
-    			t59 = text("The input layer (leftmost layer) represents the input image into the CNN.  Because we use RGB images as input, the input layer has three channels, corresponding to the red, green, and blue channels, respectively, which are shown in this layer. Use the color scale when you click on the ");
+    			t61 = text("输入层（最左侧的层）表示进入CNN的输入图像。由于我们使用的是RGB图像，输入层有三个通道，分别对应红、绿、蓝通道，如该层所示。点击上方的");
     			img0 = element("img");
-    			t60 = text(" icon above to display detailed information (on this layer, and others).");
-    			t61 = space();
-    			h41 = element("h4");
-    			h41.textContent = "Convolutional Layers";
+    			t62 = text(" 图标以显示该层及其他层的详细信息。");
     			t63 = space();
-    			p6 = element("p");
-    			p6.textContent = "The convolutional layers are the foundation of CNN, as they contain the learned kernels (weights), which extract features that distinguish different images from one another—this is what we want for classification!  As you interact with the convolutional layer, you will notice links between the previous layers and the convolutional layers.  Each link represents a unique kernel, which is used for the convolution operation to produce the current convolutional neuron’s output or activation map.";
+    			h41 = element("h4");
+    			h41.textContent = "卷积层s";
     			t65 = space();
-    			p7 = element("p");
-    			p7.textContent = "The convolutional neuron performs an elementwise dot product with a unique kernel and the output of the previous layer’s corresponding neuron.  This will yield as many intermediate results as there are unique kernels.  The convolutional neuron is the result of all of the intermediate results summed together with the learned bias.";
+    			p6 = element("p");
+    			p6.textContent = "卷积层是CNN的基础，因为它们包含学习到的卷积核（权重和偏置），用于提取能将不同图像区分开来的特征——这就是我们用于分类的目标！在你与卷积层互动时，你会看到前一层与卷积层之间的连接。每条连接代表一个唯一的卷积核，它用于卷积运算以产生当前卷积神经元的输出或激活图。";
     			t67 = space();
-    			p8 = element("p");
-    			p8.textContent = "For example, let’s look at the first convolutional layer in the Tiny VGG architecture above.  Notice that there are 10 neurons in this layer, but only 3 neurons in the previous layer.  In the Tiny VGG architecture, convolutional layers are fully-connected, meaning each neuron is connected to every other neuron in the previous layer.  Focusing on the output of the topmost convolutional neuron from the first convolutional layer, we see that there are 3 unique kernels when we hover over the activation map.";
+    			p7 = element("p");
+    			p7.textContent = "卷积神经元用一组卷积核与前一层相应神经元的输出执行逐元素点积运算。这会产生与卷积核数量相同的中间结果。所有中间结果相加再加上学习得到的偏置，就得到该卷积神经元的输出。";
     			t69 = space();
+    			p8 = element("p");
+    			p8.textContent = "例如，看看下方Tiny VGG架构中的第一层卷积层。请注意这一层有10组卷积神经元，而前一层只有3组特征神经元。观察第一层中最顶层卷积神经元的输出，当你将鼠标悬停在激活映射上时，你会看到有3个卷积核。";
+    			t71 = space();
     			div1 = element("div");
     			img1 = element("img");
-    			t70 = space();
-    			div0 = element("div");
-    			div0.textContent = "Figure 1.  As you hover over the activation map of the topmost node from the first convolutional layer, you can see that 3 kernels were applied to yield this activation map.  After clicking this activation map, you can see the convolution operation occuring with each unique kernel.";
     			t72 = space();
-    			p9 = element("p");
-    			p9.textContent = "The size of these kernels is a hyper-parameter specified by the designers of the network architecture.  In order to produce the output of the convolutional neuron (activation map), we must perform an elementwise dot product with the output of the previous layer and the unique kernel learned by the network.  In TinyVGG, the dot product operation uses a stride of 1, which means that the kernel is shifted over 1 pixel per dot product, but this is a hyperparameter that the network architecture designer can adjust to better fit their dataset.  We must do this for all 3 kernels, which will yield 3 intermediate results.";
+    			div0 = element("div");
+    			div0.textContent = "图1 当你将鼠标悬停在第一层卷积层中最顶层节点的激活图上时，你可以看到应用了3个卷积核来生成该激活图。点击该激活图后，你可以看到对每个卷积核执行的卷积运算。";
     			t74 = space();
+    			p9 = element("p");
+    			p9.textContent = "这些卷积核的大小是网络结构设计者指定的一个超参数。为了得到卷积神经元的输出（激活图），我们必须对前一层的输出与网络学习得到的卷积核执行逐元素点积。在TinyVGG中，点积操作的步长为1，这意味着卷积核每次在点积中向右或下一个像素处滑动，但这是一个超参数，网络结构设计者可以根据数据集进行调整。对所有3个卷积核都需要执行相同的操作，从而得到3个中间结果。";
+    			t76 = space();
     			div3 = element("div");
     			img2 = element("img");
-    			t75 = space();
-    			div2 = element("div");
-    			div2.textContent = "Figure 2. The kernel being applied to yield the topmost intermediate result for the discussed activation map.";
     			t77 = space();
-    			p10 = element("p");
-    			p10.textContent = "Then, an elementwise sum is performed containing all 3 intermediate results along with the bias the network has learned.  After this, the resulting 2-dimensional tensor will be the activation map viewable on the interface above for the topmost neuron in the first convolutional layer.  This same operation must be applied to produce each neuron’s activation map.";
+    			div2 = element("div");
+    			div2.textContent = "图2 用于产生最顶层特征图中间结果的卷积核";
     			t79 = space();
-    			p11 = element("p");
-    			p11.textContent = "With some simple math, we are able to deduce that there are 3 x 10 = 30 unique kernels, each of size 3x3, applied in the first convolutional layer.  The connectivity between the convolutional layer and the previous layer is a design decision when building a network architecture, which will affect the number of kernels per convolutional layer.  Click around the visualization to better understand the operations behind the convolutional layer.  See if you can follow the example above!";
+    			p10 = element("p");
+    			p10.textContent = "接着，对这3个中间结果以及网络所学习的偏置进行逐元素求和。之后，所得的二维张量将成为第一层卷积层中最顶层神经元的激活图，可在上方的界面查看。相同的操作也需要应用于生成每个神经元的激活图。";
     			t81 = space();
-    			h60 = element("h6");
-    			h60.textContent = "Understanding Hyperparameters";
+    			p11 = element("p");
+    			p11.textContent = "通过一些简单的数学，我们可以推断第一卷积层共使用3×10=30个卷积核，每个大小为3×3。卷积层与前一层之间的连通性是在构建网络架构时的设计决策，这会影响每个卷积层的卷积核数量。请在可视化中点击以更好地理解卷积层背后的运算。看看你是否能跟随上面的示例！";
     			t83 = space();
+    			h60 = element("h6");
+    			h60.textContent = "理解超参数";
+    			t85 = space();
     			p12 = element("p");
     			create_component(hyperparameterview.$$.fragment);
-    			t84 = space();
+    			t86 = space();
     			ol1 = element("ol");
     			li5 = element("li");
-    			strong7 = element("strong");
-    			strong7.textContent = "Padding";
-    			t86 = text(" is often necessary when the kernel extends beyond the activation map.  Padding conserves data at the borders of activation maps, which leads to better performance, and it can help ");
-    			a2 = element("a");
-    			a2.textContent = "preserve the input's spatial size";
-    			t88 = text(", which allows an architecture designer to build deeper, higher performing networks.  There exist ");
-    			a3 = element("a");
-    			a3.textContent = "many padding techniques";
-    			t90 = text(", but the most commonly used approach is zero-padding because of its performance, simplicity, and computational efficiency.  The technique involves adding zeros symmetrically around the edges of an input.  This approach is adopted by many high-performing CNNs such as ");
-    			a4 = element("a");
-    			a4.textContent = "AlexNet";
-    			t92 = text(".");
-    			t93 = space();
+    			strong6 = element("strong");
+    			strong6.textContent = "填充";
+    			t88 = text("：当卷积核超出激活图边界时，通常需要填充（Padding）。在激活图边缘填充可保护数据，从而提升性能，并有助于保持输入的空间尺寸，使架构设计者能够构建更深、性能更高的网络。存在多种填充技术，但最常用的方法是零填充，因为它的性能、简单性和计算效率较高。该方法是在输入边缘对称地添加零值，许多高性能的CNN（如 AlexNet）也采用了这种方法。");
+    			t89 = space();
     			li6 = element("li");
-    			strong8 = element("strong");
-    			strong8.textContent = "Kernel size";
-    			t95 = text(", often also referred to as filter size, refers to the dimensions of the sliding window over the input.  Choosing this hyperparameter has a massive impact on the image classification task.  For example, small kernel sizes are able to extract a much larger amount of information containing highly local features from the input.  As you can see on the visualization above, a smaller kernel size also leads to a smaller reduction in layer dimensions, which allows for a deeper architecture.  Conversely, a large kernel size extracts less information, which leads to a faster reduction in layer dimensions, often leading to worse performance.  Large kernels are better suited to extract features that are larger.  At the end of the day, choosing an appropriate kernel size will be dependent on your task and dataset, but generally, smaller kernel sizes lead to better performance for the image classification task because an architecture designer is able to stack ");
-    			a5 = element("a");
-    			a5.textContent = "more and more layers together to learn more and more complex features";
-    			t97 = text("!");
-    			t98 = space();
+    			strong7 = element("strong");
+    			strong7.textContent = "卷积核大小";
+    			t91 = text("：通常也称为过滤器大小，指的是在输入上滑动窗口的维度。选择这个超参数对图像分类任务有深远影响。例如，较小的卷积核可以从输入中提取更多包含局部特征的信息。如上图的可视化所示，较小的卷积核也会导致特征图维度的下降幅度较小，从而允许更深的架构。相反，较大的卷积核提取的信息更少，导致特征图维度下降得更快，往往导致性能下降。较大的卷积核更适合提取较大尺度的特征。总之，选择合适的卷积核大小取决于任务和数据集，但通常较小的卷积核在图像分类任务中表现更好，因为架构设计者能够堆叠更多层来学习更复杂的特征！");
+    			t92 = space();
     			li7 = element("li");
-    			strong9 = element("strong");
-    			strong9.textContent = "Stride";
-    			t100 = text(" indicates how many pixels the kernel should be shifted over at a time.  For example, as described in the convolutional layer example above, Tiny VGG uses a stride of 1 for its convolutional layers, which means that the dot product is performed on a 3x3 window of the input to yield an output value, then is shifted to the right by one pixel for every subsequent operation.  The impact stride has on a CNN is similar to kernel size.  As stride is decreased, more features are learned because more data is extracted, which also leads to larger output layers.  On the contrary, as stride is increased, this leads to more limited feature extraction and smaller output layer dimensions.  One responsibility of the architecture designer is to ensure that the kernel slides across the input symmetrically when implementing a CNN.  Use the hyperparameter visualization above to alter stride on various input/kernel dimensions to understand this constraint!");
-    			t101 = space();
+    			strong8 = element("strong");
+    			strong8.textContent = "步长";
+    			t94 = text("：表示卷积核在一次滑动中应移动多少像素。例如，如上文的卷积层示例所述，Tiny VGG的卷积层步长为1，这意味着在输入的3×3窗口上执行点积以产生一个输出值，然后在随后的操作中向右再移动一个像素。步长对CNN的影响与卷积核大小相似。步长越小，学习到的特征越多，因为提取的数据越多，这也会导致输出层尺寸增大。相反，步长越大，特征提取越受限，输出层尺寸也越小。架构设计者的一个职责是确保在实现CNN时，卷积核能够对输入进行对称滑动。使用下方的超参数可视化，在不同输入/卷积核大小上调整步幅，以理解这一影响!");
+    			t95 = space();
     			h42 = element("h4");
-    			h42.textContent = "Activation Functions";
-    			t103 = space();
+    			h42.textContent = "激活函数";
+    			t97 = space();
     			h61 = element("h6");
     			h61.textContent = "ReLU";
-    			t105 = space();
+    			t99 = space();
     			p13 = element("p");
-    			t106 = text("Neural networks are extremely prevalent in modern technology—because they are so accurate!  The highest performing CNNs today consist of an absurd amount of layers, which are able to learn more and more features.  Part of the reason these groundbreaking CNNs are able to achieve such ");
-    			a6 = element("a");
-    			a6.textContent = "tremendous accuracies";
-    			t108 = text(" is because of their non-linearity.  ReLU applies much-needed non-linearity into the model.  Non-linearity is necessary to produce non-linear decision boundaries, so that the output cannot be written as a linear combination of the inputs.  If a non-linear activation function was not present, deep CNN architectures would devolve into a single, equivalent convolutional layer, which would not perform nearly as well.  The ReLU activation function is specifically used as a non-linear activation function, as opposed to other non-linear functions such as ");
-    			em4 = element("em");
-    			em4.textContent = "Sigmoid";
-    			t110 = text(" because it has been ");
-    			a7 = element("a");
-    			a7.textContent = "empirically observed";
-    			t112 = text(" that CNNs using ReLU are faster to train than their counterparts.");
-    			t113 = space();
+    			p13.textContent = "神经网络在现代技术中极为普遍——因为它们如此准确！如今性能最强的CNN通常包含大量层，能够学习越来越多的特征。它们能够达到如此高的准确率，部分原因在于其非线性。ReLU为模型引入了所需的非线性。非线性对于产生非线性决策边界是必要的，这样输出就不能被写成输入的线性组合。如果没有非线性激活函数，深层CNN架构将退化为单层等效卷积层，性能将大打折扣。ReLU激活函数作为一种非线性激活函数使用，与Sigmoid等其他非线性函数相比，使用ReLU的CNN训练速度更快。";
+    			t101 = space();
     			p14 = element("p");
-    			p14.textContent = `The ReLU activation function is an elementwise mathematical operation: ${/*reluEquation*/ ctx[2]}`;
-    			t116 = space();
+    			p14.textContent = `ReLU激活函数是逐元素的数学运算：${/*reluEquation*/ ctx[1]}`;
+    			t104 = space();
     			div5 = element("div");
     			img3 = element("img");
-    			t117 = space();
+    			t105 = space();
     			div4 = element("div");
-    			div4.textContent = "Figure 3. The ReLU activation function graphed, which disregards all negative data.";
-    			t119 = space();
+    			div4.textContent = "图3：绘制的ReLU激活函数，忽略所有负数据";
+    			t107 = space();
     			p15 = element("p");
-    			p15.textContent = "This activation function is applied elementwise on every value from the input tensor.  For example, if applied ReLU on the value 2.24, the result would be 2.24, since 2.24 is larger than 0.  You can observe how this activation function is applied by clicking a ReLU neuron in the network above.  The Rectified Linear Activation function (ReLU) is performed after every convolutional layer in the network architecture outlined above.  Notice the impact this layer has on the activation map of various neurons throughout the network!";
-    			t121 = space();
+    			p15.textContent = "该激活函数对输入张量的每一个数值逐元素应用。例如，对值2.24应用ReLU，结果为2.24，因为2.24大于 0。你可以通过在上方网络中点击ReLU神经元来观察该激活函数的应用。ReLU（修正线性单元）是在上述网络架构中每个卷积层之后执行的。请注意这一层对网络中各个神经元激活图的影响！";
+    			t109 = space();
     			h62 = element("h6");
     			h62.textContent = "Softmax";
-    			t123 = space();
+    			t111 = space();
     			p16 = element("p");
-    			t124 = text(/*softmaxEquation*/ ctx[1]);
-    			t125 = text("\n    \tA softmax operation serves a key purpose: making sure the CNN outputs sum to 1.  Because of this, softmax operations are useful to scale model outputs into probabilities.  Clicking on the last layer reveals the softmax operation in the network. Notice how the logits after flatten aren’t scaled between zero to one.  For a visual indication of the impact of each logit (unscaled scalar value), they are encoded using a ");
+    			t112 = text(/*softmaxEquation*/ ctx[0]);
+    			t113 = text("\n      Softmax的一个关键作用是确保CNN的输出和为1。因此，Softmax将输出缩放为概率。点击最后一层即可看到网络中的Softmax操作。注意展平后的logits并未缩放至0到1之间。为了直观显示每个logit的影响（未缩放的标量值），它们以");
     			span4 = element("span");
-    			span4.textContent = "light orange";
-    			t127 = text(" → ");
+    			span4.textContent = "浅橙色";
+    			t115 = text(" → ");
     			span5 = element("span");
-    			span5.textContent = "dark orange";
-    			t129 = text(" color scale.  After passing through the softmax function, each class now corresponds to an appropriate probability!");
-    			t130 = space();
+    			span5.textContent = "深橙色";
+    			t117 = text("的颜色编码。经过Softmax函数后，每个类别现在对应一个合适的概率！");
+    			t118 = space();
     			p17 = element("p");
-    			p17.textContent = "You might be thinking what the difference between standard normalization and softmax is—after all, both rescale the logits between 0 and 1.  Remember that backpropagation is a key aspect of training neural networks—we want the correct answer to have the largest “signal.” By using softmax, we are effectively “approximating” argmax while gaining differentiability.  Rescaling doesn’t weigh the max significantly higher than other logits, whereas softmax does.  Simply put, softmax is a “softer” argmax—see what we did there?";
-    			t132 = space();
+    			p17.textContent = "你可能在想标准归一化和Softmax的区别——毕竟，两者都将logits缩放至0到1之间。记住，反向传播是训练神经网络的关键，我们希望正确答案具有最大的“信号”。通过使用Softmax，我们实质上是在获得可微性的同时近似argmax。简单来说，Softmax是一个“更柔和的”argmax？";
+    			t120 = space();
     			div7 = element("div");
     			img4 = element("img");
-    			t133 = space();
+    			t121 = space();
     			div6 = element("div");
-    			t134 = text("Figure 4. The ");
-    			em5 = element("em");
-    			em5.textContent = "Softmax Interactive Formula View";
-    			t136 = text(" allows a user to interact with both the color encoded logits and formula to understand how the prediction scores after the flatten layer are normalized to yield classification scores.");
-    			t137 = space();
+    			t122 = text("图4：");
+    			strong9 = element("strong");
+    			strong9.textContent = "Softmax交互公式视图";
+    			t124 = text("允许用户与颜色编码的logits和公式进行交互，以理解展平层之后的预测分数如何归一化以产生分类分数。");
+    			t125 = space();
     			h43 = element("h4");
-    			h43.textContent = "Pooling Layers";
-    			t139 = space();
+    			h43.textContent = "池化层";
+    			t127 = space();
     			p18 = element("p");
-    			p18.textContent = "There are many types of pooling layers in different CNN architectures, but they all have the purpose of gradually decreasing the spatial extent of the network, which reduces the parameters and overall computation of the network.  The type of pooling used in the Tiny VGG architecture above is Max-Pooling.";
-    			t141 = space();
+    			p18.textContent = "不同的CNN架构中存在多种池化层，但它们的共同目标是逐步降低网络的空间尺度，从而减少参数量和整体计算量。上述Tiny VGG架构中使用的池化类型是最大池化（Max-Pooling）。";
+    			t129 = space();
     			p19 = element("p");
-    			p19.textContent = "The Max-Pooling operation requires selecting a kernel size and a stride length during architecture design.  Once selected, the operation slides the kernel with the specified stride over the input while only selecting the largest value at each kernel slice from the input to yield a value for the output.  This process can be viewed by clicking a pooling neuron in the network above.";
-    			t143 = space();
+    			p19.textContent = "Max-Pooling操作在架构设计阶段同样需要选择卷积核大小和步长。一旦选定，操作就会以指定的步长在输入上滑动卷积核，在每个卷积核切片处仅选取输入中的最大值来得到输出值。可以通过点击网络中的池化神经元来观察这一过程。";
+    			t131 = space();
     			p20 = element("p");
-    			p20.textContent = "In the Tiny VGG architecture above, the pooling layers use a 2x2 kernel and a stride of 2.  This operation with these specifications results in the discarding of 75% of activations.  By discarding so many values, Tiny VGG is more computationally efficient and avoids overfitting.";
-    			t145 = space();
+    			p20.textContent = "在上述Tiny VGG架构中，池化层使用2×2的卷积核、步长为2。按照这些超参数设定，最大池化操作会丢弃75%的激活值。通过丢弃如此多的数值，Tiny VGG的计算效率提高且更易避免过拟合。";
+    			t133 = space();
     			h44 = element("h4");
-    			h44.textContent = "Flatten Layer";
-    			t147 = space();
+    			h44.textContent = "展平层";
+    			t135 = space();
     			p21 = element("p");
-    			p21.textContent = "This layer converts a three-dimensional layer in the network into a one-dimensional vector to fit the  input of a fully-connected layer for classification.  For example, a 5x5x2 tensor would be converted into a vector of size 50.  The previous convolutional layers of the network extracted the features from the input image, but now it is time to classify the features.  We use the softmax function to classify these features, which requires a 1-dimensional input.  This is why the flatten layer is necessary.  This layer can be viewed by clicking any output class.";
-    			t149 = space();
+    			p21.textContent = "该层将网络中的三维层转换为一维向量，便于输入到用于分类的全连接层。例如，一个5×5×2的张量将被转换为大小为50的向量。网络前面的卷积层已经从输入图像中提取了特征，但现在是对这些特征进行分类的时候。我们使用Softmax函数对这些特征进行分类，这需要一维输入。这就是展平层存在的原因。可以通过点击任一输出类别来查看此层。";
+    			t137 = space();
     			h22 = element("h2");
-    			h22.textContent = "Interactive features";
-    			t151 = space();
+    			h22.textContent = "交互特性";
+    			t139 = space();
     			ol2 = element("ol");
     			li8 = element("li");
     			strong10 = element("strong");
-    			strong10.textContent = "Upload your own image";
-    			t153 = text(" by selecting ");
+    			strong10.textContent = "上传自己的图片";
+    			t141 = text("通过");
+    			em10 = element("em");
+    			em10.textContent = "选择上传图片";
+    			t143 = text("图标");
     			img5 = element("img");
-    			t154 = text(" to understand how your image is classified into the 10 classes.  By analyzing the neurons throughout the network, you can understand the activations maps and extracted features.");
-    			t155 = space();
+    			t144 = text(" 来上传图片，了解你的图片如何被分类到10个类别中。通过分析网络中的神经元，你可以理解激活图及提取的特征。");
+    			t145 = space();
     			li9 = element("li");
     			strong11 = element("strong");
-    			strong11.textContent = "Change the activation map colorscale";
-    			t157 = text(" to better understand the impact of activations at different levels of abstraction by adjusting ");
+    			strong11.textContent = "改变激活图颜色尺度";
+    			t147 = text("通过调整");
+    			em11 = element("em");
+    			em11.textContent = "热力图的颜色尺度";
     			img6 = element("img");
-    			t158 = text(".");
-    			t159 = space();
+    			t149 = text("，了解在不同抽象层次上激活的影响。");
+    			t150 = space();
     			li10 = element("li");
     			strong12 = element("strong");
-    			strong12.textContent = "Understand network details";
-    			t161 = text(" such as layer dimensions and colorscales by clicking the ");
+    			strong12.textContent = "理解网络细节";
+    			t152 = text("通过点击");
+    			em12 = element("em");
+    			em12.textContent = "网络细节图标";
     			img7 = element("img");
-    			t162 = text(" icon.");
-    			t163 = space();
+    			t154 = text("，了解网络的层维度和颜色尺度等细节。");
+    			t155 = space();
     			li11 = element("li");
     			strong13 = element("strong");
-    			strong13.textContent = "Simulate network operations";
-    			t165 = text(" by clicking the ");
+    			strong13.textContent = "模拟网络运算";
+    			t157 = text("通过点击");
+    			em13 = element("em");
+    			em13.textContent = "播放图标";
     			img8 = element("img");
-    			t166 = text(" button or interact with the layer slice in the ");
-    			em6 = element("em");
-    			em6.textContent = "Interactive Formula View";
-    			t168 = text(" by hovering over portions of the input or output to understand the mappings and underlying operations.");
-    			t169 = space();
+    			t159 = text(" 来模拟网络运算，或在");
+    			em14 = element("em");
+    			em14.textContent = "交互式公式视图";
+    			t161 = text("中悬停输入或输出的部分，理解映射关系与底层运算。");
+    			t162 = space();
     			li12 = element("li");
     			strong14 = element("strong");
-    			strong14.textContent = "Learn layer functions";
-    			t171 = text(" by clicking ");
-    			img9 = element("img");
-    			t172 = text(" from the ");
-    			em7 = element("em");
-    			em7.textContent = "Interactive Formula View";
-    			t174 = text(" to read layer details from the article.");
-    			t175 = space();
-    			h23 = element("h2");
-    			h23.textContent = "Video Tutorial";
-    			t177 = space();
-    			ul = element("ul");
-    			li13 = element("li");
-    			t178 = text("CNN Explainer Introduction\n        ");
-    			small0 = element("small");
-    			small0.textContent = "(0:00-0:22)";
-    			t180 = space();
-    			li14 = element("li");
-    			em8 = element("em");
-    			em8.textContent = "Overview";
-    			t182 = space();
-    			small1 = element("small");
-    			small1.textContent = "(0:27-0:37)";
-    			t184 = space();
-    			li15 = element("li");
-    			t185 = text("Convolutional ");
-    			em9 = element("em");
-    			em9.textContent = "Elastic Explanation View";
-    			t187 = space();
-    			small2 = element("small");
-    			small2.textContent = "(0:37-0:46)";
-    			t189 = space();
-    			li16 = element("li");
-    			t190 = text("Convolutional, ReLU, and Pooling ");
-    			em10 = element("em");
-    			em10.textContent = "Interactive Formula Views";
-    			t192 = space();
-    			small3 = element("small");
-    			small3.textContent = "(0:46-1:21)";
-    			t194 = space();
-    			li17 = element("li");
-    			t195 = text("Flatten ");
-    			em11 = element("em");
-    			em11.textContent = "Elastic Explanation View";
-    			t197 = space();
-    			small4 = element("small");
-    			small4.textContent = "(1:22-1:41)";
-    			t199 = space();
-    			li18 = element("li");
-    			t200 = text("Softmax ");
-    			em12 = element("em");
-    			em12.textContent = "Interactive Formula View";
-    			t202 = space();
-    			small5 = element("small");
-    			small5.textContent = "(1:41-2:02)";
-    			t204 = space();
-    			li19 = element("li");
-    			t205 = text("Engaging Learning Experience: Understanding Classification\n        ");
-    			small6 = element("small");
-    			small6.textContent = "(2:06-2:28)";
-    			t207 = space();
-    			li20 = element("li");
-    			t208 = text("Interactive Tutorial Article\n        ");
-    			small7 = element("small");
-    			small7.textContent = "(2:29-2:54)";
-    			t210 = space();
-    			div8 = element("div");
-    			create_component(youtube.$$.fragment);
-    			t211 = space();
-    			h24 = element("h2");
-    			h24.textContent = "How is CNN Explainer implemented?";
-    			t213 = space();
-    			p22 = element("p");
-    			t214 = text("CNN Explainer uses ");
-    			a8 = element("a");
-    			em13 = element("em");
-    			em13.textContent = "TensorFlow.js";
-    			t216 = text(", an in-browser GPU-accelerated deep learning library to load the pretrained model for visualization.  The entire interactive system is written in Javascript using ");
-    			a9 = element("a");
-    			em14 = element("em");
-    			em14.textContent = "Svelte";
-    			t218 = text(" as a framework and ");
-    			a10 = element("a");
+    			strong14.textContent = "学习层功能";
+    			t164 = text("通过点击");
     			em15 = element("em");
-    			em15.textContent = "D3.js";
-    			t220 = text(" for visualizations. You only need a web browser to get started learning CNNs today!");
-    			t221 = space();
-    			h25 = element("h2");
-    			h25.textContent = "Who developed CNN Explainer?";
-    			t223 = space();
-    			p23 = element("p");
-    			t224 = text("CNN Explainer was created by \n      ");
-    			a11 = element("a");
-    			a11.textContent = "Jay Wang";
-    			t226 = text(",\n      ");
-    			a12 = element("a");
-    			a12.textContent = "Robert Turko";
-    			t228 = text(", \n      ");
-    			a13 = element("a");
-    			a13.textContent = "Omar Shaikh";
-    			t230 = text(",\n      ");
-    			a14 = element("a");
-    			a14.textContent = "Haekyu Park";
-    			t232 = text(",\n      ");
-    			a15 = element("a");
-    			a15.textContent = "Nilaksh Das";
-    			t234 = text(",\n      ");
-    			a16 = element("a");
-    			a16.textContent = "Fred Hohman";
-    			t236 = text(",\n      ");
-    			a17 = element("a");
-    			a17.textContent = "Minsuk Kahng";
-    			t238 = text(", and\n      ");
-    			a18 = element("a");
-    			a18.textContent = "Polo Chau";
-    			t240 = text(",\n      which was the result of a research collaboration between \n      Georgia Tech and Oregon State.  We thank Anmol Chhabria, Kaan Sancak, Kantwon Rogers, and the Georgia Tech Visualization Lab for their support and constructive feedback.  This work was supported in part by NSF grants IIS-1563816, CNS-1704701, NASA NSTRF, DARPA GARD, gifts from Intel, NVIDIA, Google, Amazon.");
+    			em15.textContent = "交互式公式视图图标";
+    			img9 = element("img");
+    			t166 = text("，学习层的功能。");
     			attr_dev(h20, "class", "svelte-ixpg0w");
     			add_location(h20, file$e, 104, 4, 1806);
-    			add_location(em0, file$e, 106, 92, 1955);
-    			add_location(em1, file$e, 106, 203, 2066);
+    			set_style(em0, "color", "red");
+    			add_location(em0, file$e, 106, 33, 1867);
+    			set_style(em1, "color", "red");
+    			add_location(em1, file$e, 106, 93, 1927);
     			attr_dev(p0, "class", "svelte-ixpg0w");
-    			add_location(p0, file$e, 105, 4, 1859);
+    			add_location(p0, file$e, 105, 4, 1830);
     			attr_dev(p1, "class", "svelte-ixpg0w");
-    			add_location(p1, file$e, 108, 3, 2196);
-    			add_location(strong0, file$e, 112, 10, 2509);
+    			add_location(p1, file$e, 108, 3, 1997);
+    			set_style(strong0, "color", "blue");
+    			add_location(strong0, file$e, 112, 8, 2110);
     			attr_dev(li0, "class", "svelte-ixpg0w");
-    			add_location(li0, file$e, 112, 4, 2503);
-    			add_location(strong1, file$e, 113, 10, 2683);
+    			add_location(li0, file$e, 112, 4, 2106);
+    			set_style(strong1, "color", "blue");
+    			add_location(strong1, file$e, 113, 8, 2199);
     			set_style(span0, "color", "#FF7577");
-    			add_location(span0, file$e, 113, 177, 2850);
+    			add_location(span0, file$e, 113, 83, 2274);
     			set_style(span1, "color", "#60A7D7");
-    			add_location(span1, file$e, 113, 224, 2897);
-    			add_location(strong2, file$e, 113, 265, 2938);
+    			add_location(span1, file$e, 113, 129, 2320);
+    			add_location(strong2, file$e, 113, 168, 2359);
     			attr_dev(li1, "class", "svelte-ixpg0w");
-    			add_location(li1, file$e, 113, 4, 2677);
-    			add_location(strong3, file$e, 114, 10, 2987);
+    			add_location(li1, file$e, 113, 4, 2195);
+    			set_style(strong3, "color", "blue");
+    			add_location(strong3, file$e, 114, 8, 2399);
     			attr_dev(li2, "class", "svelte-ixpg0w");
-    			add_location(li2, file$e, 114, 4, 2981);
-    			add_location(strong4, file$e, 115, 8, 3118);
+    			add_location(li2, file$e, 114, 4, 2395);
+    			set_style(strong4, "color", "blue");
+    			add_location(strong4, file$e, 115, 8, 2473);
     			set_style(span2, "color", "#BC8435");
-    			add_location(span2, file$e, 115, 235, 3345);
+    			add_location(span2, file$e, 115, 106, 2571);
     			set_style(span3, "color", "#39988F");
-    			add_location(span3, file$e, 115, 285, 3395);
-    			add_location(em2, file$e, 115, 391, 3501);
-    			add_location(em3, file$e, 115, 489, 3599);
+    			add_location(span3, file$e, 115, 152, 2617);
+    			set_style(em2, "color", "red");
+    			add_location(em2, file$e, 115, 205, 2670);
+    			set_style(em3, "color", "red");
+    			add_location(em3, file$e, 115, 250, 2715);
     			attr_dev(li3, "class", "svelte-ixpg0w");
-    			add_location(li3, file$e, 115, 4, 3114);
-    			add_location(strong5, file$e, 116, 24, 3677);
-    			add_location(strong6, file$e, 116, 96, 3749);
+    			add_location(li3, file$e, 115, 4, 2469);
+    			set_style(strong5, "color", "blue");
+    			add_location(strong5, file$e, 116, 8, 2778);
+    			set_style(em4, "color", "red");
+    			add_location(em4, file$e, 116, 52, 2822);
     			attr_dev(li4, "class", "svelte-ixpg0w");
-    			add_location(li4, file$e, 116, 4, 3657);
+    			add_location(li4, file$e, 116, 4, 2774);
     			attr_dev(ol0, "class", "svelte-ixpg0w");
-    			add_location(ol0, file$e, 111, 3, 2494);
-    			attr_dev(a0, "href", "http://ijcsit.com/docs/Volume%207/vol7issue5/ijcsit20160705014.pdf");
-    			attr_dev(a0, "title", "CNN Applications");
-    			attr_dev(a0, "class", "svelte-ixpg0w");
-    			add_location(a0, file$e, 119, 355, 4198);
+    			add_location(ol0, file$e, 111, 3, 2097);
+    			set_style(em5, "color", "red");
+    			add_location(em5, file$e, 119, 112, 3011);
+    			set_style(em6, "color", "red");
+    			add_location(em6, file$e, 119, 145, 3044);
+    			set_style(em7, "color", "red");
+    			add_location(em7, file$e, 119, 176, 3075);
+    			set_style(em8, "color", "red");
+    			add_location(em8, file$e, 119, 207, 3106);
     			attr_dev(p2, "class", "svelte-ixpg0w");
-    			add_location(p2, file$e, 118, 3, 3839);
-    			attr_dev(a1, "href", "http://cs231n.stanford.edu/");
-    			attr_dev(a1, "title", "Tiny VGG Net presented by Stanford's CS231n");
-    			attr_dev(a1, "class", "svelte-ixpg0w");
-    			add_location(a1, file$e, 122, 201, 4592);
+    			add_location(p2, file$e, 118, 3, 2895);
+    			set_style(em9, "color", "red");
+    			add_location(em9, file$e, 122, 74, 3231);
     			attr_dev(p3, "class", "svelte-ixpg0w");
-    			add_location(p3, file$e, 121, 3, 4387);
+    			add_location(p3, file$e, 121, 3, 3153);
     			attr_dev(h21, "class", "svelte-ixpg0w");
-    			add_location(h21, file$e, 125, 6, 4910);
+    			add_location(h21, file$e, 125, 6, 3333);
     			attr_dev(p4, "class", "svelte-ixpg0w");
-    			add_location(p4, file$e, 126, 6, 4965);
+    			add_location(p4, file$e, 126, 6, 3359);
     			attr_dev(h40, "id", "article-input");
     			attr_dev(h40, "class", "svelte-ixpg0w");
-    			add_location(h40, file$e, 129, 6, 5152);
+    			add_location(h40, file$e, 129, 6, 3422);
     			attr_dev(img0, "class", "is-rounded svelte-ixpg0w");
     			attr_dev(img0, "width", "12%");
     			attr_dev(img0, "height", "12%");
     			if (!src_url_equal(img0.src, img0_src_value = "/assets/figures/network_details.png")) attr_dev(img0, "src", img0_src_value);
     			attr_dev(img0, "alt", "network details icon");
-    			add_location(img0, file$e, 131, 293, 5495);
+    			add_location(img0, file$e, 131, 77, 3541);
     			attr_dev(p5, "class", "svelte-ixpg0w");
-    			add_location(p5, file$e, 130, 6, 5198);
+    			add_location(p5, file$e, 130, 6, 3460);
     			attr_dev(h41, "id", "article-convolution");
     			attr_dev(h41, "class", "svelte-ixpg0w");
-    			add_location(h41, file$e, 133, 6, 5714);
+    			add_location(h41, file$e, 133, 6, 3706);
     			attr_dev(p6, "class", "svelte-ixpg0w");
-    			add_location(p6, file$e, 134, 6, 5775);
+    			add_location(p6, file$e, 134, 6, 3751);
     			attr_dev(p7, "class", "svelte-ixpg0w");
-    			add_location(p7, file$e, 137, 3, 6298);
+    			add_location(p7, file$e, 137, 3, 3908);
     			attr_dev(p8, "class", "svelte-ixpg0w");
-    			add_location(p8, file$e, 140, 3, 6649);
+    			add_location(p8, file$e, 140, 3, 4013);
     			if (!src_url_equal(img1.src, img1_src_value = "/assets/figures/convlayer_overview_demo.gif")) attr_dev(img1, "src", img1_src_value);
     			attr_dev(img1, "alt", "clicking on topmost first conv. layer activation map");
     			attr_dev(img1, "width", "60%");
     			attr_dev(img1, "height", "60%");
     			attr_dev(img1, "align", "middle");
     			attr_dev(img1, "class", "svelte-ixpg0w");
-    			add_location(img1, file$e, 144, 6, 7207);
+    			add_location(img1, file$e, 144, 6, 4163);
     			attr_dev(div0, "class", "figure-caption svelte-ixpg0w");
-    			add_location(div0, file$e, 145, 6, 7375);
+    			add_location(div0, file$e, 145, 6, 4331);
     			attr_dev(div1, "class", "figure svelte-ixpg0w");
-    			add_location(div1, file$e, 143, 4, 7180);
+    			add_location(div1, file$e, 143, 4, 4136);
     			attr_dev(p9, "class", "svelte-ixpg0w");
-    			add_location(p9, file$e, 150, 3, 7720);
+    			add_location(p9, file$e, 150, 3, 4474);
     			if (!src_url_equal(img2.src, img2_src_value = "/assets/figures/convlayer_detailedview_demo.gif")) attr_dev(img2, "src", img2_src_value);
     			attr_dev(img2, "alt", "clicking on topmost first conv. layer activation map");
     			attr_dev(img2, "class", "svelte-ixpg0w");
-    			add_location(img2, file$e, 154, 6, 8390);
+    			add_location(img2, file$e, 154, 6, 4698);
     			attr_dev(div2, "class", "figure-caption svelte-ixpg0w");
-    			add_location(div2, file$e, 155, 6, 8527);
+    			add_location(div2, file$e, 155, 6, 4835);
     			attr_dev(div3, "class", "figure svelte-ixpg0w");
-    			add_location(div3, file$e, 153, 4, 8363);
+    			add_location(div3, file$e, 153, 4, 4671);
     			attr_dev(p10, "class", "svelte-ixpg0w");
-    			add_location(p10, file$e, 159, 3, 8701);
+    			add_location(p10, file$e, 159, 3, 4921);
     			attr_dev(p11, "class", "svelte-ixpg0w");
-    			add_location(p11, file$e, 162, 3, 9083);
+    			add_location(p11, file$e, 162, 3, 5036);
     			attr_dev(h60, "class", "svelte-ixpg0w");
-    			add_location(h60, file$e, 165, 4, 9591);
+    			add_location(h60, file$e, 165, 4, 5186);
     			attr_dev(p12, "class", "svelte-ixpg0w");
-    			add_location(p12, file$e, 166, 4, 9634);
-    			add_location(strong7, file$e, 170, 9, 9692);
-    			attr_dev(a2, "href", "https://arxiv.org/pdf/1603.07285.pdf");
-    			attr_dev(a2, "title", "See page 13");
-    			attr_dev(a2, "class", "svelte-ixpg0w");
-    			add_location(a2, file$e, 170, 214, 9897);
-    			attr_dev(a3, "href", "https://arxiv.org/pdf/1811.11718.pdf");
-    			attr_dev(a3, "title", "Outlines major padding techniques");
-    			attr_dev(a3, "class", "svelte-ixpg0w");
-    			add_location(a3, file$e, 170, 416, 10099);
-    			attr_dev(a4, "href", "https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf");
-    			attr_dev(a4, "title", "AlexNet");
-    			attr_dev(a4, "class", "svelte-ixpg0w");
-    			add_location(a4, file$e, 170, 800, 10483);
+    			add_location(p12, file$e, 166, 4, 5205);
+    			set_style(strong6, "color", "blue");
+    			add_location(strong6, file$e, 170, 9, 5263);
     			attr_dev(li5, "class", "svelte-ixpg0w");
-    			add_location(li5, file$e, 170, 5, 9688);
-    			add_location(strong8, file$e, 171, 9, 10638);
-    			attr_dev(a5, "href", "https://arxiv.org/pdf/1409.1556.pdf");
-    			attr_dev(a5, "title", "Learn why deeper networks perform better!");
-    			attr_dev(a5, "class", "svelte-ixpg0w");
-    			add_location(a5, file$e, 171, 997, 11626);
+    			add_location(li5, file$e, 170, 5, 5259);
+    			set_style(strong7, "color", "blue");
+    			add_location(strong7, file$e, 171, 9, 5488);
     			attr_dev(li6, "class", "svelte-ixpg0w");
-    			add_location(li6, file$e, 171, 5, 10634);
-    			add_location(strong9, file$e, 172, 9, 11811);
+    			add_location(li6, file$e, 171, 5, 5484);
+    			set_style(strong8, "color", "blue");
+    			add_location(strong8, file$e, 172, 9, 5791);
     			attr_dev(li7, "class", "svelte-ixpg0w");
-    			add_location(li7, file$e, 172, 5, 11807);
+    			add_location(li7, file$e, 172, 5, 5787);
     			attr_dev(ol1, "class", "svelte-ixpg0w");
-    			add_location(ol1, file$e, 169, 4, 9678);
+    			add_location(ol1, file$e, 169, 4, 5249);
     			attr_dev(h42, "class", "svelte-ixpg0w");
-    			add_location(h42, file$e, 174, 4, 12803);
+    			add_location(h42, file$e, 174, 4, 6101);
     			attr_dev(h61, "id", "article-relu");
     			attr_dev(h61, "class", "svelte-ixpg0w");
-    			add_location(h61, file$e, 175, 4, 12837);
-    			attr_dev(a6, "href", "https://arxiv.org/pdf/1512.03385.pdf");
-    			attr_dev(a6, "title", "ResNet");
-    			attr_dev(a6, "class", "svelte-ixpg0w");
-    			add_location(a6, file$e, 177, 295, 13172);
-    			add_location(em4, file$e, 177, 936, 13813);
-    			attr_dev(a7, "href", "https://arxiv.org/pdf/1906.01975.pdf");
-    			attr_dev(a7, "title", "See page 29");
-    			attr_dev(a7, "class", "svelte-ixpg0w");
-    			add_location(a7, file$e, 177, 973, 13850);
+    			add_location(h61, file$e, 175, 4, 6119);
     			attr_dev(p13, "class", "svelte-ixpg0w");
-    			add_location(p13, file$e, 176, 4, 12873);
+    			add_location(p13, file$e, 176, 4, 6155);
     			attr_dev(p14, "class", "svelte-ixpg0w");
-    			add_location(p14, file$e, 179, 4, 14021);
+    			add_location(p14, file$e, 179, 4, 6410);
     			if (!src_url_equal(img3.src, img3_src_value = "/assets/figures/relu_graph.png")) attr_dev(img3, "src", img3_src_value);
     			attr_dev(img3, "alt", "relu graph");
     			attr_dev(img3, "width", "30%");
     			attr_dev(img3, "height", "30%");
     			attr_dev(img3, "class", "svelte-ixpg0w");
-    			add_location(img3, file$e, 183, 4, 14152);
+    			add_location(img3, file$e, 183, 4, 6491);
     			attr_dev(div4, "class", "figure-caption svelte-ixpg0w");
-    			add_location(div4, file$e, 184, 6, 14254);
+    			add_location(div4, file$e, 184, 6, 6593);
     			attr_dev(div5, "class", "figure svelte-ixpg0w");
-    			add_location(div5, file$e, 182, 4, 14127);
+    			add_location(div5, file$e, 182, 4, 6466);
     			attr_dev(p15, "class", "svelte-ixpg0w");
-    			add_location(p15, file$e, 188, 4, 14403);
+    			add_location(p15, file$e, 188, 4, 6681);
     			attr_dev(h62, "id", "article-softmax");
     			attr_dev(h62, "class", "svelte-ixpg0w");
-    			add_location(h62, file$e, 191, 4, 14955);
+    			add_location(h62, file$e, 191, 4, 6848);
     			set_style(span4, "color", "#FFC385");
-    			add_location(span4, file$e, 194, 424, 15448);
+    			add_location(span4, file$e, 194, 128, 7045);
     			set_style(span5, "color", "#C44103");
-    			add_location(span5, file$e, 194, 480, 15504);
+    			add_location(span5, file$e, 194, 175, 7092);
     			attr_dev(p16, "class", "svelte-ixpg0w");
-    			add_location(p16, file$e, 192, 4, 14997);
+    			add_location(p16, file$e, 192, 4, 6890);
     			attr_dev(p17, "class", "svelte-ixpg0w");
-    			add_location(p17, file$e, 196, 4, 15682);
+    			add_location(p17, file$e, 196, 4, 7180);
     			if (!src_url_equal(img4.src, img4_src_value = "/assets/figures/softmax_animation.gif")) attr_dev(img4, "src", img4_src_value);
     			attr_dev(img4, "alt", "softmax interactive formula view");
     			attr_dev(img4, "class", "svelte-ixpg0w");
-    			add_location(img4, file$e, 200, 4, 16272);
-    			add_location(em5, file$e, 202, 22, 16429);
+    			add_location(img4, file$e, 200, 4, 7374);
+    			set_style(strong9, "color", "blue");
+    			add_location(strong9, file$e, 202, 11, 7520);
     			attr_dev(div6, "class", "figure-caption svelte-ixpg0w");
-    			add_location(div6, file$e, 201, 6, 16378);
+    			add_location(div6, file$e, 201, 6, 7480);
     			attr_dev(div7, "class", "figure svelte-ixpg0w");
-    			add_location(div7, file$e, 199, 4, 16247);
+    			add_location(div7, file$e, 199, 4, 7349);
     			attr_dev(h43, "id", "article-pooling");
     			attr_dev(h43, "class", "svelte-ixpg0w");
-    			add_location(h43, file$e, 205, 4, 16683);
+    			add_location(h43, file$e, 205, 4, 7649);
     			attr_dev(p18, "class", "svelte-ixpg0w");
-    			add_location(p18, file$e, 206, 4, 16732);
+    			add_location(p18, file$e, 206, 4, 7687);
     			attr_dev(p19, "class", "svelte-ixpg0w");
-    			add_location(p19, file$e, 209, 4, 17060);
+    			add_location(p19, file$e, 209, 4, 7802);
     			attr_dev(p20, "class", "svelte-ixpg0w");
-    			add_location(p20, file$e, 212, 4, 17465);
+    			add_location(p20, file$e, 212, 4, 7934);
     			attr_dev(h44, "id", "article-flatten");
     			attr_dev(h44, "class", "svelte-ixpg0w");
-    			add_location(h44, file$e, 215, 4, 17767);
+    			add_location(h44, file$e, 215, 4, 8053);
     			attr_dev(p21, "class", "svelte-ixpg0w");
-    			add_location(p21, file$e, 216, 4, 17815);
+    			add_location(p21, file$e, 216, 4, 8091);
     			attr_dev(h22, "class", "svelte-ixpg0w");
-    			add_location(h22, file$e, 220, 4, 18413);
-    			add_location(strong10, file$e, 222, 9, 18461);
+    			add_location(h22, file$e, 220, 4, 8282);
+    			add_location(strong10, file$e, 222, 9, 8314);
+    			set_style(em10, "color", "red");
+    			add_location(em10, file$e, 222, 35, 8340);
     			attr_dev(img5, "class", "icon is-rounded svelte-ixpg0w");
     			if (!src_url_equal(img5.src, img5_src_value = "/assets/figures/upload_image_icon.png")) attr_dev(img5, "src", img5_src_value);
     			attr_dev(img5, "alt", "upload image icon");
-    			add_location(img5, file$e, 222, 61, 18513);
+    			add_location(img5, file$e, 222, 70, 8375);
     			attr_dev(li8, "class", "svelte-ixpg0w");
-    			add_location(li8, file$e, 222, 5, 18457);
-    			add_location(strong11, file$e, 223, 9, 18814);
+    			add_location(li8, file$e, 222, 5, 8310);
+    			set_style(strong11, "color", "blue");
+    			add_location(strong11, file$e, 223, 9, 8551);
+    			set_style(em11, "color", "red");
+    			add_location(em11, file$e, 223, 59, 8601);
     			attr_dev(img6, "class", "is-rounded svelte-ixpg0w");
     			attr_dev(img6, "width", "12%");
     			attr_dev(img6, "height", "12%");
     			if (!src_url_equal(img6.src, img6_src_value = "/assets/figures/heatmap_scale.png")) attr_dev(img6, "src", img6_src_value);
     			attr_dev(img6, "alt", "heatmap");
-    			add_location(img6, file$e, 223, 158, 18963);
+    			add_location(img6, file$e, 223, 94, 8636);
     			attr_dev(li9, "class", "svelte-ixpg0w");
-    			add_location(li9, file$e, 223, 5, 18810);
-    			add_location(strong12, file$e, 224, 9, 19093);
+    			add_location(li9, file$e, 223, 5, 8547);
+    			set_style(strong12, "color", "blue");
+    			add_location(strong12, file$e, 224, 9, 8782);
+    			set_style(em12, "color", "red");
+    			add_location(em12, file$e, 224, 56, 8829);
     			attr_dev(img7, "class", "is-rounded svelte-ixpg0w");
     			attr_dev(img7, "width", "12%");
     			attr_dev(img7, "height", "12%");
     			if (!src_url_equal(img7.src, img7_src_value = "/assets/figures/network_details.png")) attr_dev(img7, "src", img7_src_value);
     			attr_dev(img7, "alt", "network details icon");
-    			add_location(img7, file$e, 224, 110, 19194);
+    			add_location(img7, file$e, 224, 89, 8862);
     			attr_dev(li10, "class", "svelte-ixpg0w");
-    			add_location(li10, file$e, 224, 5, 19089);
-    			add_location(strong13, file$e, 225, 9, 19344);
+    			add_location(li10, file$e, 224, 5, 8778);
+    			set_style(strong13, "color", "blue");
+    			add_location(strong13, file$e, 225, 9, 9024);
+    			set_style(em13, "color", "red");
+    			add_location(em13, file$e, 225, 56, 9071);
     			attr_dev(img8, "class", "icon is-rounded svelte-ixpg0w");
     			if (!src_url_equal(img8.src, img8_src_value = "/assets/figures/play_button.png")) attr_dev(img8, "src", img8_src_value);
     			attr_dev(img8, "alt", "play icon");
-    			add_location(img8, file$e, 225, 70, 19405);
-    			add_location(em6, file$e, 225, 212, 19547);
+    			add_location(img8, file$e, 225, 87, 9102);
+    			set_style(em14, "color", "red");
+    			add_location(em14, file$e, 225, 192, 9207);
     			attr_dev(li11, "class", "svelte-ixpg0w");
-    			add_location(li11, file$e, 225, 5, 19340);
-    			add_location(strong14, file$e, 226, 10, 19699);
+    			add_location(li11, file$e, 225, 5, 9020);
+    			set_style(strong14, "color", "blue");
+    			add_location(strong14, file$e, 226, 10, 9281);
+    			set_style(em15, "color", "red");
+    			add_location(em15, file$e, 226, 56, 9327);
     			attr_dev(img9, "class", "icon is-rounded svelte-ixpg0w");
     			if (!src_url_equal(img9.src, img9_src_value = "/assets/figures/info_button.png")) attr_dev(img9, "src", img9_src_value);
     			attr_dev(img9, "alt", "info icon");
-    			add_location(img9, file$e, 226, 61, 19750);
-    			add_location(em7, file$e, 226, 165, 19854);
+    			add_location(img9, file$e, 226, 92, 9363);
     			attr_dev(li12, "class", "svelte-ixpg0w");
-    			add_location(li12, file$e, 226, 6, 19695);
+    			add_location(li12, file$e, 226, 6, 9277);
     			attr_dev(ol2, "class", "svelte-ixpg0w");
-    			add_location(ol2, file$e, 221, 4, 18447);
-    			attr_dev(h23, "class", "svelte-ixpg0w");
-    			add_location(h23, file$e, 229, 4, 19949);
-    			attr_dev(small0, "class", "svelte-ixpg0w");
-    			add_location(small0, file$e, 233, 8, 20088);
-    			attr_dev(li13, "class", "video-link svelte-ixpg0w");
-    			add_location(li13, file$e, 231, 6, 19988);
-    			add_location(em8, file$e, 236, 8, 20199);
-    			attr_dev(small1, "class", "svelte-ixpg0w");
-    			add_location(small1, file$e, 237, 8, 20225);
-    			attr_dev(li14, "class", "video-link svelte-ixpg0w");
-    			add_location(li14, file$e, 235, 6, 20133);
-    			add_location(em9, file$e, 240, 22, 20350);
-    			attr_dev(small2, "class", "svelte-ixpg0w");
-    			add_location(small2, file$e, 241, 8, 20392);
-    			attr_dev(li15, "class", "video-link svelte-ixpg0w");
-    			add_location(li15, file$e, 239, 6, 20270);
-    			add_location(em10, file$e, 244, 41, 20536);
-    			attr_dev(small3, "class", "svelte-ixpg0w");
-    			add_location(small3, file$e, 245, 8, 20579);
-    			attr_dev(li16, "class", "video-link svelte-ixpg0w");
-    			add_location(li16, file$e, 243, 6, 20437);
-    			add_location(em11, file$e, 248, 16, 20698);
-    			attr_dev(small4, "class", "svelte-ixpg0w");
-    			add_location(small4, file$e, 249, 8, 20740);
-    			attr_dev(li17, "class", "video-link svelte-ixpg0w");
-    			add_location(li17, file$e, 247, 6, 20624);
-    			add_location(em12, file$e, 252, 16, 20860);
-    			attr_dev(small5, "class", "svelte-ixpg0w");
-    			add_location(small5, file$e, 253, 8, 20902);
-    			attr_dev(li18, "class", "video-link svelte-ixpg0w");
-    			add_location(li18, file$e, 251, 6, 20785);
-    			attr_dev(small6, "class", "svelte-ixpg0w");
-    			add_location(small6, file$e, 257, 8, 21081);
-    			attr_dev(li19, "class", "video-link svelte-ixpg0w");
-    			add_location(li19, file$e, 255, 6, 20947);
-    			attr_dev(small7, "class", "svelte-ixpg0w");
-    			add_location(small7, file$e, 261, 8, 21230);
-    			attr_dev(li20, "class", "video-link svelte-ixpg0w");
-    			add_location(li20, file$e, 259, 6, 21126);
-    			attr_dev(ul, "class", "svelte-ixpg0w");
-    			add_location(ul, file$e, 230, 4, 19977);
-    			attr_dev(div8, "class", "video svelte-ixpg0w");
-    			add_location(div8, file$e, 264, 4, 21283);
-    			attr_dev(h24, "class", "svelte-ixpg0w");
-    			add_location(h24, file$e, 268, 4, 21406);
-    			add_location(em13, file$e, 270, 62, 21519);
-    			attr_dev(a8, "href", "https://js.tensorflow.org/");
-    			attr_dev(a8, "class", "svelte-ixpg0w");
-    			add_location(a8, file$e, 270, 25, 21482);
-    			add_location(em14, file$e, 270, 282, 21739);
-    			attr_dev(a9, "href", "https://svelte.dev/");
-    			attr_dev(a9, "class", "svelte-ixpg0w");
-    			add_location(a9, file$e, 270, 252, 21709);
-    			add_location(em15, file$e, 270, 349, 21806);
-    			attr_dev(a10, "href", "https://d3js.org/");
-    			attr_dev(a10, "class", "svelte-ixpg0w");
-    			add_location(a10, file$e, 270, 321, 21778);
-    			attr_dev(p22, "class", "svelte-ixpg0w");
-    			add_location(p22, file$e, 269, 4, 21453);
-    			attr_dev(h25, "class", "svelte-ixpg0w");
-    			add_location(h25, file$e, 273, 4, 21923);
-    			attr_dev(a11, "href", "https://zijie.wang/");
-    			attr_dev(a11, "class", "svelte-ixpg0w");
-    			add_location(a11, file$e, 276, 6, 22011);
-    			attr_dev(a12, "href", "https://www.linkedin.com/in/robert-turko/");
-    			attr_dev(a12, "class", "svelte-ixpg0w");
-    			add_location(a12, file$e, 277, 6, 22061);
-    			attr_dev(a13, "href", "http://oshaikh.com/");
-    			attr_dev(a13, "class", "svelte-ixpg0w");
-    			add_location(a13, file$e, 278, 6, 22138);
-    			attr_dev(a14, "href", "https://haekyu.com/");
-    			attr_dev(a14, "class", "svelte-ixpg0w");
-    			add_location(a14, file$e, 279, 6, 22191);
-    			attr_dev(a15, "href", "http://nilakshdas.com/");
-    			attr_dev(a15, "class", "svelte-ixpg0w");
-    			add_location(a15, file$e, 280, 6, 22244);
-    			attr_dev(a16, "href", "https://fredhohman.com/");
-    			attr_dev(a16, "class", "svelte-ixpg0w");
-    			add_location(a16, file$e, 281, 6, 22300);
-    			attr_dev(a17, "href", "http://minsuk.com");
-    			attr_dev(a17, "class", "svelte-ixpg0w");
-    			add_location(a17, file$e, 282, 6, 22357);
-    			attr_dev(a18, "href", "https://www.cc.gatech.edu/~dchau/");
-    			attr_dev(a18, "class", "svelte-ixpg0w");
-    			add_location(a18, file$e, 283, 6, 22413);
-    			attr_dev(p23, "class", "svelte-ixpg0w");
-    			add_location(p23, file$e, 274, 4, 21965);
-    			attr_dev(div9, "id", "description");
-    			attr_dev(div9, "class", "svelte-ixpg0w");
-    			add_location(div9, file$e, 103, 2, 1779);
+    			add_location(ol2, file$e, 221, 4, 8300);
+    			attr_dev(div8, "id", "description");
+    			attr_dev(div8, "class", "svelte-ixpg0w");
+    			add_location(div8, file$e, 103, 2, 1779);
     			add_location(body, file$e, 102, 0, 1770);
     		},
     		l: function claim(nodes) {
@@ -8355,422 +8053,226 @@ var app = (function () {
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, body, anchor);
-    			append_dev(body, div9);
-    			append_dev(div9, h20);
-    			append_dev(div9, t1);
-    			append_dev(div9, p0);
+    			append_dev(body, div8);
+    			append_dev(div8, h20);
+    			append_dev(div8, t1);
+    			append_dev(div8, p0);
     			append_dev(p0, t2);
     			append_dev(p0, em0);
     			append_dev(p0, t4);
     			append_dev(p0, em1);
     			append_dev(p0, t6);
-    			append_dev(div9, t7);
-    			append_dev(div9, p1);
-    			append_dev(div9, t9);
-    			append_dev(div9, ol0);
+    			append_dev(div8, t7);
+    			append_dev(div8, p1);
+    			append_dev(div8, t9);
+    			append_dev(div8, ol0);
     			append_dev(ol0, li0);
-    			append_dev(li0, t10);
     			append_dev(li0, strong0);
-    			append_dev(li0, t12);
-    			append_dev(ol0, t13);
+    			append_dev(li0, t11);
+    			append_dev(ol0, t12);
     			append_dev(ol0, li1);
-    			append_dev(li1, t14);
     			append_dev(li1, strong1);
-    			append_dev(li1, t16);
+    			append_dev(li1, t14);
     			append_dev(li1, span0);
-    			append_dev(li1, t18);
+    			append_dev(li1, t16);
     			append_dev(li1, span1);
-    			append_dev(li1, t20);
+    			append_dev(li1, t18);
     			append_dev(li1, strong2);
-    			append_dev(li1, t22);
-    			append_dev(ol0, t23);
+    			append_dev(li1, t20);
+    			append_dev(ol0, t21);
     			append_dev(ol0, li2);
-    			append_dev(li2, t24);
     			append_dev(li2, strong3);
-    			append_dev(li2, t26);
-    			append_dev(ol0, t27);
+    			append_dev(li2, t23);
+    			append_dev(ol0, t24);
     			append_dev(ol0, li3);
     			append_dev(li3, strong4);
-    			append_dev(li3, t29);
+    			append_dev(li3, t26);
     			append_dev(li3, span2);
-    			append_dev(li3, t31);
+    			append_dev(li3, t28);
     			append_dev(li3, span3);
-    			append_dev(li3, t33);
+    			append_dev(li3, t30);
     			append_dev(li3, em2);
-    			append_dev(li3, t35);
+    			append_dev(li3, t32);
     			append_dev(li3, em3);
-    			append_dev(li3, t37);
-    			append_dev(ol0, t38);
+    			append_dev(li3, t34);
+    			append_dev(ol0, t35);
     			append_dev(ol0, li4);
-    			append_dev(li4, t39);
     			append_dev(li4, strong5);
-    			append_dev(li4, t41);
-    			append_dev(li4, strong6);
-    			append_dev(li4, t43);
-    			append_dev(div9, t44);
-    			append_dev(div9, p2);
+    			append_dev(li4, t37);
+    			append_dev(li4, em4);
+    			append_dev(li4, t39);
+    			append_dev(div8, t40);
+    			append_dev(div8, p2);
+    			append_dev(p2, t41);
+    			append_dev(p2, em5);
+    			append_dev(p2, t43);
+    			append_dev(p2, em6);
     			append_dev(p2, t45);
-    			append_dev(p2, a0);
+    			append_dev(p2, em7);
     			append_dev(p2, t47);
-    			append_dev(div9, t48);
-    			append_dev(div9, p3);
-    			append_dev(p3, t49);
-    			append_dev(p3, a1);
+    			append_dev(p2, em8);
+    			append_dev(p2, t49);
+    			append_dev(div8, t50);
+    			append_dev(div8, p3);
     			append_dev(p3, t51);
-    			append_dev(div9, t52);
-    			append_dev(div9, h21);
-    			append_dev(div9, t54);
-    			append_dev(div9, p4);
-    			append_dev(div9, t56);
-    			append_dev(div9, h40);
-    			append_dev(div9, t58);
-    			append_dev(div9, p5);
-    			append_dev(p5, t59);
+    			append_dev(p3, em9);
+    			append_dev(p3, t53);
+    			append_dev(div8, t54);
+    			append_dev(div8, h21);
+    			append_dev(div8, t56);
+    			append_dev(div8, p4);
+    			append_dev(div8, t58);
+    			append_dev(div8, h40);
+    			append_dev(div8, t60);
+    			append_dev(div8, p5);
+    			append_dev(p5, t61);
     			append_dev(p5, img0);
-    			append_dev(p5, t60);
-    			append_dev(div9, t61);
-    			append_dev(div9, h41);
-    			append_dev(div9, t63);
-    			append_dev(div9, p6);
-    			append_dev(div9, t65);
-    			append_dev(div9, p7);
-    			append_dev(div9, t67);
-    			append_dev(div9, p8);
-    			append_dev(div9, t69);
-    			append_dev(div9, div1);
+    			append_dev(p5, t62);
+    			append_dev(div8, t63);
+    			append_dev(div8, h41);
+    			append_dev(div8, t65);
+    			append_dev(div8, p6);
+    			append_dev(div8, t67);
+    			append_dev(div8, p7);
+    			append_dev(div8, t69);
+    			append_dev(div8, p8);
+    			append_dev(div8, t71);
+    			append_dev(div8, div1);
     			append_dev(div1, img1);
-    			append_dev(div1, t70);
+    			append_dev(div1, t72);
     			append_dev(div1, div0);
-    			append_dev(div9, t72);
-    			append_dev(div9, p9);
-    			append_dev(div9, t74);
-    			append_dev(div9, div3);
+    			append_dev(div8, t74);
+    			append_dev(div8, p9);
+    			append_dev(div8, t76);
+    			append_dev(div8, div3);
     			append_dev(div3, img2);
-    			append_dev(div3, t75);
+    			append_dev(div3, t77);
     			append_dev(div3, div2);
-    			append_dev(div9, t77);
-    			append_dev(div9, p10);
-    			append_dev(div9, t79);
-    			append_dev(div9, p11);
-    			append_dev(div9, t81);
-    			append_dev(div9, h60);
-    			append_dev(div9, t83);
-    			append_dev(div9, p12);
+    			append_dev(div8, t79);
+    			append_dev(div8, p10);
+    			append_dev(div8, t81);
+    			append_dev(div8, p11);
+    			append_dev(div8, t83);
+    			append_dev(div8, h60);
+    			append_dev(div8, t85);
+    			append_dev(div8, p12);
     			mount_component(hyperparameterview, p12, null);
-    			append_dev(div9, t84);
-    			append_dev(div9, ol1);
+    			append_dev(div8, t86);
+    			append_dev(div8, ol1);
     			append_dev(ol1, li5);
-    			append_dev(li5, strong7);
-    			append_dev(li5, t86);
-    			append_dev(li5, a2);
+    			append_dev(li5, strong6);
     			append_dev(li5, t88);
-    			append_dev(li5, a3);
-    			append_dev(li5, t90);
-    			append_dev(li5, a4);
-    			append_dev(li5, t92);
-    			append_dev(ol1, t93);
+    			append_dev(ol1, t89);
     			append_dev(ol1, li6);
-    			append_dev(li6, strong8);
-    			append_dev(li6, t95);
-    			append_dev(li6, a5);
-    			append_dev(li6, t97);
-    			append_dev(ol1, t98);
+    			append_dev(li6, strong7);
+    			append_dev(li6, t91);
+    			append_dev(ol1, t92);
     			append_dev(ol1, li7);
-    			append_dev(li7, strong9);
-    			append_dev(li7, t100);
-    			append_dev(div9, t101);
-    			append_dev(div9, h42);
-    			append_dev(div9, t103);
-    			append_dev(div9, h61);
-    			append_dev(div9, t105);
-    			append_dev(div9, p13);
-    			append_dev(p13, t106);
-    			append_dev(p13, a6);
-    			append_dev(p13, t108);
-    			append_dev(p13, em4);
-    			append_dev(p13, t110);
-    			append_dev(p13, a7);
-    			append_dev(p13, t112);
-    			append_dev(div9, t113);
-    			append_dev(div9, p14);
-    			append_dev(div9, t116);
-    			append_dev(div9, div5);
+    			append_dev(li7, strong8);
+    			append_dev(li7, t94);
+    			append_dev(div8, t95);
+    			append_dev(div8, h42);
+    			append_dev(div8, t97);
+    			append_dev(div8, h61);
+    			append_dev(div8, t99);
+    			append_dev(div8, p13);
+    			append_dev(div8, t101);
+    			append_dev(div8, p14);
+    			append_dev(div8, t104);
+    			append_dev(div8, div5);
     			append_dev(div5, img3);
-    			append_dev(div5, t117);
+    			append_dev(div5, t105);
     			append_dev(div5, div4);
-    			append_dev(div9, t119);
-    			append_dev(div9, p15);
-    			append_dev(div9, t121);
-    			append_dev(div9, h62);
-    			append_dev(div9, t123);
-    			append_dev(div9, p16);
-    			append_dev(p16, t124);
-    			append_dev(p16, t125);
+    			append_dev(div8, t107);
+    			append_dev(div8, p15);
+    			append_dev(div8, t109);
+    			append_dev(div8, h62);
+    			append_dev(div8, t111);
+    			append_dev(div8, p16);
+    			append_dev(p16, t112);
+    			append_dev(p16, t113);
     			append_dev(p16, span4);
-    			append_dev(p16, t127);
+    			append_dev(p16, t115);
     			append_dev(p16, span5);
-    			append_dev(p16, t129);
-    			append_dev(div9, t130);
-    			append_dev(div9, p17);
-    			append_dev(div9, t132);
-    			append_dev(div9, div7);
+    			append_dev(p16, t117);
+    			append_dev(div8, t118);
+    			append_dev(div8, p17);
+    			append_dev(div8, t120);
+    			append_dev(div8, div7);
     			append_dev(div7, img4);
-    			append_dev(div7, t133);
+    			append_dev(div7, t121);
     			append_dev(div7, div6);
-    			append_dev(div6, t134);
-    			append_dev(div6, em5);
-    			append_dev(div6, t136);
-    			append_dev(div9, t137);
-    			append_dev(div9, h43);
-    			append_dev(div9, t139);
-    			append_dev(div9, p18);
-    			append_dev(div9, t141);
-    			append_dev(div9, p19);
-    			append_dev(div9, t143);
-    			append_dev(div9, p20);
-    			append_dev(div9, t145);
-    			append_dev(div9, h44);
-    			append_dev(div9, t147);
-    			append_dev(div9, p21);
-    			append_dev(div9, t149);
-    			append_dev(div9, h22);
-    			append_dev(div9, t151);
-    			append_dev(div9, ol2);
+    			append_dev(div6, t122);
+    			append_dev(div6, strong9);
+    			append_dev(div6, t124);
+    			append_dev(div8, t125);
+    			append_dev(div8, h43);
+    			append_dev(div8, t127);
+    			append_dev(div8, p18);
+    			append_dev(div8, t129);
+    			append_dev(div8, p19);
+    			append_dev(div8, t131);
+    			append_dev(div8, p20);
+    			append_dev(div8, t133);
+    			append_dev(div8, h44);
+    			append_dev(div8, t135);
+    			append_dev(div8, p21);
+    			append_dev(div8, t137);
+    			append_dev(div8, h22);
+    			append_dev(div8, t139);
+    			append_dev(div8, ol2);
     			append_dev(ol2, li8);
     			append_dev(li8, strong10);
-    			append_dev(li8, t153);
+    			append_dev(li8, t141);
+    			append_dev(li8, em10);
+    			append_dev(li8, t143);
     			append_dev(li8, img5);
-    			append_dev(li8, t154);
-    			append_dev(ol2, t155);
+    			append_dev(li8, t144);
+    			append_dev(ol2, t145);
     			append_dev(ol2, li9);
     			append_dev(li9, strong11);
-    			append_dev(li9, t157);
+    			append_dev(li9, t147);
+    			append_dev(li9, em11);
     			append_dev(li9, img6);
-    			append_dev(li9, t158);
-    			append_dev(ol2, t159);
+    			append_dev(li9, t149);
+    			append_dev(ol2, t150);
     			append_dev(ol2, li10);
     			append_dev(li10, strong12);
-    			append_dev(li10, t161);
+    			append_dev(li10, t152);
+    			append_dev(li10, em12);
     			append_dev(li10, img7);
-    			append_dev(li10, t162);
-    			append_dev(ol2, t163);
+    			append_dev(li10, t154);
+    			append_dev(ol2, t155);
     			append_dev(ol2, li11);
     			append_dev(li11, strong13);
-    			append_dev(li11, t165);
+    			append_dev(li11, t157);
+    			append_dev(li11, em13);
     			append_dev(li11, img8);
-    			append_dev(li11, t166);
-    			append_dev(li11, em6);
-    			append_dev(li11, t168);
-    			append_dev(ol2, t169);
+    			append_dev(li11, t159);
+    			append_dev(li11, em14);
+    			append_dev(li11, t161);
+    			append_dev(ol2, t162);
     			append_dev(ol2, li12);
     			append_dev(li12, strong14);
-    			append_dev(li12, t171);
+    			append_dev(li12, t164);
+    			append_dev(li12, em15);
     			append_dev(li12, img9);
-    			append_dev(li12, t172);
-    			append_dev(li12, em7);
-    			append_dev(li12, t174);
-    			append_dev(div9, t175);
-    			append_dev(div9, h23);
-    			append_dev(div9, t177);
-    			append_dev(div9, ul);
-    			append_dev(ul, li13);
-    			append_dev(li13, t178);
-    			append_dev(li13, small0);
-    			append_dev(ul, t180);
-    			append_dev(ul, li14);
-    			append_dev(li14, em8);
-    			append_dev(li14, t182);
-    			append_dev(li14, small1);
-    			append_dev(ul, t184);
-    			append_dev(ul, li15);
-    			append_dev(li15, t185);
-    			append_dev(li15, em9);
-    			append_dev(li15, t187);
-    			append_dev(li15, small2);
-    			append_dev(ul, t189);
-    			append_dev(ul, li16);
-    			append_dev(li16, t190);
-    			append_dev(li16, em10);
-    			append_dev(li16, t192);
-    			append_dev(li16, small3);
-    			append_dev(ul, t194);
-    			append_dev(ul, li17);
-    			append_dev(li17, t195);
-    			append_dev(li17, em11);
-    			append_dev(li17, t197);
-    			append_dev(li17, small4);
-    			append_dev(ul, t199);
-    			append_dev(ul, li18);
-    			append_dev(li18, t200);
-    			append_dev(li18, em12);
-    			append_dev(li18, t202);
-    			append_dev(li18, small5);
-    			append_dev(ul, t204);
-    			append_dev(ul, li19);
-    			append_dev(li19, t205);
-    			append_dev(li19, small6);
-    			append_dev(ul, t207);
-    			append_dev(ul, li20);
-    			append_dev(li20, t208);
-    			append_dev(li20, small7);
-    			append_dev(div9, t210);
-    			append_dev(div9, div8);
-    			mount_component(youtube, div8, null);
-    			append_dev(div9, t211);
-    			append_dev(div9, h24);
-    			append_dev(div9, t213);
-    			append_dev(div9, p22);
-    			append_dev(p22, t214);
-    			append_dev(p22, a8);
-    			append_dev(a8, em13);
-    			append_dev(p22, t216);
-    			append_dev(p22, a9);
-    			append_dev(a9, em14);
-    			append_dev(p22, t218);
-    			append_dev(p22, a10);
-    			append_dev(a10, em15);
-    			append_dev(p22, t220);
-    			append_dev(div9, t221);
-    			append_dev(div9, h25);
-    			append_dev(div9, t223);
-    			append_dev(div9, p23);
-    			append_dev(p23, t224);
-    			append_dev(p23, a11);
-    			append_dev(p23, t226);
-    			append_dev(p23, a12);
-    			append_dev(p23, t228);
-    			append_dev(p23, a13);
-    			append_dev(p23, t230);
-    			append_dev(p23, a14);
-    			append_dev(p23, t232);
-    			append_dev(p23, a15);
-    			append_dev(p23, t234);
-    			append_dev(p23, a16);
-    			append_dev(p23, t236);
-    			append_dev(p23, a17);
-    			append_dev(p23, t238);
-    			append_dev(p23, a18);
-    			append_dev(p23, t240);
+    			append_dev(li12, t166);
     			current = true;
-
-    			if (!mounted) {
-    				dispose = [
-    					listen_dev(
-    						li13,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(0))) /*currentPlayer*/ ctx[0].play(0).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li14,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(27))) /*currentPlayer*/ ctx[0].play(27).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li15,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(37))) /*currentPlayer*/ ctx[0].play(37).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li16,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(46))) /*currentPlayer*/ ctx[0].play(46).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li17,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(82))) /*currentPlayer*/ ctx[0].play(82).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li18,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(101))) /*currentPlayer*/ ctx[0].play(101).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li19,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(126))) /*currentPlayer*/ ctx[0].play(126).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					),
-    					listen_dev(
-    						li20,
-    						"click",
-    						function () {
-    							if (is_function(/*currentPlayer*/ ctx[0].play(149))) /*currentPlayer*/ ctx[0].play(149).apply(this, arguments);
-    						},
-    						false,
-    						false,
-    						false,
-    						false
-    					)
-    				];
-
-    				mounted = true;
-    			}
     		},
-    		p: function update(new_ctx, [dirty]) {
-    			ctx = new_ctx;
-    			const youtube_changes = {};
-    			youtube.$set(youtube_changes);
-    		},
+    		p: noop,
     		i: function intro(local) {
     			if (current) return;
     			transition_in(hyperparameterview.$$.fragment, local);
-    			transition_in(youtube.$$.fragment, local);
     			current = true;
     		},
     		o: function outro(local) {
     			transition_out(hyperparameterview.$$.fragment, local);
-    			transition_out(youtube.$$.fragment, local);
     			current = false;
     		},
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(body);
     			destroy_component(hyperparameterview);
-    			/*youtube_binding*/ ctx[3](null);
-    			destroy_component(youtube);
-    			mounted = false;
-    			run_all(dispose);
     		}
     	};
 
@@ -8797,13 +8299,6 @@ var app = (function () {
     		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== '$$' && key !== 'slot') console.warn(`<Article> was created with unknown prop '${key}'`);
     	});
 
-    	function youtube_binding($$value) {
-    		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
-    			currentPlayer = $$value;
-    			$$invalidate(0, currentPlayer);
-    		});
-    	}
-
     	$$self.$capture_state = () => ({
     		HyperparameterView: Hyperparameterview,
     		Youtube,
@@ -8813,16 +8308,16 @@ var app = (function () {
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ('softmaxEquation' in $$props) $$invalidate(1, softmaxEquation = $$props.softmaxEquation);
-    		if ('reluEquation' in $$props) $$invalidate(2, reluEquation = $$props.reluEquation);
-    		if ('currentPlayer' in $$props) $$invalidate(0, currentPlayer = $$props.currentPlayer);
+    		if ('softmaxEquation' in $$props) $$invalidate(0, softmaxEquation = $$props.softmaxEquation);
+    		if ('reluEquation' in $$props) $$invalidate(1, reluEquation = $$props.reluEquation);
+    		if ('currentPlayer' in $$props) currentPlayer = $$props.currentPlayer;
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [currentPlayer, softmaxEquation, reluEquation, youtube_binding];
+    	return [softmaxEquation, reluEquation];
     }
 
     class Article extends SvelteComponentDev {
@@ -10122,12 +9617,8 @@ var app = (function () {
       redChannel.append('tspan')
         .style('dominant-baseline', 'hanging')
         .style('fill', '#C95E67')
-        .text('Red');
+        .text('红');
       
-      redChannel.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .text(' channel');
-
       inputAnnotation.append('text')
         .attr('x', nodeCoordinate[0][1].x + nodeLength$2 / 2)
         .attr('y', nodeCoordinate[0][1].y + nodeLength$2 + 5)
@@ -10135,7 +9626,7 @@ var app = (function () {
         .style('dominant-baseline', 'hanging')
         .style('text-anchor', 'middle')
         .style('fill', '#3DB665')
-        .text('Green');
+        .text('绿');
 
       inputAnnotation.append('text')
         .attr('x', nodeCoordinate[0][2].x + nodeLength$2 / 2)
@@ -10144,7 +9635,7 @@ var app = (function () {
         .style('dominant-baseline', 'hanging')
         .style('text-anchor', 'middle')
         .style('fill', '#3F7FBC')
-        .text('Blue');
+        .text('蓝');
     };
 
     /**
@@ -11250,10 +10741,10 @@ var app = (function () {
             .style('fill', gappedColorScale(layerColorScales$4.weight, kernelRange,
               d.bias, kernelColorGap))
             .on('mouseover', () => {
-              hoverInfoStore.set( {show: true, text: `Bias: ${formater$1(d.bias)}`} );
+              hoverInfoStore.set( {show: true, text: `偏置: ${formater$1(d.bias)}`} );
             })
             .on('mouseleave', () => {
-              hoverInfoStore.set( {show: false, text: `Bias: ${formater$1(d.bias)}`} );
+              hoverInfoStore.set( {show: false, text: `偏置: ${formater$1(d.bias)}`} );
             });
 
         // Link from bias to the plus symbol
@@ -11275,10 +10766,10 @@ var app = (function () {
           .style('fill', gappedColorScale(layerColorScales$4.weight, kernelRange,
             d.bias, kernelColorGap))
           .on('mouseover', () => {
-            hoverInfoStore.set( {show: true, text: `Bias: ${formater$1(d.bias)}`} );
+            hoverInfoStore.set( {show: true, text: `偏置: ${formater$1(d.bias)}`} );
           })
           .on('mouseleave', () => {
-            hoverInfoStore.set( {show: false, text: `Bias: ${formater$1(d.bias)}`} );
+            hoverInfoStore.set( {show: false, text: `偏置: ${formater$1(d.bias)}`} );
           });
         
         // Link from bias to the plus symbol
@@ -11425,7 +10916,7 @@ var app = (function () {
         .attr('class', 'kernel-annotation');
       
       kernelAnnotation.append('text')
-        .text('Kernel')
+        .text('卷积核')
         .attr('class', 'annotation-text')
         .attr('x', leftX - 2.5 * kernelRectLength * 3)
         .attr('y', nodeCoordinate$1[curLayerIndex - 1][0].y + kernelRectLength * 3)
@@ -11477,13 +10968,7 @@ var app = (function () {
       
       slideText.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .text('Slide kernel over input channel');
-
-      slideText.append('tspan')
-        .attr('x', sliderX)
-        .attr('dy', '1em')
-        .style('dominant-baseline', 'hanging')
-        .text('to get intermediate result');
+        .text('将卷积核在输入通道上滑动以获得中间结果！');
 
       // slideText.append('tspan')
       //   .attr('x', sliderX)
@@ -11496,12 +10981,12 @@ var app = (function () {
         .attr('dy', '1.2em')
         .style('dominant-baseline', 'hanging')
         .style('font-weight', 700)
-        .text('Click ');
+        .text('点击');
       
       slideText.append('tspan')
         .style('dominant-baseline', 'hanging')
         .style('font-weight', 400)
-        .text('to learn more');
+        .text('了解更多！');
 
       drawArrow({
         group: group,
@@ -11524,25 +11009,13 @@ var app = (function () {
 
       slideText2.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .text('Each input chanel');
-
-      slideText2.append('tspan')
-        .attr('x', sliderX)
-        .attr('dy', '1em')
-        .style('dominant-baseline', 'hanging')
-        .text('gets a different kernel');
+        .text('每个输入通道使用不同的卷积核！');
 
       slideText2.append('tspan')
         .attr('x', sliderX)
         .attr('dy', '1.3em')
-        .style('font-weight', 700)
         .style('dominant-baseline', 'hanging')
-        .text('Hover over ');
-
-      slideText2.append('tspan')
-        .style('font-weight', 400)
-        .style('dominant-baseline', 'hanging')
-        .text('to see value!');
+        .text('将鼠标悬停在激活映射上查看数值！');
 
       drawArrow({
         group: group,
@@ -11583,14 +11056,8 @@ var app = (function () {
       
       plusText.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .text('Add up all intermediate');
-      
-      plusText.append('tspan')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .style('dominant-baseline', 'hanging')
-        .text('results and then add bias');
-      
+        .text('将所有中间结果相加，然后加上偏置！');
+       
       if (i === 9) {
         drawArrow({
           group: group,
@@ -11628,7 +11095,7 @@ var app = (function () {
         .attr('y', biasTextY)
         .style('text-anchor', 'middle')
         .style('dominant-baseline', i === 0 ? 'hanging' : 'baseline')
-        .text('Bias');
+        .text('偏置');
     };
 
     /**
@@ -12402,7 +11869,7 @@ var app = (function () {
       // Update the hover info UI
       hoverInfoStore.set({
         show: true,
-        text: `Logit: ${formater$2(logits[i])}`
+        text: `得分: ${formater$2(logits[i])}`
       });
 
       // Highlight the text in the detail view
@@ -12451,7 +11918,7 @@ var app = (function () {
       // Update the hover info UI
       hoverInfoStore.set({
         show: false,
-        text: `Logit: ${formater$2(logits[i])}`
+        text: `得分: ${formater$2(logits[i])}`
       });
 
       // Dehighlight the text in the detail view
@@ -12878,7 +12345,7 @@ var app = (function () {
         .style('dominant-baseline', 'middle')
         .style('opacity', 0.8)
         .style('font-weight', 800)
-        .text('logit');
+        .text('得分');
     };
 
     const removeLogitLayer = () => {
@@ -13024,21 +12491,8 @@ var app = (function () {
               .attr('class', 'annotation-text softmax-detail-text')
               .style('dominant-baseline', 'baseline')
               .style('text-anchor', 'middle')
-              .text('Normalize ');
+              .text('将得分转化为概率分布！');
             
-            text.append('tspan') 
-              .attr('dx', 1)
-              .style('fill', '#E56014')
-              .text('logits');
-            
-            text.append('tspan')
-              .attr('dx', 1)
-              .text(' into');
-
-            text.append('tspan')
-              .attr('x', textX)
-              .attr('dy', '1.1em')
-              .text('class probabilities');
 
             if (selectedI === 0) {
               drawArrow({
@@ -13087,7 +12541,7 @@ var app = (function () {
               .style('font-weight', '800')
               .append('tspan')
               .attr('x', 0)
-              .text('logit')
+              .text('得分')
               .append('tspan')
               .attr('x', 0)
               .style('font-size', '8px')
@@ -13100,11 +12554,7 @@ var app = (function () {
               .attr('x', textX)
               .attr('y', (svgPaddings$3.top + vSpaceAroundGap$3) / 2 + 3)
               .style('text-anchor', 'start')
-              .text('Before')
-              .append('tspan')
-              .attr('x', textX)
-              .attr('dy', '1em')
-              .text('normalization');
+              .text('转化前');
 
 
             drawArrow({
@@ -13123,11 +12573,7 @@ var app = (function () {
               .attr('x', nodeCoordinate$2[layerIndexDict['output']][0].x - 35)
               .attr('y', (svgPaddings$3.top + vSpaceAroundGap$3) / 2 + 3)
               .style('text-anchor', 'end')
-              .text('After')
-              .append('tspan')
-              .attr('x', nodeCoordinate$2[layerIndexDict['output']][0].x - 35)
-              .attr('dy', '1em')
-              .text('normalization');
+              .text('转化后');
 
             drawArrow({
               group: softmaxDetailAnnotation,
@@ -13174,28 +12620,7 @@ var app = (function () {
               .append('tspan')
               .style('font-weight', 700)
               .style('dominant-baseline', 'baseline')
-              .text(`Hover over `)
-              .append('tspan')
-              .style('font-weight', 400)
-              .style('dominant-baseline', 'baseline')
-              .text('to see');
-            
-            hoverText.append('tspan')
-              .style('dominant-baseline', 'baseline')
-              .attr('x', textX)
-              .attr('dy', '1em')
-              .text('its ');
-
-            hoverText.append('tspan')
-              .style('dominant-baseline', 'baseline')
-              .attr('dx', 1)
-              .style('fill', '#E56014')
-              .text('logit');
-            
-            hoverText.append('tspan')
-              .style('dominant-baseline', 'baseline')
-              .attr('dx', 1)
-              .text(' value');
+              .text(`悬停看一看得分！`);
             
             drawArrow({
               group: hoverTextGroup,
@@ -13662,10 +13087,10 @@ var app = (function () {
         .style('fill', gappedColorScale(layerColorScales$5.weight,
             flattenRange, d.bias, 0.35))
         .on('mouseover', () => {
-          hoverInfoStore.set( {show: true, text: `Bias: ${formater$2(d.bias)}`} );
+          hoverInfoStore.set( {show: true, text: `偏置: ${formater$2(d.bias)}`} );
         })
         .on('mouseleave', () => {
-          hoverInfoStore.set( {show: false, text: `Bias: ${formater$2(d.bias)}`} );
+          hoverInfoStore.set( {show: false, text: `偏置: ${formater$2(d.bias)}`} );
         })
         .on('click', () => { d3.event.stopPropagation(); });
       
@@ -13904,42 +13329,7 @@ var app = (function () {
       
       plusText.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .text('Add up all products');
-      
-      plusText.append('tspan')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .style('dominant-baseline', 'hanging')
-        .text('(');
-
-      plusText.append('tspan')
-        .style('fill', '#66a3c8')
-        .style('dominant-baseline', 'hanging')
-        .text('element');
-
-      plusText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .text(' × ');
-
-      plusText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .style('fill', '#b58946')
-        .text('weight');
-
-      plusText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .text(')');
-
-      plusText.append('tspan')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .style('dominant-baseline', 'hanging')
-        .text('and then ');
-
-      plusText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .style('fill', '#479d94')
-        .text('bias');
+        .text('所有输入值加权求和再与偏置求和！');
       
       drawArrow({
         group: plusAnnotation,
@@ -13962,7 +13352,7 @@ var app = (function () {
         .attr('y', biasTextY)
         .style('text-anchor', 'middle')
         .style('dominant-baseline', 'baseline')
-        .text('Bias');
+        .text('偏置');
       
       // Add annotation for the softmax symbol
       let softmaxAnnotation = intermediateLayerAnnotation.append('g')
@@ -13975,11 +13365,11 @@ var app = (function () {
         .style('dominant-baseline', 'baseline')
         .style('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click ')
+        .text('点击')
         .append('tspan')
         .attr('dx', 1)
         .style('font-weight', 400)
-        .text('to learn more');
+        .text('查看更多！');
 
       drawArrow({
         group: softmaxAnnotation,
@@ -14007,26 +13397,8 @@ var app = (function () {
 
       let tempTspan = flattenText.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .style('font-weight', 700)
-        .text('Hover over ');
-      
-      tempTspan.append('tspan')
-        .attr('dx', 1)
-        .style('font-weight', 400)
-        .style('dominant-baseline', 'hanging')
-        .text('matrix to');
-      
-      flattenText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .text('see how it is flattened');
-      
-      flattenText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .text('into a 1D array!');
+        .text('悬停在矩阵上观察如何展平成一维数组！');
+
 
       drawArrow({
         group: flattenAnnotation,
@@ -14050,19 +13422,7 @@ var app = (function () {
 
       middleText.append('tspan')
         .style('dominant-baseline', 'hanging')
-        .text('Same flattening');
-      
-      middleText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .text('operation for');
-
-      middleText.append('tspan')
-        .style('dominant-baseline', 'hanging')
-        .attr('x', textX)
-        .attr('dy', '1em')
-        .text('each neuron');
+        .text('对于每个神经元同样的展平操作！');
 
       drawArrow({
         group: flattenAnnotation,
@@ -16411,7 +15771,7 @@ var app = (function () {
     const file$h = "src\\Header.svelte";
 
     function create_fragment$h(ctx) {
-    	let div6;
+    	let div2;
     	let div1;
     	let div0;
     	let t1;
@@ -16421,32 +15781,20 @@ var app = (function () {
     	let feTurbulence;
     	let feColorMatrix;
     	let feComposite;
-    	let g;
-    	let text_1;
+    	let g0;
+    	let text0;
     	let t2;
+    	let g1;
+    	let a;
+    	let text1;
     	let t3;
-    	let div5;
-    	let div2;
-    	let a0;
-    	let img0;
-    	let img0_src_value;
-    	let t4;
-    	let div3;
-    	let a1;
-    	let img1;
-    	let img1_src_value;
-    	let t5;
-    	let div4;
-    	let a2;
-    	let img2;
-    	let img2_src_value;
 
     	const block = {
     		c: function create() {
-    			div6 = element("div");
+    			div2 = element("div");
     			div1 = element("div");
     			div0 = element("div");
-    			div0.textContent = "CNN Explainer";
+    			div0.textContent = "CNN可视化";
     			t1 = space();
     			svg = svg_element("svg");
     			defs = svg_element("defs");
@@ -16454,22 +15802,13 @@ var app = (function () {
     			feTurbulence = svg_element("feTurbulence");
     			feColorMatrix = svg_element("feColorMatrix");
     			feComposite = svg_element("feComposite");
-    			g = svg_element("g");
-    			text_1 = svg_element("text");
-    			t2 = text("Learn Convolutional Neural Network (CNN) in your browser!");
-    			t3 = space();
-    			div5 = element("div");
-    			div2 = element("div");
-    			a0 = element("a");
-    			img0 = element("img");
-    			t4 = space();
-    			div3 = element("div");
-    			a1 = element("a");
-    			img1 = element("img");
-    			t5 = space();
-    			div4 = element("div");
-    			a2 = element("a");
-    			img2 = element("img");
+    			g0 = svg_element("g");
+    			text0 = svg_element("text");
+    			t2 = text("在浏览器中学习卷积神经网络（CNN）！\n\t\t\t\t");
+    			g1 = svg_element("g");
+    			a = svg_element("a");
+    			text1 = svg_element("text");
+    			t3 = text("汉化修改于开源项目：cnn-explainer");
     			attr_dev(div0, "id", "logo-text");
     			attr_dev(div0, "class", "svelte-qob9ex");
     			add_location(div0, file$h, 59, 4, 811);
@@ -16478,81 +15817,62 @@ var app = (function () {
     			attr_dev(feTurbulence, "numOctaves", "5");
     			attr_dev(feTurbulence, "stitchTiles", "stitch");
     			attr_dev(feTurbulence, "result", "f1");
-    			add_location(feTurbulence, file$h, 66, 5, 1020);
+    			add_location(feTurbulence, file$h, 66, 5, 1014);
     			attr_dev(feColorMatrix, "type", "matrix");
     			attr_dev(feColorMatrix, "values", "0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -1.5 1.5");
     			attr_dev(feColorMatrix, "result", "f2");
-    			add_location(feColorMatrix, file$h, 68, 5, 1147);
+    			add_location(feColorMatrix, file$h, 68, 5, 1141);
     			attr_dev(feComposite, "operator", "in");
     			attr_dev(feComposite, "in2", "f2");
     			attr_dev(feComposite, "in", "SourceGraphic");
     			attr_dev(feComposite, "result", "f3");
-    			add_location(feComposite, file$h, 70, 5, 1273);
+    			add_location(feComposite, file$h, 70, 5, 1267);
     			attr_dev(filter, "x", "0%");
     			attr_dev(filter, "y", "0%");
     			attr_dev(filter, "width", "100%");
     			attr_dev(filter, "height", "100%");
     			attr_dev(filter, "filterUnits", "objectBoundingBox");
     			attr_dev(filter, "id", "chalk-texture");
-    			add_location(filter, file$h, 65, 4, 914);
-    			add_location(defs, file$h, 64, 3, 903);
-    			attr_dev(text_1, "id", "svg-logo-tagline");
-    			attr_dev(text_1, "class", "svelte-qob9ex");
-    			add_location(text_1, file$h, 76, 4, 1456);
-    			attr_dev(g, "filter", "url(#chalk-texture)");
-    			attr_dev(g, "transform", "translate(0, 35)");
-    			add_location(g, file$h, 75, 3, 1390);
-    			attr_dev(svg, "width", "510px");
+    			add_location(filter, file$h, 65, 4, 908);
+    			add_location(defs, file$h, 64, 3, 897);
+    			attr_dev(text0, "id", "svg-logo-tagline");
+    			attr_dev(text0, "class", "svelte-qob9ex");
+    			add_location(text0, file$h, 76, 4, 1450);
+    			attr_dev(g0, "filter", "url(#chalk-texture)");
+    			attr_dev(g0, "transform", "translate(0, 35)");
+    			add_location(g0, file$h, 75, 3, 1384);
+    			attr_dev(text1, "id", "svg-logo-tagline");
+    			attr_dev(text1, "x", "1990px");
+    			attr_dev(text1, "y", "0");
+    			attr_dev(text1, "text-anchor", "end");
+    			set_style(text1, "cursor", "pointer");
+    			set_style(text1, "text-decoration", "underline");
+    			set_style(text1, "fill", "#0066cc");
+    			attr_dev(text1, "class", "svelte-qob9ex");
+    			add_location(text1, file$h, 83, 6, 1722);
+    			attr_dev(a, "href", "http://poloclub.github.io/cnn-explainer/");
+    			attr_dev(a, "target", "_blank");
+    			xlink_attr(a, "xlink:href", "http://poloclub.github.io/cnn-explainer/");
+    			add_location(a, file$h, 82, 4, 1594);
+    			attr_dev(g1, "filter", "url(#chalk-texture)");
+    			attr_dev(g1, "transform", "translate(0, 35)");
+    			add_location(g1, file$h, 81, 3, 1528);
+    			attr_dev(svg, "width", "2000px");
     			attr_dev(svg, "height", "50px");
-    			add_location(svg, file$h, 63, 2, 866);
+    			add_location(svg, file$h, 63, 2, 859);
     			attr_dev(div1, "id", "logo");
     			attr_dev(div1, "class", "svelte-qob9ex");
     			add_location(div1, file$h, 58, 2, 791);
-    			if (!src_url_equal(img0.src, img0_src_value = "/assets/img/pdf.png")) attr_dev(img0, "src", img0_src_value);
-    			attr_dev(img0, "alt", "pdf icon");
-    			attr_dev(img0, "class", "svelte-qob9ex");
-    			add_location(img0, file$h, 87, 4, 1722);
-    			attr_dev(a0, "target", "_blank");
-    			attr_dev(a0, "href", "https://arxiv.org/abs/2004.15004");
-    			attr_dev(a0, "class", "svelte-qob9ex");
-    			add_location(a0, file$h, 86, 3, 1658);
-    			attr_dev(div2, "class", "icon svelte-qob9ex");
-    			attr_dev(div2, "title", "Research paper");
-    			add_location(div2, file$h, 85, 2, 1613);
-    			if (!src_url_equal(img1.src, img1_src_value = "/assets/img/youtube.png")) attr_dev(img1, "src", img1_src_value);
-    			attr_dev(img1, "alt", "youtube icon");
-    			attr_dev(img1, "class", "svelte-qob9ex");
-    			add_location(img1, file$h, 93, 4, 1901);
-    			attr_dev(a1, "target", "_blank");
-    			attr_dev(a1, "href", "https://youtu.be/HnWIHWFbuUQ");
-    			attr_dev(a1, "class", "svelte-qob9ex");
-    			add_location(a1, file$h, 92, 3, 1841);
-    			attr_dev(div3, "class", "icon svelte-qob9ex");
-    			attr_dev(div3, "title", "Demo video");
-    			add_location(div3, file$h, 91, 2, 1800);
-    			if (!src_url_equal(img2.src, img2_src_value = "/assets/img/github.png")) attr_dev(img2, "src", img2_src_value);
-    			attr_dev(img2, "alt", "github icon");
-    			attr_dev(img2, "class", "svelte-qob9ex");
-    			add_location(img2, file$h, 99, 4, 2107);
-    			attr_dev(a2, "target", "_blank");
-    			attr_dev(a2, "href", "https://github.com/poloclub/cnn-explainer");
-    			attr_dev(a2, "class", "svelte-qob9ex");
-    			add_location(a2, file$h, 98, 3, 2034);
-    			attr_dev(div4, "class", "icon svelte-qob9ex");
-    			attr_dev(div4, "title", "Open-source code");
-    			add_location(div4, file$h, 97, 2, 1987);
-    			attr_dev(div5, "class", "icons svelte-qob9ex");
-    			add_location(div5, file$h, 83, 1, 1589);
-    			attr_dev(div6, "id", "header");
-    			attr_dev(div6, "class", "svelte-qob9ex");
-    			add_location(div6, file$h, 56, 0, 770);
+    			attr_dev(div2, "id", "header");
+    			attr_dev(div2, "class", "svelte-qob9ex");
+    			add_location(div2, file$h, 56, 0, 770);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div6, anchor);
-    			append_dev(div6, div1);
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, div1);
     			append_dev(div1, div0);
     			append_dev(div1, t1);
     			append_dev(div1, svg);
@@ -16561,28 +15881,19 @@ var app = (function () {
     			append_dev(filter, feTurbulence);
     			append_dev(filter, feColorMatrix);
     			append_dev(filter, feComposite);
-    			append_dev(svg, g);
-    			append_dev(g, text_1);
-    			append_dev(text_1, t2);
-    			append_dev(div6, t3);
-    			append_dev(div6, div5);
-    			append_dev(div5, div2);
-    			append_dev(div2, a0);
-    			append_dev(a0, img0);
-    			append_dev(div5, t4);
-    			append_dev(div5, div3);
-    			append_dev(div3, a1);
-    			append_dev(a1, img1);
-    			append_dev(div5, t5);
-    			append_dev(div5, div4);
-    			append_dev(div4, a2);
-    			append_dev(a2, img2);
+    			append_dev(svg, g0);
+    			append_dev(g0, text0);
+    			append_dev(text0, t2);
+    			append_dev(svg, g1);
+    			append_dev(g1, a);
+    			append_dev(a, text1);
+    			append_dev(text1, t3);
     		},
     		p: noop,
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div6);
+    			if (detaching) detach_dev(div2);
     		}
     	};
 
