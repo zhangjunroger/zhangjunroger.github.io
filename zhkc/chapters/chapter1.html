@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第1章 神经网络基础 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg>
+                </div>
+                <span>NN&DL 智慧课程</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第1章</span></div>
+            <div class="chapter-big-num">01</div>
+            <h1>神经网络基础</h1>
+            <p>本章从生物神经元出发，介绍人工神经元的数学模型与感知机算法，讨论激活函数的作用与性质，并引入神经网络的基本架构。读者将掌握神经网络的基本数学表达与几何意义，为后续章节奠定理论基础。</p>
+            <div class="chapter-info-bar">
+                <span class="info-chip">📚 4 课时</span>
+                <span class="info-chip">🎯 8 个知识点</span>
+                <span class="info-chip">📐 5 个数学公式</span>
+                <span class="info-chip">💡 入门必读</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <!-- 章节导航 -->
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>生物神经元与人工神经元模型</li>
+                <li>M-P 神经元与加权求和</li>
+                <li>感知机（Perceptron）</li>
+                <li>感知机的收敛性与几何意义</li>
+                <li>激活函数及其性质</li>
+                <li>多层神经网络的表达能力</li>
+                <li>XOR 问题与单层网络的局限性</li>
+                <li>本章小结与习题</li>
+            </ol>
+        </div>
+
+        <!-- ======================= 1.1 ======================= -->
+        <div class="content-section">
+            <h2>1.1 从生物神经元到人工神经元</h2>
+
+            <p>人的大脑中约有 $8.6 \times 10^{10}$ 个神经元，每个神经元平均与约 $10^4$ 个其他神经元通过突触连接，构成了一个庞大而复杂的信息处理网络。一个典型的生物神经元主要由三部分组成：</p>
+
+            <ul>
+                <li><strong>树突（Dendrite）</strong>：接收来自其他神经元的输入信号，信号通常是化学递质；</li>
+                <li><strong>细胞体（Soma）</strong>：对所有输入信号进行整合，当膜电位超过某个阈值时产生神经冲动；</li>
+                <li><strong>轴突（Axon）</strong>：将产生的神经冲动传递到下一个神经元的突触。</li>
+            </ul>
+
+            <p>1943 年，Warren McCulloch 和 Walter Pitts 提出了第一个形式化的人工神经元模型，后人称之为 <span class="term">M-P 神经元</span>（McCulloch-Pitts Neuron）。该模型把生物神经元抽象为一个"加权求和 → 阈值判断 → 输出"的简单单元。</p>
+
+            <div class="definition" data-label="定义 1.1　人工神经元">
+                <p>设 $\boldsymbol{x} = (x_1, x_2, \dots, x_n)^T \in \mathbb{R}^n$ 为输入向量，$\boldsymbol{w} = (w_1, w_2, \dots, w_n)^T \in \mathbb{R}^n$ 为对应的权重向量，$b \in \mathbb{R}$ 为偏置（Bias），$\varphi : \mathbb{R} \to \mathbb{R}$ 为激活函数，则该神经元的输出定义为</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ y = \varphi\!\left( \sum_{i=1}^n w_i x_i + b \right) = \varphi(\boldsymbol{w}^T \boldsymbol{x} + b). \tag{1.1} $$
+            </div>
+
+            <p>在最原始的 M-P 模型中，激活函数 $\varphi$ 取为阶跃函数，即当输入超过阈值时输出 1，否则输出 0。该模型虽然简单，但揭示了神经网络的基本运算范式：<em>线性组合 + 非线性变换</em>。</p>
+
+            <div class="remark" data-label="注记 1.1">
+                <p>公式 (1.1) 中引入偏置 $b$ 相当于在输入向量中增加一个恒为 1 的分量，权重即为 $b$。这使得神经元可以在输入-输出平面上自由平移，而不是只能穿过原点，从而大大增强了表达能力。</p>
+            </div>
+        </div>
+
+        <!-- ======================= 1.2 ======================= -->
+        <div class="content-section">
+            <h2>1.2 感知机模型</h2>
+
+            <p>1957 年，Frank Rosenblatt 在 M-P 神经元的基础上提出了 <span class="term">感知机（Perceptron）</span>，并给出了可训练的学习算法。感知机是最简单的二分类线性模型，其几何意义是在特征空间中寻找一个超平面，将两类样本正确分开。</p>
+
+            <div class="definition" data-label="定义 1.2　感知机">
+                <p>给定输入向量 $\boldsymbol{x} \in \mathbb{R}^n$，感知机的输出为</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \hat{y} = \operatorname{sign}(\boldsymbol{w}^T \boldsymbol{x} + b) = \begin{cases} \;\;1, & \boldsymbol{w}^T \boldsymbol{x} + b \geq 0, \\ -1, & \text{otherwise}, \end{cases} \tag{1.2} $$
+            </div>
+
+            <p>其中 $\operatorname{sign}(\cdot)$ 为符号函数。感知机的训练目标是找到参数 $(\boldsymbol{w}, b)$，使得对于训练集中的所有样本 $(\boldsymbol{x}_i, y_i)$，当 $y_i = 1$ 时有 $\boldsymbol{w}^T \boldsymbol{x}_i + b > 0$，当 $y_i = -1$ 时有 $\boldsymbol{w}^T \boldsymbol{x}_i + b < 0$。</p>
+
+            <h3>1.2.1 感知机的学习算法</h3>
+
+            <p>感知机采用 <em>随机梯度下降</em>（Stochastic Gradient Descent）的思想进行训练。定义经验损失为所有被误分类样本到超平面距离之和。设 $M$ 为被误分类的样本集合，误分类样本满足 $y_i (\boldsymbol{w}^T \boldsymbol{x}_i + b) \leq 0$，则目标函数为</p>
+
+            <div class="formula-box centered">
+                $$ L(\boldsymbol{w}, b) = -\!\!\sum_{i \in M} y_i \big(\boldsymbol{w}^T \boldsymbol{x}_i + b\big). \tag{1.3} $$
+            </div>
+
+            <p>对 $\boldsymbol{w}$ 和 $b$ 分别求偏导，得到梯度</p>
+
+            <div class="formula-box centered">
+                $$ \nabla_{\boldsymbol{w}} L = -\!\!\sum_{i \in M} y_i \boldsymbol{x}_i, \qquad \nabla_{b} L = -\!\!\sum_{i \in M} y_i. \tag{1.4} $$
+            </div>
+
+            <p>感知机的更新规则如下：每次随机选择一个被误分类的样本 $(\boldsymbol{x}_i, y_i)$，执行</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{w} \gets \boldsymbol{w} + \eta \, y_i \boldsymbol{x}_i, \qquad b \gets b + \eta \, y_i, \tag{1.5} $$
+            </div>
+
+            <p>其中 $\eta \in (0, 1]$ 称为 <span class="term">学习率（Learning Rate）</span>。重复上述过程直到训练集中没有被误分类的样本。</p>
+
+            <h3>1.2.2 感知机收敛定理</h3>
+
+            <p>Novikoff（1962）证明了：若训练数据线性可分，则感知机学习算法在有限次迭代后必定收敛。以下给出该定理的形式化陈述（略去证明过程，有兴趣的读者可参考统计学习方法相关章节）。</p>
+
+            <div class="theorem" data-label="定理 1.1　Novikoff 收敛定理">
+                <p>设训练集 $T = \{(\boldsymbol{x}_1, y_1), \dots, (\boldsymbol{x}_N, y_N)\}$ 线性可分，其中 $\|\boldsymbol{x}_i\| \leq R$，$i = 1, \dots, N$，且存在单位法向量 $\hat{\boldsymbol{w}}_{\text{opt}}$ 和间隔 $\gamma > 0$，使得对所有 $i$ 有 $y_i (\hat{\boldsymbol{w}}_{\text{opt}}^T \boldsymbol{x}_i + b_{\text{opt}}) \geq \gamma$。则感知机学习算法在训练集上的误分类次数 $k$ 满足</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ k \leq \left( \frac{R + |b_{\text{opt}}|}{\gamma} \right)^{\!2}. \tag{1.6} $$
+            </div>
+
+            <p>该定理从理论上保证了当训练数据线性可分时，感知机算法在有限步内必能得到一个能够正确分类所有样本的超平面。然而，当数据 <em>线性不可分</em> 时，感知机算法将永远不会收敛，并且会在不同的超平面之间来回振荡。这正是我们需要更复杂模型的根本原因。</p>
+
+            <div class="example" data-label="例 1.1　逻辑与（AND）问题">
+                <p>考虑训练数据集 $\{((0,0),-1), ((0,1),-1), ((1,0),-1), ((1,1),1)\}$。取 $w_1 = 1$, $w_2 = 1$, $b = -1.5$，则对每个样本计算 $\boldsymbol{w}^T \boldsymbol{x} + b$：</p>
+                <ul>
+                    <li>$(0,0)$：$0 + 0 - 1.5 = -1.5 < 0$，输出 $-1$ ✓</li>
+                    <li>$(0,1)$：$0 + 1 - 1.5 = -0.5 < 0$，输出 $-1$ ✓</li>
+                    <li>$(1,0)$：$1 + 0 - 1.5 = -0.5 < 0$，输出 $-1$ ✓</li>
+                    <li>$(1,1)$：$1 + 1 - 1.5 = 0.5 > 0$，输出 $1$ ✓</li>
+                </ul>
+                <p>可见感知机可以完美解决 AND 问题。读者可自行验证 OR 问题同样可解。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 1.1">
+                <p>试构造一个感知机（给出 $\boldsymbol{w}$ 和 $b$）来实现逻辑 OR 运算：输入 $(x_1, x_2) \in \{0,1\}^2$，当 $x_1 + x_2 \geq 1$ 时输出 $1$，否则输出 $-1$。</p>
+            </div>
+        </div>
+
+        <!-- ======================= 1.3 ======================= -->
+        <div class="content-section">
+            <h2>1.3 XOR 问题与单层网络的局限性</h2>
+
+            <p>尽管感知机能够解决 AND、OR 等线性可分问题，但对于某些看似简单的问题却无能为力。经典的 <span class="term">异或问题（XOR）</span> 就是一例。异或的真值表如下：</p>
+
+            <table>
+                <tr><th>$x_1$</th><th>$x_2$</th><th>$y = x_1 \oplus x_2$</th></tr>
+                <tr><td>0</td><td>0</td><td>-1</td></tr>
+                <tr><td>0</td><td>1</td><td>1</td></tr>
+                <tr><td>1</td><td>0</td><td>1</td></tr>
+                <tr><td>1</td><td>1</td><td>-1</td></tr>
+            </table>
+
+            <p>在二维平面上画出这四个样本点，正样本 $(0,1),(1,0)$ 和负样本 $(0,0),(1,1)$ 是 <em>线性不可分</em> 的——不存在一条直线能把它们分开。因此，单层感知机 <strong>无法</strong> 解决 XOR 问题。</p>
+
+            <div class="theorem" data-label="定理 1.2">
+                <p>单层感知机（仅有输入层和输出层）只能表示线性可分的概念，无法表示 XOR 等线性不可分函数。</p>
+            </div>
+
+            <p>解决方法是在输入层与输出层之间加入 <em>隐藏层</em>（Hidden Layer），构造 <span class="term">多层感知机（Multi-Layer Perceptron, MLP）</span>。下一章将详细介绍。</p>
+
+            <div class="remark" data-label="历史注记">
+                <p>1969 年，Minsky 和 Papert 出版《Perceptrons》一书，系统阐述了单层感知机的局限性，这在当时引发了对神经网络研究的第一次"AI 寒冬"。直到 1980 年代反向传播算法重新被发现后，神经网络研究才得以复兴。</p>
+            </div>
+        </div>
+
+        <!-- ======================= 1.4 ======================= -->
+        <div class="content-section">
+            <h2>1.4 激活函数</h2>
+
+            <p>如果神经网络中没有非线性激活函数，那么无论网络多么深，整体等价于一个线性变换 $\boldsymbol{y} = \boldsymbol{Wx} + \boldsymbol{b}$，其表达能力与单个线性层无异。因此，<em>引入非线性激活函数是神经网络能拟合复杂函数的关键</em>。</p>
+
+            <h3>1.4.1 基本要求</h3>
+
+            <p>一个好的激活函数 $\varphi : \mathbb{R} \to \mathbb{R}$ 通常具有以下性质：</p>
+            <ul>
+                <li><strong>非线性</strong>：$\varphi$ 不能是线性函数（否则网络整体仍是线性的）；</li>
+                <li><strong>连续可导</strong>：便于使用基于梯度的优化方法（ReLU 在 $z=0$ 处次可导，仍可接受）；</li>
+                <li><strong>单调性</strong>：此时单层网络为凸函数，优化更稳定；</li>
+                <li><strong>梯度不易消失或爆炸</strong>：导数的绝对值不宜太小或太大；</li>
+                <li><strong>计算高效</strong>：深层网络中每个神经元都需要计算激活值。</li>
+            </ul>
+
+            <h3>1.4.2 常用激活函数</h3>
+
+            <p><strong>（1）Sigmoid 函数</strong></p>
+
+            <div class="formula-box centered">
+                $$ \sigma(z) = \frac{1}{1 + e^{-z}}, \quad \sigma'(z) = \sigma(z)\big(1 - \sigma(z)\big). \tag{1.7} $$
+            </div>
+
+            <p>Sigmoid 函数将实值输入压缩到 $(0,1)$ 区间，可以解释为"神经元激活的概率"或作为二分类输出层。其缺点是当 $|z| \gg 1$ 时函数趋于饱和，导数接近 0，导致 <span class="term">梯度消失（Vanishing Gradient）</span> 问题。</p>
+
+            <p><strong>（2）Tanh 函数（双曲正切）</strong></p>
+
+            <div class="formula-box centered">
+                $$ \tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}} = 2\sigma(2z) - 1. \tag{1.8} $$
+            </div>
+
+            <p>Tanh 函数的值域为 $(-1, 1)$，且以 0 为中心，相比 Sigmoid 具有更好的数值性质（消除了 Sigmoid 的非零均值偏移问题）。但同样存在饱和导致的梯度消失问题。</p>
+
+            <p><strong>（3）ReLU 函数（Rectified Linear Unit）</strong></p>
+
+            <div class="formula-box centered">
+                $$ \operatorname{ReLU}(z) = \max(0, z), \quad \operatorname{ReLU}'(z) = \begin{cases} 1, & z > 0, \\ 0, & z \leq 0. \end{cases} \tag{1.9} $$
+            </div>
+
+            <p>ReLU 是当前最常用的激活函数。当 $z > 0$ 时梯度恒为 1，避免了正半轴梯度消失；计算简单（只需比较大小），比 Sigmoid/Tanh 快数倍。但 $z \leq 0$ 时梯度为 0，可能导致 <span class="term">神经元死亡（Dying ReLU）</span>：参数在某次更新后变为负值并永远无法激活。</p>
+
+            <p><strong>（4）Leaky ReLU 与 Parametric ReLU</strong></p>
+
+            <div class="formula-box centered">
+                $$ \operatorname{LeakyReLU}(z) = \begin{cases} z, & z > 0, \\ \alpha z, & z \leq 0, \end{cases} \tag{1.10} $$
+            </div>
+
+            <p>其中 $\alpha > 0$ 是一个小的常数（如 $0.01$）。若 $\alpha$ 也作为可学习的参数，则称为 Parametric ReLU（PReLU）。</p>
+
+            <p><strong>（5）Softplus 函数</strong></p>
+
+            <div class="formula-box centered">
+                $$ \operatorname{softplus}(z) = \log\!\left(1 + e^z\right), \quad \operatorname{softplus}'(z) = \sigma(z). \tag{1.11} $$
+            </div>
+
+            <p>Softplus 是 ReLU 的平滑近似，处处可导。</p>
+
+            <p><strong>（6）Softmax 函数（用于多分类输出层）</strong></p>
+
+            <div class="formula-box centered">
+                $$ p_k = \operatorname{softmax}(\boldsymbol{z})_k = \frac{e^{z_k}}{\sum_{i=1}^K e^{z_i}}, \quad k = 1, 2, \dots, K. \tag{1.12} $$
+            </div>
+
+            <p>Softmax 将一个 $K$ 维实向量归一化为概率分布（非负且和为 1），常用于多分类任务的输出层，其输出 $p_k$ 可解释为样本属于第 $k$ 类的后验概率。</p>
+
+            <table>
+                <tr><th>激活函数</th><th>公式</th><th>值域</th><th>单调性</th><th>主要用途</th></tr>
+                <tr><td>Sigmoid</td><td>$\sigma(z) = 1/(1+e^{-z})$</td><td>$(0,1)$</td><td>✔</td><td>二分类输出层、门控</td></tr>
+                <tr><td>Tanh</td><td>$\tanh(z)$</td><td>$(-1,1)$</td><td>✔</td><td>隐藏层、循环网络</td></tr>
+                <tr><td>ReLU</td><td>$\max(0,z)$</td><td>$[0, +\infty)$</td><td>✔</td><td>绝大多数隐藏层</td></tr>
+                <tr><td>Leaky ReLU</td><td>$\max(\alpha z, z)$</td><td>$\mathbb{R}$</td><td>✔</td><td>防止神经元死亡</td></tr>
+                <tr><td>Softplus</td><td>$\log(1+e^z)$</td><td>$(0, +\infty)$</td><td>✔</td><td>ReLU 的平滑版</td></tr>
+                <tr><td>Softmax</td><td>$e^{z_k} / \sum e^{z_i}$</td><td>$(0,1)^K, \sum=1$</td><td>✘</td><td>多分类输出层</td></tr>
+            </table>
+
+            <div class="code-block">
+                <span class="code-lang">Python</span>
+<pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-function">sigmoid</span>(z):
+    <span class="code-keyword">return</span> <span class="code-number">1.0</span> / (<span class="code-number">1.0</span> + np.exp(-z))
+
+<span class="code-keyword">def</span> <span class="code-function">tanh</span>(z):
+    <span class="code-keyword">return</span> np.tanh(z)
+
+<span class="code-keyword">def</span> <span class="code-function">relu</span>(z):
+    <span class="code-keyword">return</span> np.maximum(<span class="code-number">0</span>, z)
+
+<span class="code-keyword">def</span> <span class="code-function">leaky_relu</span>(z, alpha=<span class="code-number">0.01</span>):
+    <span class="code-keyword">return</span> np.where(z > <span class="code-number">0</span>, z, alpha * z)
+
+<span class="code-keyword">def</span> <span class="code-function">softmax</span>(z):
+    e_z = np.exp(z - np.max(z))  <span class="code-comment"># 减去最大值以防止溢出</span>
+    <span class="code-keyword">return</span> e_z / e_z.sum()
+
+<span class="code-comment"># 测试</span>
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    z = np.array([-<span class="code-number">2.0</span>, -<span class="code-number">1.0</span>, <span class="code-number">0.0</span>, <span class="code-number">1.0</span>, <span class="code-number">2.0</span>])
+    <span class="code-keyword">print</span>(<span class="code-string">"sigmoid:"</span>, np.round(sigmoid(z), <span class="code-number">4</span>))
+    <span class="code-keyword">print</span>(<span class="code-string">"relu:"</span>, relu(z))
+    <span class="code-keyword">print</span>(<span class="code-string">"softmax:"</span>, np.round(softmax(z), <span class="code-number">4</span>))</code></pre>
+            </div>
+        </div>
+
+        <!-- ======================= 1.5 ======================= -->
+        <div class="content-section">
+            <h2>1.5 前馈神经网络的基本架构</h2>
+
+            <p>将多个神经元按层级组织起来，并用可学习的权重连接相邻两层，就构成了一个 <span class="term">前馈神经网络（Feedforward Neural Network）</span>，亦称 <em>多层感知机（MLP）</em>。</p>
+
+            <p>设网络共有 $L$ 层（不计输入层），记：</p>
+            <ul>
+                <li>第 $\ell$ 层的输入向量为 $\boldsymbol{a}^{(\ell-1)} \in \mathbb{R}^{n_{\ell-1}}$（上一层的激活值）；</li>
+                <li>第 $\ell$ 层的权重矩阵为 $\boldsymbol{W}^{(\ell)} \in \mathbb{R}^{n_{\ell} \times n_{\ell-1}}$；</li>
+                <li>第 $\ell$ 层的偏置向量为 $\boldsymbol{b}^{(\ell)} \in \mathbb{R}^{n_{\ell}}$；</li>
+                <li>第 $\ell$ 层的预激活值为 $\boldsymbol{z}^{(\ell)} = \boldsymbol{W}^{(\ell)} \boldsymbol{a}^{(\ell-1)} + \boldsymbol{b}^{(\ell)}$；</li>
+                <li>第 $\ell$ 层的激活函数为 $\varphi^{(\ell)}$，输出为 $\boldsymbol{a}^{(\ell)} = \varphi^{(\ell)}(\boldsymbol{z}^{(\ell)})$。</li>
+            </ul>
+
+            <p>约定 $\boldsymbol{a}^{(0)} = \boldsymbol{x}$ 为输入向量。则整个网络的前向传播可以写为</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{z}^{(\ell)} = \boldsymbol{W}^{(\ell)} \boldsymbol{a}^{(\ell-1)} + \boldsymbol{b}^{(\ell)}, \quad \boldsymbol{a}^{(\ell)} = \varphi^{(\ell)}(\boldsymbol{z}^{(\ell)}), \quad \ell = 1, 2, \dots, L. \tag{1.13} $$
+            </div>
+
+            <p>最终输出 $\hat{\boldsymbol{y}} = \boldsymbol{a}^{(L)}$。在二分类问题中输出层通常使用 Sigmoid，在多分类问题中使用 Softmax，在回归问题中则直接使用恒等激活（Identity）。</p>
+
+            <div class="definition" data-label="定义 1.3　网络参数个数">
+                <p>对于一个具有 $n_0$ 维输入、$n_1, n_2, \dots, n_{L-1}$ 个隐藏单元、$n_L$ 维输出的 $L$ 层前馈网络，参数总数为</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ |\theta| = \sum_{\ell=1}^{L} \big(n_{\ell} \cdot n_{\ell-1} + n_{\ell}\big) = \sum_{\ell=1}^{L} n_{\ell}(n_{\ell-1} + 1). \tag{1.14} $$
+            </div>
+
+            <div class="example" data-label="例 1.2　参数计数">
+                <p>考虑一个用于手写数字识别（10 分类）的 MLP：输入为 $28 \times 28 = 784$ 维像素向量，两个隐藏层分别有 256 和 128 个神经元，输出层为 10 维 Softmax。则参数总数为</p>
+                <p style="text-align:center; color:#c4b5fd; font-family:Consolas,monospace;">$(784 + 1) \times 256 + (256 + 1) \times 128 + (128 + 1) \times 10 = 200{,}960 + 32{,}896 + 1{,}290 = 235{,}146$。</p>
+            </div>
+
+            <h3>1.5.1 万能逼近定理</h3>
+
+            <p>以下经典定理说明单隐藏层 MLP 在理论上具有极强的表达能力（Hornik et al., 1989）。</p>
+
+            <div class="theorem" data-label="定理 1.3　万能逼近定理">
+                <p>设 $\varphi$ 为任意连续、非常数且有界的标量函数（例如 Sigmoid）。则对于任意定义在 $\mathbb{R}^n$ 的紧集 $K$ 上的连续实值函数 $f : K \to \mathbb{R}$，以及任意给定的 $\varepsilon > 0$，存在正整数 $m$、常数 $c_i \in \mathbb{R}$、$\boldsymbol{w}_i \in \mathbb{R}^n$、$b_i \in \mathbb{R}$（$i = 1, \dots, m$），使得</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \sup_{\boldsymbol{x} \in K} \left| f(\boldsymbol{x}) - \sum_{i=1}^m c_i \,\varphi\!\left(\boldsymbol{w}_i^T \boldsymbol{x} + b_i\right) \right| < \varepsilon. \tag{1.15} $$
+            </div>
+
+            <p>换言之，<em>一个单隐藏层的前馈神经网络</em>，只要隐藏单元足够多，就能以任意精度逼近任意紧集上的连续函数。该定理为神经网络的强大能力提供了理论支撑，但并未给出"需要多少个隐藏单元"以及"如何找到这些参数"的构造性答案。在实践中，更深的网络往往能用更少的总参数达到更好的效果——这正是深度学习的基本动机之一。</p>
+        </div>
+
+        <!-- ======================= 小结 ======================= -->
+        <div class="summary-box">
+            <div class="summary-title">★ 本章要点 · KEY POINTS</div>
+            <ul>
+                <li>M-P 神经元是人工神经元的数学抽象：输出 = 激活函数（权重 · 输入 + 偏置），即 $y = \varphi(\boldsymbol{w}^T \boldsymbol{x} + b)$。</li>
+                <li>感知机是最简单的线性二分类模型，当训练数据线性可分时，其学习算法在有限步内必定收敛（Novikoff 定理）。</li>
+                <li>单层网络无法解决 XOR 等线性不可分问题，必须引入隐藏层构成 MLP。</li>
+                <li>激活函数为网络引入非线性，是神经网络强大表达力的关键。常用者有 Sigmoid、Tanh、ReLU、Leaky ReLU、Softmax 等。</li>
+                <li>万能逼近定理保证了单隐藏层 MLP 以足够多的神经元可以逼近任意连续函数，但实际训练中深层网络通常更高效。</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>习 题</h2>
+
+            <div class="exercise" data-label="习题 1.2">
+                <p>试证明 Sigmoid 函数满足 $\sigma'(z) = \sigma(z)(1 - \sigma(z))$，并求当 $z \to +\infty$ 与 $z \to -\infty$ 时 $\sigma'(z)$ 的极限。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 1.3">
+                <p>试画出 $\tanh(z)$ 在 $z \in [-3, 3]$ 的图像，并给出 $\tanh'(z)$ 用 $\tanh(z)$ 表示的表达式。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 1.4">
+                <p>给定 Softmax 输入 $z = (2, 1, 0)^T$，手动计算其 Softmax 输出（结果保留 3 位小数），并验证 $\sum_{k=1}^3 p_k = 1$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 1.5">
+                <p>考虑一个两层网络：输入为 $x \in \mathbb{R}^2$，隐藏层为 2 个 Tanh 神经元，输出层为 1 个 Sigmoid 神经元。令所有偏置为 0，隐藏层权重矩阵为 $\boldsymbol{W}^{(1)} = [[1, 1], [-1, 1]]$，输出层权重为 $\boldsymbol{w}^{(2)} = [1, -1]$。试写出整个网络的表达式 $f(x_1, x_2)$，并计算在点 $(0, 0)$ 和 $(1, 1)$ 处的输出。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 1.6">
+                <p>编程实现：从标准正态分布随机采样 200 个二维样本，线性可分；用你自己编写的感知机算法训练一个分类器，画出决策边界，并与 sklearn 中 Perceptron 类的结果比较。</p>
+            </div>
+        </div>
+
+    </section>
+
+    <div class="chapter-nav">
+        <a href="../index.html#chapters" class="nav-btn">← 返回章节列表</a>
+        <a href="chapter2.html" class="nav-btn">第2章 前馈神经网络 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

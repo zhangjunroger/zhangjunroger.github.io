@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第3章 网络训练与优化基础 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第3章</span></div>
+            <div class="chapter-big-num">03</div>
+            <h1>优化与正则化</h1>
+            <p>本章系统介绍训练深度神经网络时所使用的高阶优化算法——AdaGrad、RMSprop、Adam 等，以及用于改善泛化能力的主要正则化手段，包括 L1/L2 正则化、权重衰减、Dropout、数据增强、早停、批量归一化与层归一化。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 10 课时</span><span class="info-chip">🎯 12 个知识点</span><span class="info-chip">📐 25+ 公式</span><span class="info-chip">⚙️ 实战导向</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>优化问题的基本框架</li>
+                <li>Momentum 与 Nesterov 加速梯度</li>
+                <li>AdaGrad、RMSprop、Adam</li>
+                <li>学习率调度与 Warmup</li>
+                <li>L1、L2 正则化与权重衰减</li>
+                <li>Dropout 机制</li>
+                <li>数据增强（Data Augmentation）</li>
+                <li>早停（Early Stopping）</li>
+                <li>批量归一化（Batch Normalization）</li>
+                <li>层归一化（Layer Normalization）</li>
+                <li>参数范数裁剪</li>
+                <li>代码综合示例：带正则化的 MLP</li>
+            </ol>
+        </div>
+
+        <!-- 3.1 -->
+        <div class="content-section">
+            <h2>3.1 优化问题的基本框架</h2>
+
+            <p>在深度学习中，一般是在有限的训练集上最小化一个经验风险：</p>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell(f(\boldsymbol{x}_i; \theta), y_i) + \lambda \cdot R(\theta), \tag{3.1} $$
+            </div>
+
+            <p>其中 $R(\theta)$ 为正则化项，$\lambda \geq 0$ 为正则化强度。优化过程通常具有以下几个挑战：</p>
+            <ul>
+                <li><strong>非凸性</strong>：深度神经网络的损失函数关于参数是非凸的，可能存在大量局部极小值、鞍点和平坦区域；</li>
+                <li><strong>高维参数空间</strong>：大模型参数量可达 $10^9$ 量级；</li>
+                <li><strong>大规模数据</strong>：每次遍历全部样本计算精确梯度代价过高；</li>
+                <li><strong>病态曲率</strong>：Hessian 矩阵条件数大，导致 SGD 方向不稳定。</li>
+            </ul>
+        </div>
+
+        <!-- 3.2 -->
+        <div class="content-section">
+            <h2>3.2 基于动量的方法</h2>
+
+            <h3>3.2.1 动量法（Momentum）</h3>
+
+            <div class="definition" data-label="定义 3.1">
+                <p>设第 $t$ 步梯度为 $\boldsymbol{g}_t = \nabla L(\theta_t)$，速度为 $\boldsymbol{v}_t$，动量系数为 $\beta \in [0, 1)$（常取 $0.9$），学习率为 $\eta$，则</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{v}_{t+1} = \beta \, \boldsymbol{v}_t + (1 - \beta) \, \boldsymbol{g}_t, \quad \theta_{t+1} = \theta_t - \eta \, \boldsymbol{v}_{t+1}. \tag{3.2} $$
+            </div>
+
+            <p>动量法在参数更新方向上累积历史梯度，使 <em>稳定下降方向加速</em>，<em>振荡方向衰减</em>。等价于对梯度做了指数加权平均（Exponentially Weighted Average, EWA）。</p>
+
+            <h3>3.2.2 Nesterov 加速梯度（NAG）</h3>
+
+            <p>NAG 的思想是：先"按原速度向前探一步"，然后在该位置计算梯度进行修正。形式为：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{v}_{t+1} = \beta \, \boldsymbol{v}_t + (1 - \beta) \, \nabla L(\theta_t - \eta \beta \, \boldsymbol{v}_t), \quad \theta_{t+1} = \theta_t - \eta \, \boldsymbol{v}_{t+1}. \tag{3.3} $$
+            </div>
+
+            <p>NAG 在凸优化情况下有 $O(1/t^2)$ 的加速效果，但在深度学习中被 Adam 等自适应方法普遍取代，故本书从略。</p>
+        </div>
+
+        <!-- 3.3 -->
+        <div class="content-section">
+            <h2>3.3 自适应学习率算法</h2>
+
+            <h3>3.3.1 AdaGrad</h3>
+
+            <p>AdaGrad（Duchi et al., 2011）为每个参数维护一个累积平方梯度，使 <em>频繁更新的参数学习率下降更快</em>：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{s}_t = \boldsymbol{s}_{t-1} + \boldsymbol{g}_t \odot \boldsymbol{g}_t, \quad \theta_{t+1,i} = \theta_{t,i} - \frac{\eta}{\sqrt{s_{t,i} + \varepsilon}} \, g_{t,i}, \tag{3.4} $$
+            </div>
+
+            <p>其中 $\varepsilon \approx 10^{-7}$ 防止除零。下标 $i$ 表示第 $i$ 个参数。AdaGrad 的主要缺陷是平方梯度单调递增，学习率单调衰减到 0，在后期几乎停止更新。</p>
+
+            <h3>3.3.2 RMSprop</h3>
+
+            <p>RMSprop（Hinton, 2012, 未公开发表）将"累积平方梯度"替换为"指数加权移动平均平方梯度"，以避免单调衰减：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{s}_t = \beta \, \boldsymbol{s}_{t-1} + (1 - \beta) \, \boldsymbol{g}_t \odot \boldsymbol{g}_t, \quad \theta_{t+1} = \theta_t - \eta \, \frac{\boldsymbol{g}_t}{\sqrt{\boldsymbol{s}_t + \varepsilon}}. \tag{3.5} $$
+            </div>
+
+            <p>推荐 $\beta = 0.9$，基础学习率 $\eta$ 通常取 $[10^{-3}, 10^{-2}]$。</p>
+
+            <h3>3.3.3 Adam（Adaptive Moment Estimation）</h3>
+
+            <p>Adam（Kingma & Ba, 2014）结合了 Momentum 的一阶矩估计与 RMSprop 的二阶矩估计，并引入偏差修正以解决冷启动问题。</p>
+
+            <div class="definition" data-label="定义 3.2　Adam 算法">
+                <p>设超参数 $\beta_1 \in [0, 1)$（通常 $0.9$）、$\beta_2 \in [0, 1)$（通常 $0.999$）、$\eta$（默认 $0.001$）、$\varepsilon \approx 10^{-8}$。初始化 $\boldsymbol{m}_0 = \boldsymbol{0}$、$\boldsymbol{v}_0 = \boldsymbol{0}$。对每一步 $t = 1, 2, \dots$，计算：</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \begin{aligned}
+                \boldsymbol{g}_t &= \nabla L(\theta_{t-1}), \\
+                \boldsymbol{m}_t &= \beta_1 \, \boldsymbol{m}_{t-1} + (1 - \beta_1) \, \boldsymbol{g}_t, \tag{3.6a} \\
+                \boldsymbol{v}_t &= \beta_2 \, \boldsymbol{v}_{t-1} + (1 - \beta_2) \, \boldsymbol{g}_t \odot \boldsymbol{g}_t, \tag{3.6b} \\
+                \hat{\boldsymbol{m}}_t &= \boldsymbol{m}_t / (1 - \beta_1^t), \tag{3.6c} \\
+                \hat{\boldsymbol{v}}_t &= \boldsymbol{v}_t / (1 - \beta_2^t), \tag{3.6d} \\
+                \theta_t &= \theta_{t-1} - \eta \, \hat{\boldsymbol{m}}_t / (\sqrt{\hat{\boldsymbol{v}}_t} + \varepsilon). \tag{3.6e}
+                \end{aligned} $$
+            </div>
+
+            <p>这里 $\boldsymbol{m}_t$ 近似一阶矩（梯度均值），$\boldsymbol{v}_t$ 近似二阶矩（梯度方差）；式 (3.6c)、(3.6d) 称为 <em>偏差修正</em>，弥补了 $t$ 较小时 EWA 的初始偏差。Adam 是目前最受欢迎的通用优化器之一，许多研究者报告 Adam 在调参更少的情况下常达到与调优 SGD 相近的性能。</p>
+
+            <div class="remark" data-label="AdamW 与权重解耦">
+                <p>标准 Adam 在 (3.1) 框架下实现 L2 正则化时，由于 $\boldsymbol{v}_t$ 的影响，权重衰减行为与期望不一致。Loshchilov & Hutter (2017) 提出 <em>AdamW</em>：将正则化项与权重更新解耦，以"每步直接乘以 $(1-\alpha \eta)$"的方式实现权重衰减，在现代模型中广泛采用（参见 PyTorch 文档）。</p>
+            </div>
+        </div>
+
+        <!-- 3.4 -->
+        <div class="content-section">
+            <h2>3.4 学习率调度（Learning Rate Scheduling）</h2>
+
+            <p>固定学习率往往不是最优选择。常见的衰减策略有以下几类。</p>
+
+            <ul>
+                <li><strong>分段常数衰减（Step Decay）</strong>：每经过若干 epoch 将学习率乘以 $\gamma \in (0, 1)$（典型 $\gamma = 0.1$）。</li>
+                <li><strong>指数衰减（Exponential Decay）</strong>：$\eta_t = \eta_0 \, \gamma^t$。</li>
+                <li><strong>多项式衰减（Polynomial Decay）</strong>：$\eta_t = (\eta_0 - \eta_{\min}) \, (1 - t/T)^p + \eta_{\min}$，$T$ 为总步数，$p=1$ 为线性衰减。</li>
+                <li><strong>Cosine 退火（Cosine Annealing）</strong>：</li>
+            </ul>
+
+            <div class="formula-box centered">
+                $$ \eta_t = \eta_{\min} + \tfrac{1}{2} (\eta_{\max} - \eta_{\min}) \left(1 + \cos\!\left(\frac{t}{T} \pi\right)\right). \tag{3.7} $$
+            </div>
+
+            <ul>
+                <li><strong>带 Warmup 的 Cosine 退火</strong>：训练初始阶段先将学习率从 0 线性增加到 $\eta_{\max}$（经历 $T_{\text{warmup}}$ 步），再执行 Cosine 退火。Warmup 可以避免初期梯度剧烈振荡，被广泛用于 Transformer 等大型模型训练。</li>
+            </ul>
+        </div>
+
+        <!-- 3.5 -->
+        <div class="content-section">
+            <h2>3.5 范数正则化与权重衰减</h2>
+
+            <h3>3.5.1 L2 正则化（岭回归 / Tikhonov）</h3>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell(\hat{y}_i, y_i) + \frac{\lambda}{2} \|\boldsymbol{W}\|_F^2. \tag{3.8} $$
+            </div>
+
+            <p>注意只对权重矩阵加正则化，不对偏置加。L2 正则化对梯度的影响为：每步对 $\boldsymbol{W}$ 多乘一个 $(1 - \eta \lambda)$ 的衰减因子。</p>
+
+            <h3>3.5.2 L1 正则化（Lasso）</h3>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = \text{Loss} + \lambda \sum_{ij} |W_{ij}|. \tag{3.9} $$
+            </div>
+
+            <p>L1 的子梯度取值 $\operatorname{sign}(W_{ij})$，会使较多参数被推向 0，起到"稀疏化"和特征选择作用。</p>
+
+            <h3>3.5.3 权重衰减（Weight Decay）</h3>
+
+            <p>在自适应优化器（如 Adam）中，直接在损失函数加入 $\frac{\lambda}{2}\|W\|^2$ 的方式与"在更新步额外按比例衰减权重"并非等价。主流实现（AdamW、SGD with Weight Decay）采用显式衰减：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{W}_t = (1 - \eta \lambda) \, \boldsymbol{W}_{t-1} - \eta \, \boldsymbol{g}_t^{\text{(原)}}, \tag{3.10} $$
+            </div>
+
+            <p>其中 $\boldsymbol{g}_t^{\text{(原)}}$ 为不含正则化项的梯度。$\lambda$ 典型取值为 $[10^{-4}, 5 \times 10^{-2}]$。</p>
+        </div>
+
+        <!-- 3.6 -->
+        <div class="content-section">
+            <h2>3.6 Dropout</h2>
+
+            <p>Dropout（Srivastava et al., 2014）在训练过程中以概率 $p$ 随机将部分神经元输出置 0，<em>强制模型学习冗余、鲁棒的表示</em>。设某层激活值为 $\boldsymbol{a} \in \mathbb{R}^d$，训练阶段：</p>
+
+            <div class="formula-box centered">
+                $$ r_j \sim \operatorname{Bernoulli}(p), \quad \tilde{a}_j = \frac{1}{p} \, r_j \cdot a_j, \quad \text{输出 = } \tilde{\boldsymbol{a}}. \tag{3.11} $$
+            </div>
+
+            <p>其中 $1/p$ 称为 <em>Inverted Dropout 缩放因子</em>，以保证测试阶段不需要做额外的缩放（保持期望激活值不变）。测试阶段 Dropout 被关闭，所有神经元全参与预测。</p>
+
+            <p>常用的 $p$ 取值：隐藏层中通常取 $0.5$，输入层中取较高概率（如 $0.8$，即只置零 20% 的输入单元）。</p>
+
+            <div class="remark" data-label="概率的表述">
+                <p>不同框架对 Dropout 参数的定义略有差异：PyTorch 中 <code>nn.Dropout(p)</code> 表示"以概率 $p$ 将神经元置零"；TensorFlow 中 <code>tf.nn.dropout(rate=p)</code> 同理。注意切勿混淆 $p$ 与保留率。</p>
+            </div>
+        </div>
+
+        <!-- 3.7 -->
+        <div class="content-section">
+            <h2>3.7 数据增强（Data Augmentation）</h2>
+
+            <p>数据增强通过在训练样本上应用保持标签不变的随机变换来扩充数据集，是防止过拟合的最实用手段之一。</p>
+
+            <h3>3.7.1 图像分类常见增强</h3>
+            <ul>
+                <li>随机裁剪 + 补零（Random Crop + Padding）</li>
+                <li>随机水平翻转（Random Horizontal Flip）</li>
+                <li>颜色抖动（Color Jittering）：对亮度、对比度、饱和度进行随机扰动</li>
+                <li>随机灰度 / 高斯模糊</li>
+                <li>AutoAugment / RandAugment / TrivialAugment：自动搜索增强策略</li>
+                <li>Mixup（Zhang et al., 2017）：$\tilde{x} = \lambda x_i + (1-\lambda)x_j$，$\tilde{y} = \lambda y_i + (1-\lambda)y_j$，$\lambda \sim \operatorname{Beta}(\alpha, \alpha)$。</li>
+                <li>CutMix（Yun et al., 2019）：将两张图的子块拼接混合。</li>
+            </ul>
+
+            <h3>3.7.2 文本数据增强</h3>
+            <ul>
+                <li>同义词替换（Synonym Replacement）</li>
+                <li>随机插入 / 删除 / 交换词语</li>
+                <li>Back-translation：把原文翻成其他语言再翻回来</li>
+                <li>EDA（Easy Data Augmentation, Wei & Zou, 2019）</li>
+            </ul>
+        </div>
+
+        <!-- 3.8 -->
+        <div class="content-section">
+            <h2>3.8 早停（Early Stopping）</h2>
+
+            <p>在训练过程中周期性地在验证集上评估性能；当验证误差在连续若干个评估周期（称为 patience）内不再下降时，<em>停止训练并退回至最优参数</em>。这是防止过拟合最有效的手段之一。</p>
+
+            <div class="proof" data-label="算法 3.1　带早停的训练">
+                <p>① 设定最大 epoch 数、验证频率、patience；初始化最佳验证误差 = $+\infty$。</p>
+                <p>② 在一个 epoch 的训练结束后，在验证集上计算指标（如 accuracy / loss）。</p>
+                <p>③ 若当前验证误差优于最佳值，则更新最佳值并保存当前权重（checkpoint）。</p>
+                <p>④ 否则，若连续 patience 次未改善，则停止训练；恢复 checkpoint 作为最终模型。</p>
+            </div>
+        </div>
+
+        <!-- 3.9 -->
+        <div class="content-section">
+            <h2>3.9 批量归一化（Batch Normalization）</h2>
+
+            <p>Batch Normalization（Ioffe & Szegedy, 2015）的动机是：在深度网络中，前层参数变化会导致后层输入分布随之改变（<em>Internal Covariate Shift</em>），从而训练困难。BN 在每个 mini-batch 中对各维独立做标准化，再通过可学习的 $\gamma, \beta$ 进行线性缩放与平移。</p>
+
+            <div class="definition" data-label="定义 3.3　Batch Normalization">
+                <p>设 mini-batch 为 $\mathcal{B} = \{ \boldsymbol{x}_1, \dots, \boldsymbol{x}_B \}$，每个 $\boldsymbol{x} \in \mathbb{R}^d$。对每个维度 $k$ 独立执行：</p>
+            </div>
+
+            <div class="formula-box centered">
+                    $$ \begin{aligned}
+\mu_k &= \tfrac{1}{B} \sum_{i=1}^{B} x_{i,k}, \\
+\sigma_k^2 &= \tfrac{1}{B} \sum_{i=1}^{B} (x_{i,k} - \mu_k)^2, \\
+\hat{x}_{i,k} &= (x_{i,k} - \mu_k) / \sqrt{\sigma_k^2 + \varepsilon}, \\
+y_{i,k} &= \gamma_k \, \hat{x}_{i,k} + \beta_k.
+\end{aligned} \tag{3.12} $$
+                </div>
+
+            <p>其中 $\gamma, \beta \in \mathbb{R}^d$ 为可学习参数，$\varepsilon \approx 10^{-5}$ 防止除零。测试阶段 $\mu, \sigma$ 用训练阶段累积的移动平均代替。</p>
+
+            <p>BN 的优势：显著加速收敛、对初始化鲁棒性提升、正则化效果（因 batch 内随机性）、允许使用更高学习率。BN 常用在卷积层/线性层之后、激活函数之前。</p>
+
+            <p><em>局限</em>：当 batch size 很小（$B \leq 8$）时，批内统计量噪声大，BN 性能明显下降；RNN / 变长序列任务中 BN 使用不便。因此发展出了 Layer Normalization（见下节）、Instance Normalization、Group Normalization 等变体。</p>
+        </div>
+
+        <!-- 3.10 -->
+        <div class="content-section">
+            <h2>3.10 层归一化、实例归一化、组归一化</h2>
+
+            <h3>3.10.1 Layer Normalization（LN）</h3>
+
+            <p>Layer Norm（Ba et al., 2016）沿同一层的所有特征维度做归一化，与 batch 大小无关，适用于 RNN / Transformer 等结构。对样本 $i$ 的第 $l$ 层激活 $\boldsymbol{h}^{(l)}_i \in \mathbb{R}^d$：</p>
+
+            <div class="formula-box centered">
+                $$ \mu_i = \tfrac{1}{d} \sum_{k=1}^{d} h_{i,k}, \quad \sigma_i^2 = \tfrac{1}{d} \sum_{k=1}^{d} (h_{i,k} - \mu_i)^2, \quad \hat{h}_{i,k} = \frac{h_{i,k} - \mu_i}{\sqrt{\sigma_i^2 + \varepsilon}}, \quad y_{i,k} = \gamma_k \hat{h}_{i,k} + \beta_k. \tag{3.13} $$
+            </div>
+
+            <h3>3.10.2 Group Normalization（GN）</h3>
+
+            <p>GN（Wu & He, 2018）把通道分成 $G$ 组，在每组内部做归一化，是在小 batch 下 BN 的良好替代。$G=1$ 等价于 LN，$G=C$（通道数）则近似 Instance Normalization。</p>
+        </div>
+
+        <!-- 3.11 -->
+        <div class="content-section">
+            <h2>3.11 梯度裁剪（Gradient Clipping）</h2>
+
+            <p>当梯度 $\boldsymbol{g}$ 的 $L_2$ 范数超过阈值 $C$ 时，按比例缩放到 $C$：</p>
+
+            <div class="formula-box centered">
+                $$ \hat{\boldsymbol{g}} = \frac{C}{\max(C, \|\boldsymbol{g}\|_2)} \cdot \boldsymbol{g}. \tag{3.14} $$
+            </div>
+
+            <p>这是处理 <em>梯度爆炸</em> 的标准手段，在训练 RNN / Transformer 尤其常用。$C$ 的典型取值为 1.0 或 5.0。</p>
+        </div>
+
+        <!-- 3.12 综合代码 -->
+        <div class="content-section">
+            <h2>3.12 综合示例：带正则化的 MLP（PyTorch）</h2>
+
+            <div class="code-block">
+                <span class="code-lang">Python / PyTorch</span>
+<pre><code><span class="code-keyword">import</span> torch
+<span class="code-keyword">import</span> torch.nn <span class="code-keyword">as</span> nn
+<span class="code-keyword">import</span> torch.nn.functional <span class="code-keyword">as</span> F
+<span class="code-keyword">import</span> torch.optim <span class="code-keyword">as</span> optim
+<span class="code-keyword">from</span> torch.optim.lr_scheduler <span class="code-keyword">import</span> CosineAnnealingLR
+
+<span class="code-keyword">class</span> <span class="code-function">MLPWithReg</span>(nn.Module):
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, in_dim=<span class="code-number">784</span>, h1=<span class="code-number">256</span>, h2=<span class="code-number">128</span>, n_cls=<span class="code-number">10</span>, drop_p=<span class="code-number">0.3</span>):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(in_dim, h1),
+            nn.BatchNorm1d(h1),       <span class="code-comment"># 批归一化</span>
+            nn.ReLU(),
+            nn.Dropout(p=drop_p),      <span class="code-comment"># Dropout</span>
+            nn.Linear(h1, h2),
+            nn.BatchNorm1d(h2),
+            nn.ReLU(),
+            nn.Dropout(p=drop_p),
+            nn.Linear(h2, n_cls),
+        )
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, x):
+        <span class="code-keyword">return</span> self.net(x)
+
+<span class="code-comment"># --- 训练主循环 ---</span>
+model = MLPWithReg().cuda()
+optimizer = optim.AdamW(model.parameters(),
+                        lr=<span class="code-number">1e-3</span>,
+                        weight_decay=<span class="code-number">1e-4</span>)       <span class="code-comment"># AdamW + 权重衰减</span>
+scheduler = CosineAnnealingLR(optimizer, T_max=<span class="code-number">30</span>) <span class="code-comment"># 余弦退火</span>
+loss_fn = nn.CrossEntropyLoss()
+
+<span class="code-keyword">def</span> <span class="code-function">train_one_epoch</span>(model, loader, optimizer, loss_fn, grad_clip=<span class="code-number">1.0</span>):
+    model.train()
+    <span class="code-keyword">for</span> x, y <span class="code-keyword">in</span> loader:
+        logits = model(x.cuda())
+        loss = loss_fn(logits, y.cuda())
+        optimizer.zero_grad()
+        loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(), grad_clip)  <span class="code-comment"># 梯度裁剪</span>
+        optimizer.step()
+
+<span class="code-keyword">def</span> <span class="code-function">evaluate</span>(model, loader):
+    model.eval()
+    correct, total = <span class="code-number">0</span>, <span class="code-number">0</span>
+    <span class="code-keyword">with</span> torch.no_grad():
+        <span class="code-keyword">for</span> x, y <span class="code-keyword">in</span> loader:
+            correct += (model(x.cuda()).argmax(-<span class="code-number">1</span>) == y.cuda()).sum().item()
+            total += y.size(<span class="code-number">0</span>)
+    <span class="code-keyword">return</span> correct / total</code></pre>
+            </div>
+        </div>
+
+        <!-- 小结 -->
+        <div class="summary-box">
+            <div class="summary-title">★ 本章要点 · KEY POINTS</div>
+            <ul>
+                <li>Adam / AdamW 是目前实践中最常用的优化器，推荐默认使用；SGD + Momentum 配合良好的学习率调度也常能得到更高的最终精度。</li>
+                <li>学习率调度：Cosine 退火 + Warmup 已经成为训练现代深度模型的标准方案。</li>
+                <li>正则化：权重衰减（AdamW 已内建）、Dropout、数据增强（Mixup / RandAugment 等）、早停、BatchNorm、LayerNorm，应根据任务组合使用。</li>
+                <li>小批量时优先考虑 LayerNorm 或 GroupNorm；CNN 任务 BN 依然常见且效果稳定。</li>
+                <li>梯度裁剪是训练 RNN / 长序列 Transformer 时的常规操作，可防止梯度爆炸导致训练崩溃。</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>习 题</h2>
+
+            <div class="exercise" data-label="习题 3.1">
+                <p>手动模拟 Adam 的前 3 步更新：假设 $\theta_0 = 2$，$L(\theta) = \theta^2$，$\eta = 0.1$，$\beta_1 = 0.9$，$\beta_2 = 0.999$，$\varepsilon = 10^{-8}$。计算 $\theta_1, \theta_2, \theta_3$（保留 4 位小数）。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 3.2">
+                <p>给定一个线性层 $\boldsymbol{y} = \boldsymbol{xW} + \boldsymbol{b}$，$\boldsymbol{W} \in \mathbb{R}^{4 \times 3}$。设 mini-batch size = 2，输入为 $\boldsymbol{X} = [[1, 2, 0, -1], [2, 0, 1, 0]]$。手动计算对 $\boldsymbol{X}$ 的各列进行 BatchNorm 的结果（取 $\varepsilon=0$，$\gamma=1$，$\beta=0$）。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 3.3">
+                <p>在 MNIST 上实现一个三层 MLP，分别使用：(a) 纯 SGD；(b) SGD + Momentum；(c) AdamW；(d) AdamW + Dropout + Weight Decay。比较四者的最终测试精度与训练曲线。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 3.4">
+                <p>推导 Dropout 中"训练阶段以概率 $p$ 置零，然后除以 $p$"这一做法为何能保证测试阶段直接关闭 Dropout 且期望激活值不变。</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter2.html" class="nav-btn">← 第2章 前馈神经网络</a>
+        <a href="chapter4.html" class="nav-btn">第4章 卷积神经网络 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

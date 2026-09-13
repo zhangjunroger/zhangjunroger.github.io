@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第6章 循环神经网络（RNN）与序列建模 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第6章</span></div>
+            <div class="chapter-big-num">06</div>
+            <h1>Transformer 与注意力机制</h1>
+            <p>本章以 Vaswani et al. (2017) "Attention Is All You Need" 为主线，严格推导缩放点积注意力、多头注意力，介绍位置编码与正弦/余弦位置编码的理论性质，分析 Transformer 编码器-解码器架构，并概览 BERT、GPT 系列大语言模型的发展脉络。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 12 课时</span><span class="info-chip">🎯 10 个知识点</span><span class="info-chip">📐 30+ 公式</span><span class="info-chip">🤖 大模型</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>从序列对齐到注意力机制：历史回顾</li>
+                <li>加性注意力（Bahdanau）与点积注意力（Luong）</li>
+                <li>缩放点积注意力（Scaled Dot-Product Attention）</li>
+                <li>多头注意力（Multi-Head Attention）</li>
+                <li>位置编码：正弦位置编码与可学习位置编码</li>
+                <li>前馈网络（Position-wise FFN）、残差连接与层归一化</li>
+                <li>Transformer 编码器-解码器完整架构</li>
+                <li>训练目标与推断：Teacher Forcing 与 Beam Search</li>
+                <li>自注意力的复杂度与表达力分析</li>
+                <li>预训练范式：BERT、GPT 与因果语言建模</li>
+                <li>代码：从零实现一个 Transformer 块</li>
+                <li>小结与习题</li>
+            </ol>
+        </div>
+
+        <!-- 6.1 -->
+        <div class="content-section">
+            <h2>6.1 从序列对齐到注意力机制</h2>
+
+            <p>在早期的序列到序列（seq2seq）模型中，编码器把整个源序列压缩成一个固定维度的向量 $\boldsymbol{c} \in \mathbb{R}^{d_h}$，解码器只依靠这个向量来生成目标序列。当源句子较长时，单一向量难以充分表示全部细节——这就是所谓的 <span class="term">信息瓶颈</span>（information bottleneck）问题。</p>
+
+            <p><span class="term">注意力机制（Attention Mechanism）</span>的基本思想是：在生成目标端第 $i$ 个词时，<em>动态地</em>利用源端所有隐藏状态的一个加权组合来构建上下文向量 $\boldsymbol{c}_i$。权重 $\alpha_{ij}$ 表示"在生成目标第 $i$ 个词时，源第 $j$ 个词有多重要"。</p>
+
+            <div class="definition" data-label="定义 6.1 · 通用注意力">
+                <p>给定一组 <em>键</em> $\{\boldsymbol{k}_j\}_{j=1}^{n}$ 与对应 <em>值</em> $\{\boldsymbol{v}_j\}_{j=1}^{n}$，以及一个 <em>查询</em> $\boldsymbol{q}$，注意力定义为值的凸组合：</p>
+                <div class="formula-box centered">$$ \text{Attention}(\boldsymbol{q}, \{\boldsymbol{k}_j\}, \{\boldsymbol{v}_j\}) = \sum_{j=1}^{n} \alpha_{j}\,\boldsymbol{v}_{j}, \quad \alpha_{j} = \frac{\exp\big(\mathrm{score}(\boldsymbol{q},\boldsymbol{k}_j)\big)}{\sum_{l=1}^{n}\exp\big(\mathrm{score}(\boldsymbol{q},\boldsymbol{k}_l)\big)}. \tag{6.1} $$</div>
+                <p>其中 $\mathrm{score}(\cdot,\cdot)$ 称为 <span class="term">评分函数</span>，它衡量查询 $\boldsymbol{q}$ 与键 $\boldsymbol{k}_j$ 之间的"相似度"或"相关性"。</p>
+            </div>
+
+            <h3>6.1.1 加性注意力（Bahdanau et al., 2014）</h3>
+
+            <p>Bahdanau 等人在神经机器翻译中首次系统性引入注意力。他们使用一个小型前馈网络来计算评分：</p>
+
+            <div class="formula-box centered">
+                $$ \mathrm{score}(\boldsymbol{q},\boldsymbol{k}) = \boldsymbol{w}_{v}^{T}\,\tanh\!\left(\boldsymbol{W}_{q}\boldsymbol{q} + \boldsymbol{W}_{k}\boldsymbol{k}\right), \tag{6.2} $$
+            </div>
+
+            <p>其中 $\boldsymbol{W}_{q} \in \mathbb{R}^{d_{a} \times d_{q}}$、$\boldsymbol{W}_{k} \in \mathbb{R}^{d_{a} \times d_{k}}$ 与 $\boldsymbol{w}_{v} \in \mathbb{R}^{d_{a}}$ 都是可学习参数，$d_a$ 是注意力内部维度。这种 <em>加性</em> 形式可以处理查询与键维度不一致的情况。</p>
+
+            <h3>6.1.2 点积注意力（Luong et al., 2015）</h3>
+
+            <p>若 $\boldsymbol{q}$ 与 $\boldsymbol{k}$ 维度相同（都是 $d_{k}$），可以直接用内积做相似度：</p>
+
+            <div class="formula-box centered">
+                $$ \mathrm{score}(\boldsymbol{q},\boldsymbol{k}) = \boldsymbol{q}^{T}\boldsymbol{k}. \tag{6.3} $$
+            </div>
+
+            <p>点积形式更加简单，而且在 GPU 上可以通过矩阵乘法高效批量完成。Transformer 采用的正是点积注意力的一个改进版本。</p>
+
+            <div class="remark" data-label="注记 6.1 · 注意力的矩阵形式">
+                <p>把所有查询堆叠为 $\boldsymbol{Q} \in \mathbb{R}^{m \times d_{q}}$，所有键、值堆叠为 $\boldsymbol{K} \in \mathbb{R}^{n \times d_{k}}$、$\boldsymbol{V} \in \mathbb{R}^{n \times d_{v}}$，则整批注意力可写成：</p>
+                <div class="formula-box centered">$$ \text{Attention}(\boldsymbol{Q},\boldsymbol{K},\boldsymbol{V}) = \text{Softmax}\!\left(\dfrac{\boldsymbol{Q}\boldsymbol{K}^{T}}{\sqrt{d_{k}}}\right)\boldsymbol{V}. \tag{6.4} $$</div>
+                <p>这完全并行化，是 Transformer 能够高效训练的关键。</p>
+            </div>
+
+        </div>
+
+        <!-- 6.2 -->
+        <div class="content-section">
+            <h2>6.2 缩放点积注意力</h2>
+
+            <p>为什么在式 (6.4) 中除以 $\sqrt{d_{k}}$？Vaswani 等人给出了一个启发式论证：当 $d_{k}$ 很大时，点积 $\boldsymbol{q}^{T}\boldsymbol{k}$ 的方差会变得很大，导致 Softmax 后的概率分布极为"尖锐"，梯度变得很小。</p>
+
+            <div class="lemma" data-label="引理 6.2 · 点积的方差">
+                <p>设 $\boldsymbol{q}$、$\boldsymbol{k}$ 的元素为均值 0、方差 1 的独立随机变量，则</p>
+                <div class="formula-box centered">$$ \mathbb{E}\!\left[\boldsymbol{q}^{T}\boldsymbol{k}\right] = 0, \qquad \text{Var}\!\left(\boldsymbol{q}^{T}\boldsymbol{k}\right) = d_{k}. \tag{6.5} $$</div>
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明</div>
+                <p>由独立性 $\mathbb{E}[q_{i}k_{j}] = \mathbb{E}[q_{i}]\,\mathbb{E}[k_{j}] = 0$，故期望显然为零。</p>
+                <p>由方差的可加性（独立变量）：</p>
+                <div class="formula-box centered">$$ \text{Var}\!\left(\sum_{i=1}^{d_{k}} q_{i}k_{i}\right) = \sum_{i=1}^{d_{k}} \text{Var}(q_{i}k_{i}) = \sum_{i=1}^{d_{k}} \big(\mathbb{E}[q_{i}^{2}]\mathbb{E}[k_{i}^{2}] - \mathbb{E}[q_{i}]^{2}\mathbb{E}[k_{i}]^{2}\big) = \sum_{i=1}^{d_{k}} 1 \cdot 1 = d_{k}. \quad \blacksquare $$</div>
+            </div>
+
+            <p>因此把点积除以 $\sqrt{d_{k}}$，使得输出的方差保持为 1，Softmax 的输入保持在一个合理的范围，梯度不会消失。</p>
+
+            <h3>6.2.1 掩码（Masking）</h3>
+
+            <p>在解码器自注意力中，预测第 $i$ 个目标词时只能利用第 $1,\dots,i$ 的信息（因果约束）。为此在 Softmax 之前把 $(i,j)$ 位置当 $j>i$ 的 logit 设为 $-\infty$，使其权重为零：</p>
+
+            <div class="formula-box centered">
+                $$ M_{ij} = \begin{cases} 0, & j \le i, \\ -\infty, & j > i. \end{cases} \qquad \tilde{\alpha}_{ij} = \frac{\exp\!\left((\boldsymbol{Q}\boldsymbol{K}^{T}/\sqrt{d_{k}})_{ij} + M_{ij}\right)}{\sum_{l}\exp\!\left((\boldsymbol{Q}\boldsymbol{K}^{T}/\sqrt{d_{k}})_{il} + M_{il}\right)}. \tag{6.6} $$
+            </div>
+
+            <p>这保证了模型的 <span class="term">自回归性质</span>（autoregressive）。</p>
+
+            <h3>6.2.2 前向与反向传播</h3>
+
+            <p>设 $\boldsymbol{Z} = \text{Attention}(\boldsymbol{Q},\boldsymbol{K},\boldsymbol{V})$，且下游损失对 $\boldsymbol{Z}$ 的梯度为 $\partial L/\partial \boldsymbol{Z} =: \bar{\boldsymbol{Z}} \in \mathbb{R}^{m \times d_{v}}$。令 $\boldsymbol{S} = \boldsymbol{Q}\boldsymbol{K}^{T}/\sqrt{d_{k}}$，$\boldsymbol{P} = \text{Softmax}(\boldsymbol{S})$（每行和为 1），则 $\boldsymbol{Z} = \boldsymbol{P}\boldsymbol{V}$。容易推得：</p>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial L}{\partial \boldsymbol{V}} = \boldsymbol{P}^{T}\bar{\boldsymbol{Z}}, \quad \frac{\partial L}{\partial \boldsymbol{P}} = \bar{\boldsymbol{Z}}\,\boldsymbol{V}^{T}, \tag{6.7} $$
+            </div>
+
+            <p>再用 Softmax 的雅可比（第 $i$ 行的内项）：$\bar{S}_{ij} = \sum_{l} \bar{P}_{il}(P_{il}\delta_{lj} - P_{il}P_{ij}) = P_{ij}(\bar{P}_{i\cdot} - \bar{\boldsymbol{P}}_{i}\odot \mathbf{1})$ 的形式：</p>
+
+            <div class="formula-box centered">
+                $$ \bar{\boldsymbol{S}} = \boldsymbol{P} \odot \left(\bar{\boldsymbol{P}} - \text{rowsum}(\bar{\boldsymbol{P}} \odot \boldsymbol{P})\right), \quad \bar{\boldsymbol{Q}} = \frac{1}{\sqrt{d_{k}}}\bar{\boldsymbol{S}}\,\boldsymbol{K}, \quad \bar{\boldsymbol{K}} = \frac{1}{\sqrt{d_{k}}}\bar{\boldsymbol{S}}^{T}\boldsymbol{Q}. \tag{6.8} $$
+            </div>
+
+            <p>这样整个注意力模块的梯度即可端到端传播。</p>
+
+        </div>
+
+        <!-- 6.3 -->
+        <div class="content-section">
+            <h2>6.3 多头注意力（Multi-Head Attention）</h2>
+
+            <div class="definition" data-label="定义 6.3 · 多头注意力">
+                <p>给定输入 $\boldsymbol{Q},\boldsymbol{K},\boldsymbol{V}$，将它们通过 $h$ 组独立线性投影并行做注意力，再把输出拼接后线性变换：</p>
+                <div class="formula-box centered">
+                    $$ \begin{aligned} \text{head}_{i} &= \text{Attention}(\boldsymbol{Q}\boldsymbol{W}_{i}^{Q}, \boldsymbol{K}\boldsymbol{W}_{i}^{K}, \boldsymbol{V}\boldsymbol{W}_{i}^{V}), \\ \text{MultiHead}(\boldsymbol{Q},\boldsymbol{K},\boldsymbol{V}) &= \big[\text{head}_{1};\,\text{head}_{2};\,\dots;\,\text{head}_{h}\big]\,\boldsymbol{W}^{O}. \end{aligned} \tag{6.9} $$
+                </div>
+                <p>其中 $\boldsymbol{W}_{i}^{Q} \in \mathbb{R}^{d_{\text{model}} \times d_{k}}$、$\boldsymbol{W}_{i}^{K} \in \mathbb{R}^{d_{\text{model}} \times d_{k}}$、$\boldsymbol{W}_{i}^{V} \in \mathbb{R}^{d_{\text{model}} \times d_{v}}$，并且通常令 $d_{k}=d_{v}=d_{\text{model}}/h$，使参数量与单头时相同；而 $\boldsymbol{W}^{O} \in \mathbb{R}^{h d_{v} \times d_{\text{model}}}$。</p>
+            </div>
+
+            <p>直觉意义：不同的"头"学会在不同语义子空间里做匹配——有的头关注句法相邻词，有的关注长距离指代，有的关注对齐。把它们拼接起来，让模型同时获得多种类型的依赖关系。</p>
+
+            <div class="example" data-label="例 6.4 · 参数量估算">
+                <p>设 $d_{\text{model}} = 512$，头数 $h = 8$，于是 $d_{k}=d_{v}=64$。多头注意力的参数量（忽略偏置）为：</p>
+                <div class="formula-box centered">
+                    $$ h\,(d_{\text{model}}\cdot d_{k} + d_{\text{model}}\cdot d_{k} + d_{\text{model}}\cdot d_{v}) + h d_{v}\cdot d_{\text{model}} = 4 \cdot d_{\text{model}}^{2} = 4 \cdot 512^{2} = 1\,048\,576. \tag{6.10} $$
+                </div>
+                <p>这等价于一个 $d_{\text{model}} \to 4d_{\text{model}} \to d_{\text{model}}$ 的两层前馈网络的规模。</p>
+            </div>
+
+            <h3>6.3.1 Transformer 中的三类注意力</h3>
+
+            <p>在完整的 Transformer 架构中存在三种注意力变体：</p>
+
+            <div class="definition" data-label="定义 6.5 · 三类注意力">
+                <p>1. <strong>编码器自注意力</strong>：$\boldsymbol{Q}=\boldsymbol{K}=\boldsymbol{V}=$ 编码器上一层的输出，全连接、无掩码。</p>
+                <p>2. <strong>解码器掩码自注意力</strong>：$\boldsymbol{Q}=\boldsymbol{K}=\boldsymbol{V}=$ 解码器上一层的输出，施加因果掩码 (6.6)。</p>
+                <p>3. <strong>编码器-解码器注意力</strong>：$\boldsymbol{Q}$ 来自解码器上一层，$\boldsymbol{K},\boldsymbol{V}$ 来自编码器最终输出。用于把源端信息"翻译"到目标端。</p>
+            </div>
+
+        </div>
+
+        <!-- 6.4 -->
+        <div class="content-section">
+            <h2>6.4 位置编码</h2>
+
+            <p>自注意力本身是 <em>排列等变</em>（permutation-equivariant）的：若把所有输入 token 重排，输出也会做相同重排。这意味着模型不知道"顺序"。为了注入位置信息，我们把每个位置 $pos$ 的词嵌入 $\boldsymbol{x}_{pos}$ 加上一个位置向量 $\boldsymbol{p}_{pos}$：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{u}_{pos} = \boldsymbol{x}_{pos} + \boldsymbol{p}_{pos}. \tag{6.11} $$
+            </div>
+
+            <div class="definition" data-label="定义 6.6 · 正弦位置编码">
+                <p>对每个位置 $pos=0,1,2,\dots$ 和每个维度 $i=0,1,\dots,d_{\text{model}}/2-1$：</p>
+                <div class="formula-box centered">
+                    $$ \boldsymbol{p}_{pos,\,2i} = \sin\!\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right), \qquad \boldsymbol{p}_{pos,\,2i+1} = \cos\!\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right). \tag{6.12} $$
+                </div>
+            </div>
+
+            <h3>6.4.1 相对位置的可表达性</h3>
+
+            <p>正弦位置编码的优美性质：<em>任意固定偏移 $k$ 的位置向量都可以被原位置向量的线性变换表示</em>，因此模型可以学习相对位置关系。</p>
+
+            <div class="theorem" data-label="定理 6.7 · 相对位置线性表示">
+                <p>对任意整数 $k$，存在矩阵 $\boldsymbol{M}_{k} \in \mathbb{R}^{d_{\text{model}} \times d_{\text{model}}}$（不依赖于 $pos$），使得</p>
+                <div class="formula-box centered">$$ \boldsymbol{p}_{pos+k} = \boldsymbol{M}_{k}\,\boldsymbol{p}_{pos}. \tag{6.13} $$</div>
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明</div>
+                <p>只需在每一维对上单独构造二维线性关系。令 $\omega_{i} = 1/10000^{2i/d_{\text{model}}}$，由三角和角公式：</p>
+                <div class="formula-box centered">
+                    $$ \begin{bmatrix} \sin(\omega_{i}(pos+k)) \\ \cos(\omega_{i}(pos+k)) \end{bmatrix} = \begin{bmatrix} \cos(\omega_{i}k) & \sin(\omega_{i}k) \\ -\sin(\omega_{i}k) & \cos(\omega_{i}k) \end{bmatrix} \begin{bmatrix} \sin(\omega_{i}pos) \\ \cos(\omega_{i}pos) \end{bmatrix}. \tag{6.14} $$
+                </div>
+                <p>将每对 $(2i,2i+1)$ 的 2×2 旋转矩阵按块对角堆起来即得 $\boldsymbol{M}_{k}$。$\blacksquare$</p>
+            </div>
+
+            <p>实际工程中，许多变体使用 <em>可学习位置嵌入</em>（learned positional embeddings），每个位置直接拥有一个可训练向量。它在数据充足时往往表现略好，但失去了外推到比训练更长序列的能力。混合方案（如 RoPE、ALiBi）也被广泛研究。</p>
+
+        </div>
+
+        <!-- 6.5 -->
+        <div class="content-section">
+            <h2>6.5 前馈网络、残差连接与层归一化</h2>
+
+            <h3>6.5.1 Position-wise 前馈网络</h3>
+
+            <p>注意力之后紧接一个对每个位置独立作用的两层前馈网络：</p>
+
+            <div class="formula-box centered">
+                $$ \text{FFN}(\boldsymbol{x}) = \max\!\left(0,\,\boldsymbol{x}\boldsymbol{W}_{1} + \boldsymbol{b}_{1}\right)\boldsymbol{W}_{2} + \boldsymbol{b}_{2}, \tag{6.15} $$
+            </div>
+
+            <p>其中 $\boldsymbol{W}_{1} \in \mathbb{R}^{d_{\text{model}} \times d_{ff}}$，$\boldsymbol{W}_{2} \in \mathbb{R}^{d_{ff} \times d_{\text{model}}}$，一般取 $d_{ff}=4d_{\text{model}}$。注意这在每个位置上共享参数，本质是两个核大小为 1 的卷积。</p>
+
+            <h3>6.5.2 残差连接与层归一化</h3>
+
+            <p>对每个子层（注意力或 FFN）使用"Pre-LN"或"Post-LN"形式。原始 Transformer 使用后归一化（Post-LN）：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{y} = \text{LayerNorm}(\boldsymbol{x} + \text{Sublayer}(\boldsymbol{x})), \tag{6.16} $$
+            </div>
+
+            <p>其中 $\text{LayerNorm}$ 定义为（对每个样本、每个位置独立做）：</p>
+
+            <div class="formula-box centered">
+                $$ \mu = \frac{1}{d}\sum_{i=1}^{d} x_{i}, \quad \sigma^{2} = \frac{1}{d}\sum_{i=1}^{d}(x_{i}-\mu)^{2}, \quad \hat{x}_{i} = \frac{x_{i}-\mu}{\sqrt{\sigma^{2}+\epsilon}}, \quad \text{LN}(\boldsymbol{x})_{i} = \gamma_{i}\hat{x}_{i} + \beta_{i}. \tag{6.17} $$
+            </div>
+
+            <p>这里 $\gamma,\beta$ 是可学习的尺度和偏移参数。后续工作（如 GPT-2 起）转向了"Pre-LN"方案，有利于深层模型训练稳定。</p>
+
+            <div class="definition" data-label="定义 6.8 · 完整 Transformer 编码器层">
+                <p>对输入 $\boldsymbol{H}^{(l-1)} \in \mathbb{R}^{n \times d_{\text{model}}}$，第 $l$ 层编码器按如下顺序计算：</p>
+                <div class="formula-box centered">
+                    $$ \begin{aligned} \boldsymbol{A}^{(l)} &= \text{MultiHeadSelfAttn}(\boldsymbol{H}^{(l-1)}), \\ \boldsymbol{H}^{(l,1)} &= \text{LayerNorm}(\boldsymbol{H}^{(l-1)} + \text{Dropout}(\boldsymbol{A}^{(l)})), \\ \boldsymbol{F}^{(l)} &= \text{FFN}(\boldsymbol{H}^{(l,1)}), \\ \boldsymbol{H}^{(l)} &= \text{LayerNorm}(\boldsymbol{H}^{(l,1)} + \text{Dropout}(\boldsymbol{F}^{(l)})). \end{aligned} \tag{6.18} $$
+                </div>
+                <p>将 $L$ 层这样的模块堆叠得到完整编码器，最终输出 $\boldsymbol{H}^{(L)} \in \mathbb{R}^{n \times d_{\text{model}}}$。</p>
+            </div>
+
+            <p>解码器层在上述基础上插入一个"编码器-解码器注意力"子层，其 $\boldsymbol{K},\boldsymbol{V}$ 来自编码器最终层的输出，且第一个自注意力使用因果掩码。</p>
+
+        </div>
+
+        <!-- 6.6 -->
+        <div class="content-section">
+            <h2>6.6 训练目标与推断</h2>
+
+            <h3>6.6.1 训练：Teacher Forcing</h3>
+
+            <p>训练时把目标序列右移一位（$\text{BOS}, y_{1},\dots,y_{m-1}$）喂给解码器，要求模型在每个位置预测下一个词 $y_{i}$，并用交叉熵损失：</p>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = -\frac{1}{m}\sum_{i=1}^{m}\log p_{\theta}(y_{i} \mid y_{\lt i},\boldsymbol{x}_{1:n}), \tag{6.19} $$
+            </div>
+
+            <p>其中 $p_{\theta}(y_{i} \mid y_{\lt i},\boldsymbol{x})$ 由解码器第 $i$ 位输出经过线性层 + Softmax 得到。Teacher Forcing 使得训练可以完全并行——同一批次所有位置的损失一起算。</p>
+
+            <h3>6.6.2 推断：贪心 / Beam Search</h3>
+
+            <p>推断时只能从 $\text{BOS}$ 开始依次采样。令 $\boldsymbol{y}_{1:t}$ 为已生成前缀，下一个词的概率为 $p(v \mid \boldsymbol{y}_{1:t},\boldsymbol{x})$。<span class="term">贪心搜索</span>每步取：</p>
+
+            <div class="formula-box centered">
+                $$ y_{t+1}^{*} = \arg\max_{v} p(v \mid \boldsymbol{y}_{1:t},\boldsymbol{x}). \tag{6.20} $$
+            </div>
+
+            <p><span class="term">集束搜索（Beam Search）</span>维护大小为 $B$ 的候选前缀集合，每步对每个候乘以扩展概率后保留总分最高的 $B$ 条：</p>
+
+            <div class="formula-box centered">
+                $$ \mathrm{score}(\boldsymbol{y}_{1:t+1}) = \mathrm{score}(\boldsymbol{y}_{1:t}) + \log p(y_{t+1} \mid \boldsymbol{y}_{1:t},\boldsymbol{x}). \tag{6.21} $$
+            </div>
+
+            <p>最终在候选结束序列中按长度归一化分数选出译文。</p>
+
+            <h3>6.6.3 标签平滑（Label Smoothing）</h3>
+
+            <p>为缓解模型对训练数据的过度自信，使用标签平滑把硬 one-hot 目标 $\boldsymbol{y}$ 替换为软分布：</p>
+
+            <div class="formula-box centered">
+                $$ \tilde{y}_{i} = \begin{cases} 1-\epsilon, & i=y, \\ \epsilon/(V-1), & i \neq y. \end{cases} \tag{6.22} $$
+            </div>
+
+            <p>其中 $V$ 为词表大小，$\epsilon \in (0,1)$ 为平滑强度（常用 0.1）。</p>
+
+        </div>
+
+        <!-- 6.7 -->
+        <div class="content-section">
+            <h2>6.7 自注意力的复杂度与表达力分析</h2>
+
+            <p>下表比较 RNN、CNN（核大小 $k$）与自注意力对长度为 $n$、维度 $d$ 的序列每步复杂度：</p>
+
+            <table>
+                <thead><tr><th>层类型</th><th>每层计算复杂度</th><th>顺序操作数</th><th>最大路径长度</th></tr></thead>
+                <tbody>
+                    <tr><td>自注意力</td><td>$O(n^{2}d)$</td><td>$O(1)$</td><td>$O(1)$</td></tr>
+                    <tr><td>循环神经网络</td><td>$O(nd^{2})$</td><td>$O(n)$</td><td>$O(n)$</td></tr>
+                    <tr><td>卷积（核 $k$）</td><td>$O(knd^{2})$</td><td>$O(1)$</td><td>$O(\log_{k}n)$</td></tr>
+                </tbody>
+            </table>
+
+            <p>结论：<em>自注意力在短序列下训练非常高效（并行度高），但对长序列二次开销显著</em>。这催生了稀疏注意力、线性注意力、滑窗注意力等改进（如 Longformer、BigBird、FlashAttention）。</p>
+
+            <div class="remark" data-label="注记 6.9 · 自注意力作为图神经网络">
+                <p>自注意力可以被解读为一个全连接有向图上的消息传递：每个节点把自己的值按照对邻居的关注度 $\alpha_{ij}$ 加权聚合。这个观点把 Transformer 与图神经网络（GNN）统一在同一框架下。</p>
+            </div>
+
+        </div>
+
+        <!-- 6.8 -->
+        <div class="content-section">
+            <h2>6.8 预训练范式与大语言模型概览</h2>
+
+            <h3>6.8.1 因果语言模型（GPT 系列）</h3>
+
+            <p>仅保留 Transformer 解码器（掩码自注意力 + 交叉注意力位置丢弃），并在大规模文本语料上做自回归语言建模：</p>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = -\frac{1}{N}\sum_{t=1}^{N}\log p_{\theta}(x_{t} \mid x_{1:t-1}), \tag{6.23} $$
+            </div>
+
+            <p>其中 $N$ 是所有训练 token 数。典型发展脉络：</p>
+
+            <ul>
+                <li>GPT-1（2018）：12 层、117M 参数、BookCorpus 800M token；</li>
+                <li>GPT-2（2019）：48 层、1.5B 参数、WebText 40GB；</li>
+                <li>GPT-3（2020）：96 层、175B 参数、300B token；</li>
+                <li>GPT-4（2023）：混合专家（MoE）架构、万亿级激活参数。</li>
+            </ul>
+
+            <h3>6.8.2 双向掩码语言模型（BERT）</h3>
+
+            <p>BERT 仅保留编码器。预训练任务为 <span class="term">掩码语言模型（MLM）</span>：随机把部分输入 token 替换为 <[BOS_never_used_51bce0c785ca2f68081bfa7d91973934]>，要求模型恢复原始 token：</p>
+
+            <div class="formula-box centered">
+                $$ L_{\text{MLM}} = -\mathbb{E}_{x \sim \mathcal{D}}\sum_{t \in M}\log p_{\theta}(x_{t} \mid x_{\setminus M}), \tag{6.24} $$
+            </div>
+
+            <p>同时使用 <span class="term">下一句预测（NSP）</span>作为第二任务。BERT 的双向特性使其非常适合文本理解任务（分类、NER、问答），但不直接适合生成。</p>
+
+            <h3>6.8.3 序列到序列（T5、BART）</h3>
+
+            <p>保留完整的编码器-解码器架构，把预训练统一成"text-to-text"框架：无论分类、翻译、摘要都写成"输入文本 → 目标文本"。BART 则在输入侧加入多种噪声形式（打乱、删词、掩 span）进行去噪自编码预训练。</p>
+
+            <h3>6.8.4 指令微调与对齐</h3>
+
+            <p>大型预训练模型通过指令微调（Instruction Tuning）学习遵循自然语言指令，通过 RLHF（Reinforcement Learning from Human Feedback）等方法与人类偏好对齐，使得模型输出更有用、更无害。</p>
+
+        </div>
+
+        <!-- 6.9 -->
+        <div class="content-section">
+            <h2>6.9 代码：从零实现一个 Transformer 块</h2>
+
+            <p>下面用 <code>NumPy</code> 手工实现缩放点积注意力与一个简化版 Transformer 编码器层，帮助读者把公式落到代码。</p>
+
+            <div class="code-block"><span class="code-lang">python</span>
+<pre>
+<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-function">softmax</span>(X, axis=-1):
+    X_max = np.max(X, axis=axis, keepdims=True)
+    eX = np.exp(X - X_max)
+    <span class="code-keyword">return</span> eX / np.sum(eX, axis=axis, keepdims=True)
+
+<span class="code-keyword">def</span> <span class="code-function">layer_norm</span>(x, gamma, beta, eps=1e-5):
+    mu = x.mean(axis=-1, keepdims=True)
+    sigma2 = x.var(axis=-1, keepdims=True)
+    xhat = (x - mu) / np.sqrt(sigma2 + eps)
+    <span class="code-keyword">return</span> gamma * xhat + beta
+
+<span class="code-keyword">class</span> <span class="code-function">ScaledDotProductAttention</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, d_k, mask=None):
+        self.d_k = d_k
+        self.mask = mask        <span class="code-comment"># (n, n)，因果掩码：上三角为 -inf</span>
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, Q, K, V):
+        scores = (Q @ K.swapaxes(-1, -2)) / np.sqrt(self.d_k)   <span class="code-comment"># (B, n, n)</span>
+        <span class="code-keyword">if</span> self.mask <span class="code-keyword">is not</span> None:
+            scores = scores + self.mask
+        P = softmax(scores, axis=-1)
+        self.cache = (Q, K, V, P)
+        <span class="code-keyword">return</span> P @ V
+
+    <span class="code-keyword">def</span> <span class="code-function">backward</span>(self, dZ):
+        Q, K, V, P = self.cache
+        dV = P.swapaxes(-1, -2) @ dZ                       <span class="code-comment"># (B, n, n) @ (B, n, dv) -> (B, n, dv)</span>
+        dP = dZ @ V.swapaxes(-1, -2)                       <span class="code-comment"># (B, n, dv) @ (B, dv, n) -> (B, n, n)</span>
+        dS = P * (dP - np.sum(dP * P, axis=-1, keepdims=True))   <span class="code-comment"># Softmax-Jvp</span>
+        dS = dS / np.sqrt(self.d_k)
+        dQ = dS @ K
+        dK = dS.swapaxes(-1, -2) @ Q
+        <span class="code-keyword">return</span> dQ, dK, dV
+
+<span class="code-keyword">class</span> <span class="code-function">MultiHeadAttention</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, d_model, n_heads, causal=False):
+        <span class="code-keyword">assert</span> d_model % n_heads == 0
+        self.h = n_heads
+        self.d_k = d_model // n_heads
+        self.Wq = np.random.randn(d_model, d_model) * 0.02
+        self.Wk = np.random.randn(d_model, d_model) * 0.02
+        self.Wv = np.random.randn(d_model, d_model) * 0.02
+        self.Wo = np.random.randn(d_model, d_model) * 0.02
+        self.attn = ScaledDotProductAttention(self.d_k, mask=(self._causal_mask(128) <span class="code-keyword">if</span> causal <span class="code-keyword">else</span> None))
+
+    <span class="code-keyword">def</span> <span class="code-function">_causal_mask</span>(self, n):
+        m = np.triu(np.ones((n, n)), k=1) * (-1e9)
+        <span class="code-keyword">return</span> m
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, X):
+        B, n, d = X.shape
+        Q = (X @ self.Wq).reshape(B, n, self.h, self.d_k).swapaxes(1, 2)   <span class="code-comment"># (B, h, n, d_k)</span>
+        K = (X @ self.Wk).reshape(B, n, self.h, self.d_k).swapaxes(1, 2)
+        V = (X @ self.Wv).reshape(B, n, self.h, self.d_k).swapaxes(1, 2)
+        out = self.attn.forward(Q, K, V)                                   <span class="code-comment"># (B, h, n, d_k)</span>
+        out = out.swapaxes(1, 2).reshape(B, n, -1)                         <span class="code-comment"># concat heads</span>
+        self.cache = (X, Q, K, V, out)
+        <span class="code-keyword">return</span> out @ self.Wo
+
+<span class="code-keyword">class</span> <span class="code-function">TransformerEncoderLayer</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, d_model, n_heads, d_ff=None, dropout=0.1):
+        d_ff = d_ff <span class="code-keyword">or</span> 4 * d_model
+        self.self_attn = MultiHeadAttention(d_model, n_heads, causal=False)
+        self.W1 = np.random.randn(d_model, d_ff) * 0.02
+        self.b1 = np.zeros(d_ff)
+        self.W2 = np.random.randn(d_ff, d_model) * 0.02
+        self.b2 = np.zeros(d_model)
+        self.g1 = np.ones(d_model); self.beta1 = np.zeros(d_model)
+        self.g2 = np.ones(d_model); self.beta2 = np.zeros(d_model)
+        self.dropout = dropout
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, X):
+        A = self.self_attn.forward(X)
+        H1 = layer_norm(X + A, self.g1, self.beta1)
+        F = np.maximum(0, H1 @ self.W1 + self.b1) @ self.W2 + self.b2
+        H2 = layer_norm(H1 + F, self.g2, self.beta2)
+        <span class="code-keyword">return</span> H2
+
+<span class="code-comment"># 小小试验：(B=2, n=8, d=64), heads=4</span>
+layer = TransformerEncoderLayer(d_model=64, n_heads=4)
+X = np.random.randn(2, 8, 64)
+Y = layer.forward(X)
+<span class="code-keyword">print</span>(<span class="code-string">"output shape"</span>, Y.shape)   <span class="code-comment"># (2, 8, 64)</span>
+</pre>
+            </div>
+
+            <p>读者可以基于以上骨架，按第 2 章的反向传播模板补充完整的梯度实现，并在一个语言建模任务上训练。现代深度学习框架（PyTorch、TensorFlow）提供优化的 `nn.MultiheadAttention` 与 `nn.Transformer`，推荐在生产中使用。</p>
+
+        </div>
+
+        <!-- 6.10 习题 -->
+        <div class="content-section">
+            <h2>6.10 小结与习题</h2>
+
+            <div class="summary-box">
+                <div class="summary-title">📌 本章要点</div>
+                <ul>
+                    <li>注意力通过对"值"做加权组合实现上下文动态关联；评分函数有加性与点积两大类。</li>
+                    <li>缩放点积注意力将点积除以 $\sqrt{d_k}$ 以稳定方差，配合 Softmax 得到凸权重。</li>
+                    <li>多头注意力在多个子空间内并行做注意力，拼接后线性变换输出，丰富表达能力。</li>
+                    <li>正弦位置编码提供了可外推的相对位置表达；可学习位置编码在大语料下常用。</li>
+                    <li>Transformer 由多个"注意力 + 前馈网络 + 残差 + 层归一化"块堆叠构成。</li>
+                    <li>训练使用 Teacher Forcing + 交叉熵；推断使用贪心或集束搜索。</li>
+                    <li>GPT、BERT、T5 等模型分别对应解码器-only、编码器-only、完整编解码器三种预训练范式。</li>
+                </ul>
+            </div>
+
+            <div class="exercise" data-label="习题 6.1">
+                <p>设 $\boldsymbol{q},\boldsymbol{k}_{1},\dots,\boldsymbol{k}_{n} \in \mathbb{R}^{d_{k}}$ 为标准正态独立向量。数值实验：绘制 $d_{k}=32,128,512$ 时 $\boldsymbol{q}^{T}\boldsymbol{k}_{1}/\sqrt{d_{k}}$ 的样本分布直方图，观察是否接近 $\mathcal{N}(0,1)$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 6.2">
+                <p>推导加性注意力 $\mathrm{score}(\boldsymbol{q},\boldsymbol{k}) = \boldsymbol{w}_{v}^{T}\tanh(\boldsymbol{W}_{q}\boldsymbol{q} + \boldsymbol{W}_{k}\boldsymbol{k})$ 对 $\boldsymbol{W}_{q},\boldsymbol{W}_{k},\boldsymbol{w}_{v}$ 的梯度。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 6.3">
+                <p>对 $d_{\text{model}}=512$，头数 $h=16$，假设每层注意力 + FFN 的参数规模约为多少？总深度 $L=12$ 的编码器模型大约有多少参数（不含嵌入与 Softmax 输出层）？</p>
+            </div>
+
+            <div class="exercise" data-label="习题 6.4">
+                <p>说明为什么自注意力是"排列等变"的，并给出在位置编码存在时不再成立的一个反例。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 6.5 · 编程">
+                <p>扩展本节提供的 NumPy 实现，补全反向传播并在 PTB/Wikitext-2 的小样本上训练一个 2 层、128 维的 Transformer 语言模型，报告困惑度（perplexity $=e^{-L}$）曲线。</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter5.html" class="nav-btn">← 第5章 循环神经网络</a>
+        <a href="chapter7.html" class="nav-btn">第7章 生成式模型 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

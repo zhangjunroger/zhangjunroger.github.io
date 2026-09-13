@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第8章 深度强化学习基础 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第8章</span></div>
+            <div class="chapter-big-num">08</div>
+            <h1>深度学习应用实践：从方法论到工程落地</h1>
+            <p>本章把前面章节学到的理论与架构综合应用到真实场景。我们将系统讨论：计算机视觉任务的建模流程与评价指标；自然语言处理中的微调范式；强化学习的价值/策略两类算法框架；模型压缩与部署工程方法；以及机器学习项目的最佳实践。最后给出一个端到端示例项目。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 8 课时</span><span class="info-chip">🎯 9 个主题</span><span class="info-chip">🏗️ 工程方法</span><span class="info-chip">🎓 综合实战</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>机器学习项目的标准流程（CRISP-DM）</li>
+                <li>计算机视觉实战：图像分类、目标检测、分割</li>
+                <li>评价指标：Accuracy、mAP、Dice、IoU、BLEU、ROUGE</li>
+                <li>自然语言处理：微调、RAG、LoRA</li>
+                <li>强化学习：MDP、Q-Learning、DQN、PPO</li>
+                <li>多模态学习与大模型应用</li>
+                <li>模型压缩与部署：剪枝、量化、知识蒸馏</li>
+                <li>推理加速：ONNX、TensorRT、vLLM</li>
+                <li>机器学习工程最佳实践</li>
+                <li>项目示例：端到端图像分类项目</li>
+                <li>课程总结与展望</li>
+            </ol>
+        </div>
+
+        <!-- 8.1 标准流程 -->
+        <div class="content-section">
+            <h2>8.1 机器学习项目的标准流程</h2>
+
+            <p>一个典型的机器学习项目可以抽象为 <strong>CRISP-DM</strong>（Cross-Industry Standard Process for Data Mining）六阶段循环：</p>
+
+            <ol>
+                <li><strong>业务理解（Business Understanding）</strong>：明确业务目标 → 转化为可度量的机器学习任务（分类/回归/生成）。</li>
+                <li><strong>数据理解（Data Understanding）</strong>：收集数据、探索性分析（EDA）、识别质量问题。</li>
+                <li><strong>数据准备（Data Preparation）</strong>：清洗、标注、切分、特征工程、数据增强。</li>
+                <li><strong>建模（Modeling）</strong>：选择/设计模型、训练、调参。</li>
+                <li><strong>评估（Evaluation）</strong>：在测试集评估、业务指标评估、错误分析。</li>
+                <li><strong>部署（Deployment）</strong>：上线、监控、迭代。</li>
+            </ol>
+
+            <div class="definition" data-label="定义 8.1 · 数据切分">
+                <p>设全体数据 $\mathcal{D} = \{(x^{(i)}, y^{(i)})\}_{i=1}^{N}$。标准做法是随机切分为三部分：</p>
+                <ul>
+                    <li>训练集 $\mathcal{D}_{\text{train}}$（~70–80%）：用于更新模型参数；</li>
+                    <li>验证集 $\mathcal{D}_{\text{val}}$（~10–15%）：用于选择超参数、提前停止；</li>
+                    <li>测试集 $\mathcal{D}_{\text{test}}$（~10–15%）：仅在项目结束时评估一次，给出泛化能力的无偏估计。</li>
+                </ul>
+                <p>当数据量较小时采用 <strong>K-折交叉验证</strong>：把 $\mathcal{D}_{\text{train}}$ 再均分为 $K$ 份，轮流用 $K-1$ 份训练、1份验证，最终取平均。</p>
+            </div>
+
+            <p>以下两节分别在视觉与语言两个具体场景下展开这一流程。</p>
+
+        </div>
+
+        <!-- 8.2 计算机视觉 -->
+        <div class="content-section">
+            <h2>8.2 计算机视觉实战</h2>
+
+            <h3>8.2.1 图像分类与评价指标</h3>
+
+            <p>图像分类是最经典任务：给定图像 $I\in\mathbb{R}^{H\times W\times 3}$，预测其所属类别 $y\in\{1,\dots,C\}$。</p>
+
+            <div class="definition" data-label="定义 8.2 · 混淆矩阵">
+                <p>对二分类问题，模型预测与真实标签形成 $2\times 2$ 表格：</p>
+                <div class="formula-box centered">
+                $$
+                \begin{array}{c|cc}
+                     & \text{预测 }+& \text{预测 }- \\ \hline
+                \text{真实 }+ & \text{TP（真阳性）} & \text{FN（假阴性）} \\
+                \text{真实 }- & \text{FP（假阳性）} & \text{TN（真阴性）}
+                \end{array}
+                $$
+                </div>
+                <p>由此派生：精确率 Precision $= \frac{\text{TP}}{\text{TP}+\text{FP}}$，召回率 Recall $= \frac{\text{TP}}{\text{TP}+\text{FN}}$，准确率 Accuracy $= \frac{\text{TP}+\text{TN}}{N}$，F1 分数 $F_1 = 2\frac{\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}$。</p>
+            </div>
+
+            <div class="theorem" data-label="定理 8.1 · 多分类指标">
+                <p>对 $C$ 类问题有两种聚合方式：</p>
+                <ul>
+                    <li><strong>Macro-F1</strong>：对每类独立计算 $F_1$ 后取算术平均；</li>
+                    <li><strong>Weighted-F1</strong>：按每类样本数加权；</li>
+                    <li><strong>Top-$k$ Accuracy</strong>：模型给出的前 $k$ 个最高分数中包含正确标签的比例。</li>
+                </ul>
+            </div>
+
+            <h3>8.2.2 目标检测</h3>
+
+            <p>目标检测同时预测一组边界框 $\{b_i\}$ 与每框的类别 $c_i$。模型家族主要有：</p>
+            <ul>
+                <li><strong>两阶段（Two-Stage）</strong>：R-CNN / Fast R-CNN / Faster R-CNN / Mask R-CNN。先生成候选框（region proposals），再对每个框做分类与坐标回归。</li>
+                <li><strong>一阶段（One-Stage）</strong>：YOLO 系列 / SSD / RetinaNet。直接从特征图回归类别与框。</li>
+                <li><strong>Transformer 系</strong>：DETR / DINO / YOLOv8 (混合)。</li>
+            </ul>
+
+            <div class="definition" data-label="定义 8.3 · IoU 与 mAP">
+                <p>两框交并比：</p>
+                <div class="formula-box centered">
+                $$ \text{IoU}(A,B) = \frac{|A\cap B|}{|A\cup B|}. \tag{8.1} $$
+                </div>
+                <p>若预测框与真实框 IoU $\ge \tau$（通常 $\tau=0.5$）则视为正样本。对每类画出 Precision-Recall 曲线并积分得到该类的 Average Precision（AP），所有类平均即 <strong>mAP</strong>：</p>
+                <div class="formula-box centered">
+                $$ \text{AP}(c) = \int_{0}^{1} P(R)\,dR,\quad \text{mAP} = \tfrac{1}{C}\sum_{c}\text{AP}(c). \tag{8.2} $$
+                </div>
+            </div>
+
+            <p>检测框常用损失：分类用交叉熵 $\mathcal{L}_{\text{cls}}$，定位用 <strong>Smooth L1</strong>（或更现代的 <strong>CIoU Loss</strong>）：</p>
+
+            <div class="formula-box centered">
+            $$ \text{smooth}_{L_1}(x)=\begin{cases} \tfrac{1}{2}x^{2}, & |x|\le 1,\\ |x|-\tfrac{1}{2}, & |x|>1. \end{cases} \tag{8.3} $$
+            </div>
+
+            <h3>8.2.3 语义/实例分割</h3>
+
+            <p>分割要求为每个像素分配类别。医学影像常用 <strong>U-Net</strong>（编码-解码 + 跳跃连接）。</p>
+
+            <div class="definition" data-label="定义 8.4 · Dice 系数与 IoU">
+                <p>对二分类掩膜 $\hat{M}$ 与真值 $M$：</p>
+                <div class="formula-box centered">
+                $$ \text{Dice}(\hat{M},M)=\frac{2\sum_{i,j} \hat{m}_{ij}m_{ij}}{\sum_{i,j}\hat{m}_{ij}+\sum_{i,j}m_{ij}+\epsilon},\quad \mathcal{L}_{\text{Dice}} = 1-\text{Dice}. \tag{8.4} $$
+                </div>
+                <p>Dice 对类不平衡问题鲁棒，常与交叉熵 $\mathcal{L}_{\text{BCE}}$ 联合使用：$\mathcal{L} = \alpha\,\mathcal{L}_{\text{BCE}} + (1-\alpha)\,\mathcal{L}_{\text{Dice}}$。</p>
+            </div>
+
+            <h3>8.2.4 医学影像分割实战</h3>
+
+            <div class="info-box">
+                <div class="info-box-title">🎯 项目实战：医学影像分割（U-Net）</div>
+                <p>输入：$384\times 384$ CT 切片；目标：像素级肿瘤掩膜。</p>
+                <p>核心挑战与应对：</p>
+                <ul>
+                    <li>数据量少 → 迁移学习（ImageNet 预训练编码器）+ 重数据增强（弹性形变、随机裁剪、亮度/对比度扰动）。</li>
+                    <li>正负样本极不平衡 → Dice Loss + Focal Loss：</li>
+                </ul>
+                <div class="formula-box centered">
+                $$ \mathcal{L}_{\text{Focal}} = -\sum_{c=1}^{C}(1-\hat{p}_{y_c})^{\gamma}\log \hat{p}_{y_c},\quad \gamma>0. \tag{8.5} $$
+                </div>
+                <p>测试时增强（TTA）：对同一输入的多次随机增强取平均以进一步提升 1–3% Dice。</p>
+            </div>
+
+        </div>
+
+        <!-- 8.3 NLP -->
+        <div class="content-section">
+            <h2>8.3 自然语言处理：从微调到 RAG</h2>
+
+            <h3>8.3.1 Transformer 时代的 NLP 范式</h3>
+
+            <p>大模型出现前，NLP 遵循"预训练 → 微调"两阶段：先在大规模无标注语料上训练一个语言模型，再在下游任务上微调全部参数。GPT/ BERT / RoBERTa / ELECTRA 是该范式的代表。进入大模型时代后，主流范式转向：</p>
+
+            <ul>
+                <li><strong>Prompt Engineering</strong>：通过自然语言指令代替结构化输入，让模型"即开即用"；</li>
+                <li><strong>参数高效微调（PEFT）</strong>：只训练极少量参数（< 1%）；典型：LoRA、Adapter、Prefix Tuning）；</li>
+                <li><strong>检索增强生成（RAG）</strong>：把外部知识库片段插入上下文让模型引用事实而非幻想；</li>
+                <li><strong>强化学习人类反馈（RLHF）</strong>：把模型对齐人类偏好。</li>
+            </ul>
+
+            <h3>8.3.2 LoRA：Low-Rank Adaptation</h3>
+
+            <div class="definition" data-label="定义 8.5 · LoRA">
+                <p>对预训练权重 $W_0\in\mathbb{R}^{d_{\text{in}}\times d_{\text{out}}}$，附加两个低秩矩阵 $B\in\mathbb{R}^{d_{\text{in}}\times r}$、$A\in\mathbb{R}^{r\times d_{\text{out}}}$（$r\ll \min(d_{\text{in}},d_{\text{out}})$），更新时：</p>
+                <div class="formula-box centered">
+                $$ W = W_0 + \Delta W = W_0 + B A,\quad \Delta W_{\text{init}}=0. \tag{8.6} $$
+                </div>
+                <p>训练期间冻结 $W_0$，只更新 $A,B$。推理时把 $BA$ 合并回 $W_0$ 不会增加任何计算开销。</p>
+            </div>
+
+            <p>对注意力权重 $W_q, W_k, W_v, W_o$ 通常都应用 LoRA，秩 $r$ 通常 $4$–$64$ 已足够让大模型在下游任务上达到接近全参数微调的效果。总参数量下降为 $r(d_{\text{in}}+d_{\text{out}})$，相对原权重规模 $d_{\text{in}}d_{\text{out}}$ 是 $\mathcal{O}(r/d)$ 级别。</p>
+
+            <h3>8.3.3 RAG：Retrieval-Augmented Generation</h3>
+
+            <p>RAG 的核心思想：模型回答问题 $q$ 时先从文档库 $\mathcal{D}$ 中检索出 $k$ 个相关段落 $\{d_1,\dots,d_k\}$，再把它们拼接进 prompt 作为上下文，让模型基于"知识"生成：</p>
+
+            <div class="formula-box centered">
+            $$ p_{\theta}(a\mid q) \approx p_{\theta}(a\mid q, d_1,\dots, d_k),\quad \{d_i\}=\arg\max_{d\in\mathcal{D}}\, \text{sim}(q,d). \tag{8.7} $$
+            </div>
+
+            <p>相似度函数 sim 通常使用向量空间的余弦距离 $\cos(\text{Enc}(q),\text{Enc}(d))$，由双编码器（Dense Retriever / DPR）或 BM25 等稀疏检索方法实现。RAG 的工程流水线为：</p>
+
+            <ol>
+                <li>文档切分（chunking）：按语义/段落/令牌长度切分；</li>
+                <li>构建向量索引（FAISS / Chroma / Pinecone）；</li>
+                <li>查询时 top-$k$ 检索 + 重排序（rerank）；</li>
+                <li>把结果注入 LLM 的系统提示词，要求模型"只使用上下文中的信息作答"。</li>
+            </ol>
+
+            <div class="code-block"><span class="code-lang">python</span>
+<pre><span class="code-keyword">from</span> langchain.vectorstores <span class="code-keyword">import</span> FAISS
+<span class="code-keyword">from</span> langchain.embeddings <span class="code-keyword">import</span> HuggingFaceEmbeddings
+<span class="code-keyword">from</span> langchain.prompts <span class="code-keyword">import</span> PromptTemplate
+<span class="code-keyword">from</span> langchain.chains <span class="code-keyword">import</span> RetrievalQA
+
+<span class="code-comment"># 1. 文档向量化与索引</span>
+embeddings = HuggingFaceEmbeddings(model_name=<span class="code-string">"shibing624/text2vec-base-chinese"</span>)
+vector_store = FAISS.from_texts(document_chunks, embeddings)
+
+<span class="code-comment"># 2. Prompt 模板</span>
+prompt = PromptTemplate(
+    input_variables=[<span class="code-string">"context"</span>, <span class="code-string">"question"</span>],
+    template=<span class="code-string">"请根据以下上下文回答问题。\n上下文: {context}\n问题: {question}\n回答:"</span>,
+)
+
+<span class="code-comment"># 3. 检索问答链</span>
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm, chain_type=<span class="code-string">"stuff"</span>,
+    retriever=vector_store.as_retriever(search_kwargs={<span class="code-string">"k"</span>: <span class="code-number">3</span>})
+)
+
+<span class="code-comment"># 4. 调用</span>
+response = qa_chain.run(<span class="code-string">"请解释什么是梯度下降？"</span>)
+<span class="code-keyword">print</span>(response)</pre>
+            </div>
+
+            <h3>8.3.4 NLP 评价指标</h3>
+
+            <div class="theorem" data-label="定理 8.2 · BLEU 与 ROUGE">
+                <p><strong>BLEU</strong>（机器翻译）：比较模型生成句与若干参考句的 $n$-gram 重合度的加权几何平均。</p>
+                <div class="formula-box centered">
+                $$ \text{BLEU} = \text{BP} \cdot \exp\!\left(\sum_{n=1}^{N} w_n \log p_n\right),\quad p_n = \frac{\sum_{\text{ngram}\in\hat{y}}\min(\text{count}_{\hat{y}}(\text{ngram}), \max_{y\in\text{ref}}\text{count}_y(\text{ngram}))}{\sum_{\text{ngram}\in\hat{y}}\text{count}_{\hat{y}}(\text{ngram})}. \tag{8.8} $$
+                </div>
+                <p><strong>ROUGE</strong>（摘要）：基于召回的 $n$-gram 重合，有 ROUGE-1、ROUGE-2、ROUGE-L（最长公共子序列）三种变体。</p>
+            </div>
+
+        </div>
+
+        <!-- 8.4 强化学习 -->
+        <div class="content-section">
+            <h2>8.4 强化学习：从 MDP 到 PPO</h2>
+
+            <h3>8.4.1 马尔可夫决策过程</h3>
+
+            <div class="definition" data-label="定义 8.6 · MDP">
+                <p>一个马尔可夫决策过程是五元组 $(\mathcal{S},\mathcal{A},P,R,\gamma)$，其中：</p>
+                <ul>
+                    <li>$\mathcal{S}$：状态集合；</li>
+                    <li>$\mathcal{A}$：动作集合；</li>
+                    <li>$P(s'\mid s,a)$：在状态 $s$ 执行动作 $a$ 转移到 $s'$ 的概率；</li>
+                    <li>$R(s,a)$：立即奖励；</li>
+                    <li>$\gamma\in[0,1]$：折扣因子。</li>
+                </ul>
+            </div>
+
+            <p>策略 $\pi(a\mid s)$ 给出在状态 $s$ 下执行动作 $a$ 的概率。回报（Return）定义为：</p>
+
+            <div class="formula-box centered">
+            $$ G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^{\infty}\gamma^{k} R_{t+k+1}. \tag{8.9} $$
+            </div>
+
+            <p><strong>状态价值函数</strong>与 <strong>动作价值函数</strong>：</p>
+
+            <div class="formula-box centered">
+            $$ V^{\pi}(s)=\mathbb{E}_{\pi}[G_t\mid S_t=s],\quad Q^{\pi}(s,a)=\mathbb{E}_{\pi}[G_t\mid S_t=s,A_t=a]. \tag{8.10} $$
+            </div>
+
+            <div class="theorem" data-label="定理 8.3 · Bellman 方程">
+                <p>价值函数满足递归关系：</p>
+                <div class="formula-box centered">
+                $$ V^{\pi}(s) = \sum_{a}\pi(a\mid s)\Big(R(s,a) + \gamma\sum_{s'}P(s'\mid s,a)\,V^{\pi}(s')\Big). \tag{8.11} $$
+                </div>
+                <p>最优价值函数 $V^*(s)=\max_{\pi}V^{\pi}(s)$ 满足：</p>
+                <div class="formula-box centered">
+                $$ V^*(s) = \max_{a}\Big(R(s,a) + \gamma\sum_{s'}P(s'\mid s,a)\,V^*(s')\Big). \tag{8.12} $$
+                </div>
+            </div>
+
+            <h3>8.4.2 Q-Learning 与 DQN</h3>
+
+            <p><strong>Q-Learning</strong> 通过表格方式迭代逼近 $Q^*$：</p>
+
+            <div class="formula-box centered">
+            $$ Q(s,a)\leftarrow Q(s,a) + \alpha\Big(R + \gamma\max_{a'} Q(s',a') - Q(s,a)\Big). \tag{8.13} $$
+            </div>
+
+            <p>当状态/动作空间连续不可枚举时，用 <strong>DQN</strong>（Mnih et al., 2015）以 $\theta$ 参数化 $Q_{\theta}$ 近似 $Q^*$，损失：</p>
+
+            <div class="formula-box centered">
+            $$ \mathcal{L}(\theta)=\mathbb{E}_{(s,a,r,s')\sim\mathcal{B}}\Big[\big(r+\gamma\max_{a'} Q_{\theta^-}(s',a') - Q_{\theta}(s,a)\big)^2\Big], \tag{8.14} $$
+            </div>
+
+            <p>其中 $\theta^-$ 为定期冻结的目标网络参数，$\mathcal{B}$ 为经验回放缓存。DQN 的两项创新——经验回放与目标网络——显著稳定了训练。</p>
+
+            <h3>8.4.3 策略梯度与 PPO</h3>
+
+            <p><strong>REINFORCE</strong>（Williams, 1992) 使用蒙特卡洛采样整条轨迹并以回报加权的梯度：</p>
+
+            <div class="formula-box centered">
+            $$ \nabla_{\theta}\,J(\theta)=\mathbb{E}_{\pi_{\theta}}\!\left[\sum_{t=0}^{T} G_t\cdot\nabla_{\theta}\log \pi_{\theta}(a_t\mid s_t)\right]. \tag{8.15} $$
+            </div>
+
+            <p>为降低方差，加入 <strong>优势函数</strong> $A_t = Q(s_t,a_t)-V(s_t)$ 作为基线（Actor-Critic）。</p>
+
+            <p><strong>PPO</strong>（Proximal Policy Optimization, Schulman et al., 2017）通过限制新旧策略比率的"裁剪"项把策略更新限制在小范围，大大提升稳定性：</p>
+
+            <div class="definition" data-label="定义 8.7 · PPO 裁剪目标">
+                <p>令 $r_t(\theta)=\frac{\pi_{\theta}(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}$，目标：</p>
+                <div class="formula-box centered">
+                $$ J_{\text{CLIP}}(\theta)=\mathbb{E}_t\Big[\min\!\big(r_t(\theta)\hat{A}_t,\;\text{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat{A}_t)\big)\Big],\quad \epsilon=0.1\text{ or } 0.2. \tag{8.16} $$
+                </div>
+                <p>完整损失：$\mathcal{L}_{\text{PPO}} = -J_{\text{CLIP}} + c_1\mathcal{L}_{\text{value}}+c_2 S[\pi_{\theta}]$，含价值函数拟合项 $L_{\text{value}} = (V_{\theta}-V_{\text{targ}})^2$，策略熵正则项 $S$ 用于鼓励探索。</p>
+            </div>
+
+            <h3>8.4.4 AlphaGo 家族：MCTS + 深度学习</h3>
+
+            <p>AlphaGo（Silver et al., 2016）首次在围棋击败人类冠军，核心是<strong>蒙特卡洛树搜索（MCTS）</strong>与深度策略/价值网络的结合。每个节点存储先验概率 $p(a\mid s)$（策略网络输出）、访问次数 $N(s,a)$、价值估计 $V(s)$（价值网络输出）。搜索时用 UCB 类选择：</p>
+
+            <div class="formula-box centered">
+            $$ a_t = \arg\max_a \Big(Q(s,a) + c_{\text{puct}}\, p(a\mid s)\frac{\sqrt{\sum_b N(s,b)}}{1+N(s,a)}\Big). \tag{8.17} $$
+            </div>
+
+            <p>其中 $Q(s,a)=\frac{1}{N}\sum_{i} V_i$ 为该子树平均价值。AlphaGo Zero 进一步去掉人类专家数据，完全自博弈（self-play）学习。</p>
+
+            <p>在大模型对齐（RLHF）中，PPO 被用来把语言模型对齐到人类偏好：先用人类标注数据训练奖励模型 $r_{\phi}(x,y)$，再用 PPO 把 $p_{\theta}(y\mid x)$ 朝 $r_{\phi}$ 最大方向更新，同时加入 KL 散度约束避免离初始分布过远：</p>
+
+            <div class="formula-box centered">
+            $$ \mathcal{L}_{\text{RLHF}} = \mathbb{E}_{(x,y)\sim\pi_{\theta}} [ r_{\phi}(x,y) - \beta\, \text{KL}(\pi_{\theta}(\cdot\mid x) || \pi_{\text{ref}}(\cdot\mid x) )]. \tag{8.18} $$
+            </div>
+
+        </div>
+
+        <!-- 8.5 多模态 -->
+        <div class="content-section">
+            <h2>8.5 多模态与大模型应用</h2>
+
+            <p><strong>多模态学习</strong>让模型同时理解并生成不同模态的数据（文本、图像、音频、视频）。现代框架统一架构有：</p>
+
+            <ul>
+                <li><strong>CLIP</strong>（Radford et al., 2021）：对比学习把文本与图像嵌入同一空间：</li>
+            </ul>
+
+            <div class="formula-box centered">
+            $$ \mathcal{L}_{\text{CLIP}} = -\tfrac{1}{N}\sum_{i}\log\frac{\exp(\text{sim}(I_i,T_i)/\tau)}{\sum_{j}\exp(\text{sim}(I_i,T_j)/\tau)} \;(\text{对称}). \tag{8.19} $$
+            </div>
+
+            <ul>
+                <li><strong>视觉-语言模型（Vision-Language Models, VLM）</strong>：CLIP-style 视觉编码器 + LLM（如 Flamingo、BLIP-2、GPT-4V、LLaVA）。图像特征通过 Querying / Projector 注入 LLM 前。</li>
+                <li><strong>扩散生成式多模态</strong>：Stable Diffusion / DALL·E / Imagen / Sora，文本描述生成图像/视频。</li>
+            </ul>
+
+            <div class="info-box">
+                <div class="info-box-title">💡 大模型的思维链（Chain-of-Thought, CoT）</div>
+                <p>让模型"先一步一步思考再给答案"，在复杂推理任务（数学、代码、多步规划）上显著优于直接回答。更先进：Self-Consistency（多个思路投票）、Tree of Thoughts、ReAct（Reason+Act 工具调用）。</p>
+            </div>
+
+        </div>
+
+        <!-- 8.6 模型压缩与部署 -->
+        <div class="content-section">
+            <h2>8.6 模型压缩与部署工程</h2>
+
+            <h3>8.6.1 知识蒸馏（Knowledge Distillation）</h3>
+
+            <p>（Hinton et al., 2015）用大模型（教师）输出的软标签分布 $q_{\text{teacher}}(y\mid x)=\text{softmax}(z/\tau)$（$\tau$ 为温度）训练小模型（学生）：</p>
+
+            <div class="formula-box centered">
+            $$ \mathcal{L}_{\text{KD}} = \alpha\,\mathcal{L}_{\text{CE}}(p_{\theta}, y_{\text{true}}) + (1-\alpha)\,\tau^2\,\mathcal{L}_{\text{CE}}(p_{\theta}(z/\tau), q_{\text{teacher}}). \tag{8.20} $$
+            </div>
+
+            <p>软标签比硬标签（one-hot）包含更多"类别间关系"信息，学生模型可显著优于从头训练。</p>
+
+            <h3>8.6.2 剪枝（Pruning）</h3>
+
+            <p>训练-剪枝-再训练循环（Han et al., 2015）。定义重要性判据：<strong>L1 权重大小</strong>或更现代的 <strong>Fisher 信息</strong>、<strong>Hessian 迹</strong>。</p>
+
+            <div class="theorem" data-label="定理 8.4 · 最优脑损伤（OBD）">
+                <p>对损失二阶近似 $L(\theta)\approx L(\theta_0) + g^T(\theta-\theta_0) + \tfrac{1}{2}(\theta-\theta_0)^T H (\theta-\theta_0)$，若剪去 $\theta_i$ 带来的损失上升约 $\tfrac{1}{2} H_{ii}\theta_i^2$，可作为剪枝判据。</p>
+            </div>
+
+            <h3>8.6.3 量化（Quantization）</h3>
+
+            <p>把 FP32 权重/激活量化成 INT8 甚至 INT4：</p>
+
+            <div class="formula-box centered">
+            $$ x_{\text{q}} = \text{round}\!\left(\frac{x}{\Delta} + z\right), \quad x_{\text{deq}} = (x_{\text{q}}-z)\Delta, \tag{8.21} $$
+            </div>
+
+            <p>其中 $\Delta$ 为缩放因子，$z$ 为零点（非对称量化）。典型方案：GPTQ、AWQ、SmoothQuant、BitsAndBytes。</p>
+
+            <h3>8.6.4 推理加速</h3>
+
+            <p>主流工具链：</p>
+
+            <ul>
+                <li><strong>ONNX + ONNX Runtime</strong>：开放交换格式 + 跨平台推理引擎。</li>
+                <li><strong>TensorRT</strong>：NVIDIA 专用图融合/量化/内核自动调优。</li>
+                <li><strong>vLLM / TensorRT-LLM</strong>：面向大语言模型的连续批处理（continuous batching）与 PagedAttention（基于分页内存的 KV Cache），吞吐提升 10–100×。</li>
+                <li><strong>FlashAttention</strong>：把注意力计算分块，避免把完整 $(N,d)$ 中间结果写入 HBM，显著降低内存带宽。</li>
+            </ul>
+
+            <div class="info-box">
+                <div class="info-box-title">💡 KV Cache 加速自回归推理</div>
+                <p>生成第 $t+1$ 个词时需重新对 $x_{1:t}$ 做注意力并生成完整 Key/Value。为避免重复计算，把已生成词的 $K,V$ 缓存起来，只需计算新增的 $k_{t+1},v_{t+1}$。但缓存大小 $\mathcal{O}(L\cdot d_{\text{model}})$ 随序列长度线性增长，是大模型推理主要内存开销之一。</p>
+            </div>
+
+        </div>
+
+        <!-- 8.7 工程实践 -->
+        <div class="content-section">
+            <h2>8.7 机器学习工程最佳实践</h2>
+
+            <div class="definition" data-label="经验 8.1 · 项目组织">
+                <p>以下要点来自众多工业项目的综合经验：</p>
+                <ol>
+                    <li><strong>先定义业务指标再选模型</strong>：模型是手段而非目的；</li>
+                    <li><strong>建立强基线优先</strong>：从最简单模型（LR / 线性 / ResNet-18 / GPT-2 小版）起步，再考虑复杂模型；</li>
+                    <li><strong>数据质量 > 模型复杂度</strong>：投入 60%+ 时间在数据清洗、标注、增强上；</li>
+                    <li><strong>单一变量原则</strong>：每次只改动一个因素（数据、模型、优化器）；</li>
+                    <li><strong>系统化实验管理</strong>：用 MLflow / W&B / 轻量脚本记录每次超参数、评估结果；</li>
+                    <li><strong>早停 & 学习率曲线</strong>：不要让模型在训练集上过拟合；</li>
+                    <li><strong>持续监控</strong>：上线后追踪预测分布、漂移检测（PSI/ KS 检验）；</li>
+                    <li><strong>可解释</strong>：为关键决策保留可解释性记录（SHAP、attention 可视化）。</li>
+                </ol>
+            </div>
+
+            <h3>8.7.1 数据漂移检测</h3>
+
+            <p>设上线后输入分布从 $P_{\text{train}}$ 变为 $P_{\text{test}}$：</p>
+
+            <div class="formula-box centered">
+            $$ \text{PSI}(f,g) = \sum_{b} (f_b-g_b)\log(f_b/g_b),\quad \text{KS} = \sup_{x}|F_{\text{train}}(x)-F_{\text{test}}(x)|. \tag{8.22} $$
+            </div>
+
+            <p>PSI < 0.1 视为稳定；0.1–0.25 中等漂移；> 0.25 严重漂移需重新训练。</p>
+
+        </div>
+
+        <!-- 8.8 示例项目 -->
+        <div class="content-section">
+            <h2>8.8 项目示例：端到端图像分类项目</h2>
+
+            <p><strong>任务</strong>：在自建的小型图像数据集（10 类、每类 ~500 张）上做图像分类。</p>
+
+            <p><strong>步骤</strong>：</p>
+
+            <ol>
+                <li><strong>数据探索</strong>：各类样本分布、分辨率分布、质量检查；</li>
+                <li><strong>数据预处理</strong>：统一分辨率、标准化（使用数据集均值/方差）；</li>
+                <li><strong>数据增强（训练时）</strong>：随机水平翻转 ±10° 旋转、±10% 亮度、ColorJitter 颜色扰动、RandomResizedCrop 随机裁剪；</li>
+                <li><strong>模型架构</strong>：ResNet-50（ImageNet 预训练）替换最后一层 FC → 10 类；</li>
+                <li><strong>训练策略</strong>：学习率 1e-3，AdamW，余弦退火调度，warmup 5 epoch，总 30 epoch；</li>
+                <li><strong>评估</strong>：混淆矩阵、每类 F1、Grad-CAM 可视化定位误差；</li>
+                <li><strong>部署</strong>：导出 ONNX → TensorRT 量化 → FastAPI REST 接口；</li>
+                <li><strong>监控</strong>：Prometheus 采集服务 QPS/延迟/预测分布，Grafana 监控。</li>
+            </ol>
+
+            <div class="code-block"><span class="code-lang">python</span>
+<pre><span class="code-keyword">import</span> torch
+<span class="code-keyword">import</span> torch.nn <span class="code-keyword">as</span> nn
+<span class="code-keyword">from</span> torchvision <span class="code-keyword">import</span> models, transforms
+
+<span class="code-comment"># 数据</span>
+transform_train = transforms.Compose([
+    transforms.RandomResizedCrop(<span class="code-number">224</span>),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[<span class="code-number">0.485</span>, <span class="code-number">0.456</span>, <span class="code-number">0.406</span>],
+                         std=[<span class="code-number">0.229</span>, <span class="code-number">0.224</span>, <span class="code-number">0.225</span>])
+])
+
+<span class="code-comment"># 模型</span>
+model = models.resnet50(pretrained=<span class="code-keyword">True</span>)
+model.fc = nn.Linear(model.fc.in_features, <span class="code-number">10</span>)
+
+<span class="code-comment"># 优化</span>
+optimizer = torch.optim.AdamW(model.parameters(), lr=<span class="code-number">1e-3</span>, weight_decay=<span class="code-number">1e-4</span>)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=<span class="code-number">30</span>)
+
+<span class="code-comment"># 训练循环（略）</span>
+<span class="code-keyword">for</span> epoch <span class="code-keyword">in</span> <span class="code-function">range</span>(<span class="code-number">30</span>):
+    train_one_epoch(model, loader, optimizer)
+    scheduler.step()
+    evaluate(model, val_loader)</pre>
+            </div>
+
+            <p>项目代码在真实工业中会扩展为模块化：数据模块、模型模块、训练器、评估、导出。</p>
+
+        </div>
+
+        <!-- 8.9 总结 -->
+        <div class="content-section">
+            <h2>8.9 课程总结与前沿展望</h2>
+
+            <p>本课程覆盖了从感知机到大模型的完整深度学习体系。主要路线：</p>
+
+            <ul>
+                <li><strong>数学基础</strong>：线性代数、微积分、概率；</li>
+                <li><strong>核心训练机制</strong>：反向传播、优化器、正则化；</li>
+                <li><strong>三大架构</strong>：CNN（视觉）、RNN/LSTM（序列）、Transformer（大模型）；</li>
+                <li><strong>生成式模型</strong>：VAE、GAN、扩散模型；</li>
+                <li><strong>应用与工程</strong>：视觉/NLP/强化学习/部署。</li>
+            </ul>
+
+            <div class="theorem" data-label="经验 8.2 · 持续学习路径">
+                <p>深度学习仍在以极快速度演进。建议读者：</p>
+                <ol>
+                    <li>精读 1–2 个经典论文/月（NeurIPS、ICML、ICLR、CVPR、ACL）；</li>
+                    <li>动手重写经典模型（ResNet、Transformer、Diffusion）；</li>
+                    <li>在 Kaggle 或工业数据上完成端到端项目；</li>
+                    <li>关注模型对齐、安全、多模态、具身智能、科学智能等前沿。</li>
+                </ol>
+            </div>
+
+            <h3>习题</h3>
+
+            <div class="exercise" data-label="习题 8.1">
+                <p>对一个二分类器给出混淆矩阵：TP=80, FP=20, FN=10, TN=90。计算 Precision、Recall、Accuracy、F1。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 8.2">
+                <p>证明 IoU $\in [0,1]$，且 IoU=1 当且仅当两集合完全相等。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 8.3 · 推导">
+                <p>在 Q-Learning 中证明：若 $|R|\le R_{\max}$，$\gamma<1$，则 Bellman 算子是 $\gamma$-压缩映射，由 Banach 不动点定理知 $Q^*$ 存在唯一。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 8.4 · 编程">
+                <p>实现一个简化 PPO（离散动作空间的简单环境，如 CartPole）：用 100 步内学会平衡。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 8.5 · 工程">
+                <p>选定你感兴趣的真实数据集（如 Kaggle Titanic / CIFAR-10 子集），完成从数据准备到部署的端到端项目，并写一份项目报告。</p>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-title">🎉 恭喜完成课程</div>
+                <p>你已经学完了《神经网络与深度学习》的全部核心内容。深度学习是一门兼具理论深度与工程实践的学科，真正的学习从这里才刚刚开始。建议你选择一个方向（视觉、语言、生成、强化…）深入钻研，并在真实项目中打磨自己的工程能力。祝你在 AI 的广阔天地里有所成就！</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter7.html" class="nav-btn">← 第7章 生成式模型</a>
+        <a href="../index.html" class="nav-btn">返回首页 🏠</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

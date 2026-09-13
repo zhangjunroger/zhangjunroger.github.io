@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第7章 深度生成模型 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第7章</span></div>
+            <div class="chapter-big-num">07</div>
+            <h1>生成式模型：VAE · GAN · 扩散模型</h1>
+            <p>本章从概率视角系统介绍三类代表性生成模型：变分自编码器（VAE）的证据下界推导；生成对抗网络（GAN）的极小极大博弈与纳什均衡；以及去噪扩散概率模型（DDPM）的前向/反向扩散过程。每类模型都给出严格数学框架、训练算法与代表性变体。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 12 课时</span><span class="info-chip">🎯 9 个知识点</span><span class="info-chip">📐 40+ 公式</span><span class="info-chip">🎨 图像生成</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>生成建模的目标：显式 vs 隐式密度估计</li>
+                <li>变分自编码器（VAE）：证据下界（ELBO）</li>
+                <li>VAE 的重参数化技巧与训练算法</li>
+                <li>生成对抗网络（GAN）：极小极大博弈</li>
+                <li>GAN 训练不稳定性与经典变体（WGAN、LSGAN、SNGAN）</li>
+                <li>扩散模型：前向扩散与反向去噪过程</li>
+                <li>DDPM 损失函数与采样算法</li>
+                <li>扩散加速：DDIM、DPM-Solver、CFG</li>
+                <li>三类模型的比较：密度估计、样本质量、训练难度</li>
+                <li>代码：从零实现一个简单 VAE/GAN</li>
+                <li>小结与习题</li>
+            </ol>
+        </div>
+
+        <!-- 7.1 -->
+        <div class="content-section">
+            <h2>7.1 生成建模：问题设置</h2>
+
+            <p>给定来自真实分布 $p_{\text{data}}(\boldsymbol{x})$ 的样本 $\{\boldsymbol{x}^{(i)}\}_{i=1}^{N}$，例如手写数字、人脸图像、自然语言。我们希望学习一个模型 $p_{\theta}(\boldsymbol{x})$ 来逼近 $p_{\text{data}}$，使得模型可以：</p>
+
+            <ol>
+                <li><strong>采样（Sampling）</strong>：从 $p_{\theta}(\boldsymbol{x})$ 中生成高质量、多样化的新样本 $\tilde{\boldsymbol{x}} \sim p_{\theta}$；</li>
+                <li><strong>密度估计（Density Estimation）</strong>：对任意 $\boldsymbol{x}$ 给出合理的似然 $p_{\theta}(\boldsymbol{x})$（VAE、归一化流等可给出）；</li>
+                <li><strong>表示学习（Representation Learning）</strong>：在低维潜在空间 $\boldsymbol{z} \in \mathbb{R}^{d_{z}}$ 中发现语义上有意义的结构。</li>
+            </ol>
+
+            <div class="definition" data-label="定义 7.1 · 两类生成模型">
+                <p>• <strong>显式密度模型</strong>：显式定义 $p_{\theta}(\boldsymbol{x})$ 的密度函数（或其下界），训练通过最大化对数似然 $\sum \log p_{\theta}(\boldsymbol{x}^{(i)})$ 进行。典型代表：<em>VAE、归一化流、自回归模型（PixelCNN）</em>。</p>
+                <p>• <strong>隐式密度模型</strong>：不显式建模密度，而是通过一个确定性映射 $g_{\theta}: \mathcal{Z} \to \mathcal{X}$ 把简单先验噪声 $p(\boldsymbol{z})$ 变换成目标分布的样本。典型代表：<em>GAN、扩散模型</em>。</p>
+            </div>
+
+            <p>我们将依次介绍这三类代表性框架：VAE（显式+变分）、GAN（隐式+对抗）、扩散模型（隐式+多步马尔可夫链）。</p>
+        </div>
+
+        <!-- 7.2 VAE -->
+        <div class="content-section">
+            <h2>7.2 变分自编码器（VAE）</h2>
+
+            <h3>7.2.1 概率图模型</h3>
+
+            <p>VAE 假设每个观测 $\boldsymbol{x} \in \mathbb{R}^{D}$ 由一个潜在向量 $\boldsymbol{z} \in \mathbb{R}^{d_{z}}$ 经似然 $p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})$ 生成。我们对 $\boldsymbol{z}$ 指定先验：</p>
+
+            <div class="formula-box centered">
+                $$ p(\boldsymbol{z}) = \mathcal{N}(\boldsymbol{z}\mid\boldsymbol{0},\boldsymbol{I}), \qquad p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z}) = \begin{cases} \mathcal{N}(\boldsymbol{x}\mid\mu_{\theta}(\boldsymbol{z}),\sigma^{2}\boldsymbol{I}), & \text{实数图像（如灰度归一化到 [0,1] 后）}, \\ \text{Bernoulli}(\boldsymbol{x}\mid\pi_{\theta}(\boldsymbol{z})), & \text{二值像素}. \end{cases} \tag{7.1} $$
+            </div>
+
+            <p>模型的联合密度是 $p_{\theta}(\boldsymbol{x},\boldsymbol{z}) = p(\boldsymbol{z})\,p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})$。</p>
+
+            <h3>7.2.2 为什么不能直接最大化似然？</h3>
+
+            <p>观测的边缘似然为 $\log p_{\theta}(\boldsymbol{x}) = \log \int p(\boldsymbol{z})\,p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})\,d\boldsymbol{z}$。但积分不可积（隐藏在非线性网络内），且后验 $p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x}) = p(\boldsymbol{z})p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})/p_{\theta}(\boldsymbol{x})$ 也无法直接计算。</p>
+
+            <p><span class="term">变分推断</span>的思路：用一个可学习的近似后验 $q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})$ 来逼近真实后验 $p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x})$。$q_{\phi}$ 称为 <em>编码器/识别模型</em>，$p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})$ 称为 <em>解码器/生成模型</em>。</p>
+
+            <h3>7.2.3 证据下界（ELBO）</h3>
+
+            <div class="theorem" data-label="定理 7.2 · ELBO 分解">
+                <p>对任意分布 $q(\boldsymbol{z})$，有</p>
+                <div class="formula-box centered">
+                    $$ \log p_{\theta}(\boldsymbol{x}) = \underbrace{\mathbb{E}_{\boldsymbol{z}\sim q}\!\left[\log\frac{p_{\theta}(\boldsymbol{x},\boldsymbol{z})}{q(\boldsymbol{z})}\right]}_{=:\,\mathcal{L}(q,\theta;\,\boldsymbol{x})\;\,\text{ELBO}} \;+\; \underbrace{D_{\text{KL}}(q(\boldsymbol{z})\parallel p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x}))}_{\ge\,0}. \tag{7.2} $$
+                </div>
+                <p>由于 KL 散度非负，$\mathcal{L}(q,\theta;\boldsymbol{x}) \le \log p_{\theta}(\boldsymbol{x})$；当 $q = p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x})$ 时等式成立。</p>
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明</div>
+                <p>利用 $p_{\theta}(\boldsymbol{x},\boldsymbol{z}) = p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x})\,p_{\theta}(\boldsymbol{x})$，把期望拆开：</p>
+                <div class="formula-box centered">
+                    $$ \mathbb{E}_{q}\Big[\log\frac{p_{\theta}(\boldsymbol{x},\boldsymbol{z})}{q(\boldsymbol{z})}\Big] = \mathbb{E}_{q}\Big[\log p_{\theta}(\boldsymbol{x}) + \log\frac{p_{\theta}(\boldsymbol{z}\mid\boldsymbol{x})}{q(\boldsymbol{z})}\Big] = \log p_{\theta}(\boldsymbol{x}) - D_{\text{KL}}(q\parallel p_{\theta}(\cdot\mid\boldsymbol{x})). \quad \blacksquare $$
+                </div>
+            </div>
+
+            <p>把 ELBO 拆成两项便于优化：</p>
+
+            <div class="formula-box centered">
+                $$ \mathcal{L}(\phi,\theta;\boldsymbol{x}) = \underbrace{\mathbb{E}_{\boldsymbol{z}\sim q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})}\big[\log p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})\big]}_{\text{重构似然}} \;-\; \underbrace{D_{\text{KL}}(q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})\parallel p(\boldsymbol{z}))}_{\text{正则项}}. \tag{7.3} $$
+            </div>
+
+            <p>直觉理解：第一项鼓励解码器能从 $\boldsymbol{z}$ 忠实地恢复 $\boldsymbol{x}$；第二项鼓励近似后验不要偏离标准正态先验太远——这正是"自编码器"一词的来源：编码器把 $\boldsymbol{x}$ 编码到 $\boldsymbol{z}$，解码器再从 $\boldsymbol{z}$ 重建 $\boldsymbol{x}$。</p>
+
+            <h3>7.2.4 高斯 VAE 的 KL 闭式</h3>
+
+            <p>令 $p(\boldsymbol{z})=\mathcal{N}(\boldsymbol{0},\boldsymbol{I})$，$q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})=\mathcal{N}(\boldsymbol{\mu}_{\phi}(\boldsymbol{x}),\mathrm{diag}(\boldsymbol{\sigma}_{\phi}^{2}(\boldsymbol{x})))$。两者的 KL 散度有解析解：</p>
+
+            <div class="formula-box centered">
+                $$ D_{\text{KL}}(q\parallel p) = \tfrac{1}{2}\,\sum_{j=1}^{d_{z}} \Big(1 + \log \sigma_{j}^{2} - \mu_{j}^{2} - \sigma_{j}^{2}\Big). \tag{7.4} $$
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明（7.4）</div>
+                <p>对一维高斯 $q=\mathcal{N}(\mu,\sigma^{2})$ 与 $p=\mathcal{N}(0,1)$，有：</p>
+                <div class="formula-box centered">
+                    $$ D_{\text{KL}}(q\parallel p) = \int q(z)\log\frac{q(z)}{p(z)}dz = \tfrac{1}{2}\big(-\log\sigma^{2} + \mu^{2} + \sigma^{2} - 1\big). $$
+                </div>
+                <p>各维独立时求和即得 (7.4)。$\blacksquare$</p>
+            </div>
+
+            <h3>7.2.5 重参数化技巧（Reparameterization Trick）</h3>
+
+            <p>直接对期望 $\mathbb{E}_{\boldsymbol{z}\sim q_{\phi}}[\log p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})]$ 关于 $\phi$ 求梯度会遇到"对采样求导"问题。解决方法是把随机源与参数解耦：若 $\boldsymbol{z} \sim \mathcal{N}(\boldsymbol{\mu}_{\phi},\mathrm{diag}(\boldsymbol{\sigma}_{\phi}^{2}))$，则可写</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{z} = \boldsymbol{\mu}_{\phi}(\boldsymbol{x}) + \boldsymbol{\sigma}_{\phi}(\boldsymbol{x}) \odot \boldsymbol{\varepsilon}, \qquad \boldsymbol{\varepsilon}\sim\mathcal{N}(\boldsymbol{0},\boldsymbol{I}). \tag{7.5} $$
+            </div>
+
+            <p>于是期望改写为对固定分布 $\boldsymbol{\varepsilon}$ 的期望，梯度可以穿过期望：</p>
+
+            <div class="formula-box centered">
+                $$ \nabla_{\phi}\mathbb{E}_{\boldsymbol{z}\sim q_{\phi}(\cdot\mid\boldsymbol{x})}[f(\boldsymbol{z})] = \mathbb{E}_{\boldsymbol{\varepsilon}\sim\mathcal{N}(\boldsymbol{0},\boldsymbol{I})}\Big[\nabla_{\phi}f\big(\boldsymbol{\mu}_{\phi}(\boldsymbol{x}) + \boldsymbol{\sigma}_{\phi}(\boldsymbol{x})\odot\boldsymbol{\varepsilon}\big)\Big]. \tag{7.6} $$
+            </div>
+
+            <p>实践中用一个 mini-batch 的 Monte-Carlo 估计（通常单样本即可）：</p>
+
+            <div class="formula-box centered">
+                $$ \mathcal{L}(\phi,\theta;\boldsymbol{x}) \approx \log p_{\theta}(\boldsymbol{x}\mid\boldsymbol{\mu}_{\phi}(\boldsymbol{x}) + \boldsymbol{\sigma}_{\phi}(\boldsymbol{x})\odot\boldsymbol{\varepsilon}) - D_{\text{KL}}(q_{\phi}(\cdot\mid\boldsymbol{x})\parallel p(\cdot)). \tag{7.7} $$
+            </div>
+
+            <h3>7.2.6 VAE 训练算法</h3>
+
+            <div class="code-block"><span class="code-lang">算法 7.1 · VAE 训练</span>
+<div class="algorithm-block">
+<span class="code-keyword">输入：</span>数据集 $\mathcal{D}=\{\boldsymbol{x}^{(i)}\}$；编码器 $q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})$；解码器 $p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})$<br>
+<span class="code-keyword">输出：</span>参数 $\phi,\theta$<br><br>
+<span class="code-comment"># 对每个训练轮次</span><br>
+<span class="code-keyword">for</span> epoch = 1, 2, ...:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment"># 对每个 mini-batch</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">for</span> batch $\mathcal{B} \subseteq \mathcal{D}$:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathcal{L} \leftarrow 0$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">for</span> $\boldsymbol{x} \in \mathcal{B}$:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{\mu}, \log\boldsymbol{\sigma}^{2} \leftarrow \text{Encoder}_{\phi}(\boldsymbol{x})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{\varepsilon} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{z} \leftarrow \boldsymbol{\mu} + \exp(\tfrac{1}{2}\log\boldsymbol{\sigma}^{2}) \odot \boldsymbol{\varepsilon}$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\hat{\boldsymbol{x}} \leftarrow \text{Decoder}_{\theta}(\boldsymbol{z})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\mathcal{L} \leftarrow \mathcal{L} + \Big[\underbrace{\log p(\hat{\boldsymbol{x}})}_{\text{交叉熵 / MSE}} + \tfrac{1}{2}\sum_{j}\big(1 + \log\sigma_{j}^{2} - \mu_{j}^{2} - \sigma_{j}^{2}\big)\Big]$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$\nabla_{\phi,\theta}(-\mathcal{L}/|\mathcal{B}|)$&nbsp;&nbsp;&nbsp;<span class="code-comment"># 求梯度</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;Adam 更新 $\phi, \theta$
+</div>
+            </div>
+
+            <p>注：实践中编码器输出 $\log\boldsymbol{\sigma}^{2}$（实数）而非 $\boldsymbol{\sigma}^{2}$，以避免数值问题。</p>
+
+            <div class="example" data-label="例 7.3 · VAE 数字实验">
+                <p>在 MNIST 上训练一个 VAE，编码器/解码器用两层 MLP，$d_z=2$。训练后在 $z$ 空间的二维网格上均匀采样并解码，可以得到平滑的数字插值，显示 VAE 学到了连续且有结构的潜在表示。但样本通常偏模糊——这是使用高斯似然带来的固有缺陷，扩散模型在这方面表现更好。</p>
+            </div>
+
+        </div>
+
+        <!-- 7.3 GAN -->
+        <div class="content-section">
+            <h2>7.3 生成对抗网络（GAN）</h2>
+
+            <h3>7.3.1 极小极大博弈</h3>
+
+            <p>GAN（Goodfellow et al., 2014）由两个网络构成：</p>
+
+            <ul>
+                <li><strong>生成器（Generator）</strong> $G_{\theta}: \mathcal{Z}\to\mathcal{X}$，把先验噪声 $\boldsymbol{z}\sim p(\boldsymbol{z})$ 映射到假样本 $\tilde{\boldsymbol{x}} = G_{\theta}(\boldsymbol{z})$；</li>
+                <li><strong>判别器（Discriminator）</strong> $D_{\phi}: \mathcal{X}\to(0,1)$，输出一个标量，表示输入来自真实数据（而非 $G$ 生成）的概率。</li>
+            </ul>
+
+            <p>二者进行零和博弈：判别器 $D$ 最大化分类正确的对数概率，生成器 $G$ 最小化 $D$ 做出正确判断的能力。</p>
+
+            <div class="definition" data-label="定义 7.4 · GAN 的价值函数">
+                <div class="formula-box centered">
+                    $$ \min_{G}\max_{D}\;V(D,G) = \underbrace{\mathbb{E}_{\boldsymbol{x}\sim p_{\text{data}}}[\log D(\boldsymbol{x})]}_{真实样本得分} \;+\; \underbrace{\mathbb{E}_{\boldsymbol{z}\sim p(\boldsymbol{z})}[\log(1-D(G(\boldsymbol{z})))]}_{假样本得分}. \tag{7.8} $$
+                </div>
+            </div>
+
+            <h3>7.3.2 最优判别器</h3>
+
+            <p>固定生成器 $G$，令其隐式定义分布 $p_{G}(\boldsymbol{x})=\int p(\boldsymbol{z})\delta(\boldsymbol{x}-G(\boldsymbol{z}))d\boldsymbol{z}$。对每个 $\boldsymbol{x}$ 求点态最优：</p>
+
+            <div class="theorem" data-label="定理 7.5 · 最优判别器">
+                <p>固定 $G$，使 $V(D,G)$ 最大的判别器为：</p>
+                <div class="formula-box centered">
+                    $$ D_{G}^{*}(\boldsymbol{x}) = \frac{p_{\text{data}}(\boldsymbol{x})}{p_{\text{data}}(\boldsymbol{x}) + p_{G}(\boldsymbol{x})}. \tag{7.9} $$
+                </div>
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明</div>
+                <p>固定 $G$ 后，$V(D,G) = \int \big(p_{\text{data}}(\boldsymbol{x})\log D(\boldsymbol{x}) + p_{G}(\boldsymbol{x})\log(1-D(\boldsymbol{x}))\big)d\boldsymbol{x}$。对每个 $\boldsymbol{x}$ 视为关于 $D\in(0,1)$ 的函数 $f(D)=a\log D + b\log(1-D)$，求导令其为零得 $a/D - b/(1-D)=0 \Rightarrow D^{*}=a/(a+b)$，即 (7.9)。$\blacksquare$</p>
+            </div>
+
+            <h3>7.3.3 最优判别器下的目标与 JS 散度</h3>
+
+            <p>代入 $D_{G}^{*}$ 可把 $G$ 的目标写成 Jensen-Shannon 散度：</p>
+
+            <div class="formula-box centered">
+                $$ V(D_{G}^{*},G) = 2\log 2 + D_{\text{JS}}(p_{\text{data}}\parallel p_{G}) - 2\log 2 = D_{\text{JS}}(p_{\text{data}}\parallel p_{G}) - \log 4. \tag{7.10} $$
+            </div>
+
+            <p>其中 JS 散度定义为：</p>
+
+            <div class="formula-box centered">
+                $$ D_{\text{JS}}(P\parallel Q) = \tfrac{1}{2}D_{\text{KL}}(P\parallel \tfrac{P+Q}{2}) + \tfrac{1}{2}D_{\text{KL}}(Q\parallel \tfrac{P+Q}{2}) \in [0,\log 2]. \tag{7.11} $$
+            </div>
+
+            <p>这说明 GAN 在极小极大值的意义下，<em>最小化真实分布与生成分布间的 JS 散度</em>。</p>
+
+            <h3>7.3.4 训练不稳定性与改进</h3>
+
+            <p>原版 GAN 存在两类问题：</p>
+
+            <ul>
+                <li><strong>梯度消失</strong>：当 $p_{G}$ 与 $p_{\text{data}}$ 几乎不相交时（例如都在高维空间的低维流形上），最优判别器几乎完美分类，此时生成器梯度近似为 0——网络无法更新。</li>
+                <li><strong>模式崩溃（Mode Collapse）</strong>：生成器只产生少数几种类型的样本，缺乏多样性。</li>
+            </ul>
+
+            <p>针对这些问题有大量改进，我们列出三个重要方向：</p>
+
+            <h3>7.3.5 非饱和损失（Non-saturating GAN）</h3>
+
+            <p>Goodfellow 本人建议，在更新 $G$ 时把"最小化 $\log(1-D(G(\boldsymbol{z})))$"改成"最大化 $\log D(G(\boldsymbol{z}))$"，等价于最小化 $-\log D(G(\boldsymbol{z}))$。这在判别器很自信时仍能提供非零梯度。</p>
+
+            <h3>7.3.6 Wasserstein GAN（WGAN）</h3>
+
+            <p>WGAN（Arjovsky et al., 2017）把 JS 散度替换为 Earth-Mover 距离（EM 距离 / $W_1$），它对几乎不交的分布仍能提供平滑、有意义的距离。利用 Kantorovich-Rubinstein 对偶，WGAN 把目标写成：</p>
+
+            <div class="definition" data-label="定义 7.6 · WGAN">
+                <div class="formula-box centered">
+                    $$ \min_{G}\max_{D \in \text{Lip}(1)}\Big\{\mathbb{E}_{\boldsymbol{x}\sim p_{\text{data}}}[D(\boldsymbol{x})] - \mathbb{E}_{\boldsymbol{z}\sim p(\boldsymbol{z})}[D(G(\boldsymbol{z}))]\Big\}. \tag{7.12} $$
+                </div>
+                <p>其中判别器 $D$ 被约束为 1-Lipschitz 函数。最初用权重裁剪（weight clipping）实现，后续 <em>梯度惩罚（GP）</em>版（Gulrajani et al., 2017）以 $\mathbb{E}_{\hat{\boldsymbol{x}}\sim\hat{p}}[(\|\nabla_{\hat{\boldsymbol{x}}}D(\hat{\boldsymbol{x}})\|_{2}-1)^{2}]$ 的形式施加软约束，显著提升训练稳定性与样本质量。</p>
+            </div>
+
+            <h3>7.3.7 Spectral Normalization GAN（SNGAN）</h3>
+
+            <p>对每个线性/卷积层 $\boldsymbol{W}$，用谱归一化替换为 $\boldsymbol{W}/\sigma(\boldsymbol{W})$，使整个判别器全局满足 1-Lipschitz。SNGAN 使大规模 ImageNet 条件 GAN 训练稳定，成为 BigGAN 等模型的标准组件。</p>
+
+            <h3>7.3.8 GAN 训练实用指南</h3>
+
+            <div class="code-block"><span class="code-lang">算法 7.2 · WGAN-GP 训练（小批量）</span>
+<div class="algorithm-block">
+<span class="code-keyword">输入：</span>生成器 $G_{\theta}$、判别器 $D_{\phi}$；超参 $\lambda_{\text{gp}}$（默认 10）、$n_{\text{critic}}$（每步 G 更新 $D$ 的轮次，默认 5）<br><br>
+<span class="code-keyword">for</span> 每次迭代:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">for</span> $k = 1, \dots, n_{\text{critic}}$:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;采样 $\boldsymbol{x} \sim p_{\text{data}}$,  $\boldsymbol{z} \sim p(\boldsymbol{z})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$\tilde{\boldsymbol{x}} \leftarrow G_{\theta}(\boldsymbol{z})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;采样 $\epsilon \sim U(0,1)$，构造插值 $\hat{\boldsymbol{x}} = \epsilon\boldsymbol{x} + (1-\epsilon)\tilde{\boldsymbol{x}}$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$L_{D} \leftarrow \underbrace{\tfrac{1}{|\mathcal{B}|}\sum D_{\phi}(\tilde{\boldsymbol{x}}) - \tfrac{1}{|\mathcal{B}|}\sum D_{\phi}(\boldsymbol{x})}_{\text{Wasserstein 负损失}} + \underbrace{\lambda_{\text{gp}}\cdot\tfrac{1}{|\mathcal{B}|}\sum\big(\|\nabla_{\hat{\boldsymbol{x}}}D_{\phi}(\hat{\boldsymbol{x}})\|_{2} - 1\big)^{2}}_{\text{梯度惩罚}}$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Adam 更新 $\phi \leftarrow \phi + \eta\cdot\nabla_{\phi}L_{D}$&nbsp;&nbsp;&nbsp;<span class="code-comment"># 注意是 +</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;采样新 $\boldsymbol{z} \sim p(\boldsymbol{z})$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$L_{G} \leftarrow -\tfrac{1}{|\mathcal{B}|}\sum D_{\phi}(G_{\theta}(\boldsymbol{z}))$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Adam 更新 $\theta \leftarrow \theta - \eta\cdot\nabla_{\theta}L_{G}$<br><br>
+<span class="code-keyword">输出：</span>训练好的生成器 $G_{\theta}$、判别器 $D_{\phi}$
+</div>
+            </div>
+
+        </div>
+
+        <!-- 7.4 扩散模型 -->
+        <div class="content-section">
+            <h2>7.4 去噪扩散概率模型（DDPM）</h2>
+
+            <p>扩散模型（Sohl-Dickstein et al., 2015；Ho et al., 2020）通过两个马尔可夫链定义生成过程：一个 <em>前向扩散</em>把真实数据逐渐加噪至高斯白噪声，一个 <em>反向去噪</em>学习从白噪声逐步恢复真实样本。</p>
+
+            <h3>7.4.1 前向扩散过程</h3>
+
+            <p>给定数据点 $\boldsymbol{x}_{0}\sim q(\boldsymbol{x}_{0})$（即 $p_{\text{data}}$），前向过程是一个（非可学习的）马尔可夫链，每步添加少量高斯噪声：</p>
+
+            <div class="definition" data-label="定义 7.7 · 前向扩散核">
+                <div class="formula-box centered">
+                    $$ q(\boldsymbol{x}_{t}\mid\boldsymbol{x}_{t-1}) = \mathcal{N}\big(\boldsymbol{x}_{t}\mid \sqrt{1-\beta_{t}}\,\boldsymbol{x}_{t-1},\;\beta_{t}\boldsymbol{I}\big), \quad q(\boldsymbol{x}_{1:T}\mid\boldsymbol{x}_{0}) = \prod_{t=1}^{T}q(\boldsymbol{x}_{t}\mid\boldsymbol{x}_{t-1}). \tag{7.13} $$
+                </div>
+                <p>其中 $\{\beta_{t}\in(0,1)\}_{t=1}^{T}$ 是预定义噪声调度（DDPM 取线性从 $\beta_{1}=10^{-4}$ 到 $\beta_{T}=0.02$，$T=1000$）。令 $\alpha_{t}:=1-\beta_{t}$，$\bar{\alpha}_{t}:=\prod_{s=1}^{t}\alpha_{s}$。</p>
+            </div>
+
+            <p>前向过程的关键性质是：<em>任意时间步 $t$ 的边缘分布可以闭式写出，无需逐步模拟</em>。</p>
+
+            <div class="lemma" data-label="引理 7.8 · 前向边缘闭式">
+                <div class="formula-box centered">
+                    $$ q(\boldsymbol{x}_{t}\mid\boldsymbol{x}_{0}) = \mathcal{N}\big(\boldsymbol{x}_{t}\mid\sqrt{\bar{\alpha}_{t}}\,\boldsymbol{x}_{0},\;(1-\bar{\alpha}_{t})\boldsymbol{I}\big). \tag{7.14} $$
+                </div>
+            </div>
+
+            <div class="proof">
+                <div class="proof-title">证明（归纳）</div>
+                <p>基例 $t=1$ 即定义。假设 (7.14) 对 $t-1$ 成立：$\boldsymbol{x}_{t-1}=\sqrt{\bar{\alpha}_{t-1}}\boldsymbol{x}_{0}+\sqrt{1-\bar{\alpha}_{t-1}}\,\boldsymbol{\varepsilon}_{t-1}$，$\boldsymbol{\varepsilon}_{t-1}\sim\mathcal{N}(\boldsymbol{0},\boldsymbol{I})$。代入核：</p>
+                <div class="formula-box centered">
+                    $$ \boldsymbol{x}_{t} = \sqrt{\alpha_{t}}\,\boldsymbol{x}_{t-1} + \sqrt{\beta_{t}}\,\boldsymbol{\varepsilon}_{t} = \sqrt{\alpha_{t}\bar{\alpha}_{t-1}}\,\boldsymbol{x}_{0} + \sqrt{\alpha_{t}(1-\bar{\alpha}_{t-1})}\,\boldsymbol{\varepsilon}_{t-1} + \sqrt{\beta_{t}}\,\boldsymbol{\varepsilon}_{t}. $$
+                </div>
+                <p>两个独立高斯噪声合并的方差为 $\alpha_{t}(1-\bar{\alpha}_{t-1}) + \beta_{t} = \alpha_{t} - \alpha_{t}\bar{\alpha}_{t-1} + \beta_{t} = 1 - \bar{\alpha}_{t}$（因为 $\alpha_{t}+\beta_{t}=1$ 且 $\bar{\alpha}_{t}=\alpha_{t}\bar{\alpha}_{t-1}$）。所以</p>
+                <div class="formula-box centered">
+                    $$ \boldsymbol{x}_{t} = \sqrt{\bar{\alpha}_{t}}\,\boldsymbol{x}_{0} + \sqrt{1-\bar{\alpha}_{t}}\,\boldsymbol{\varepsilon}, \quad \boldsymbol{\varepsilon}\sim\mathcal{N}(\boldsymbol{0},\boldsymbol{I}). \quad \blacksquare $$
+                </div>
+            </div>
+
+            <h3>7.4.2 反向过程与参数化</h3>
+
+            <p>生成过程 $p_{\theta}(\boldsymbol{x}_{0:T})$ 从 $p(\boldsymbol{x}_{T})=\mathcal{N}(\boldsymbol{0},\boldsymbol{I})$ 出发，然后执行：</p>
+
+            <div class="formula-box centered">
+                $$ p_{\theta}(\boldsymbol{x}_{t-1}\mid\boldsymbol{x}_{t}) = \mathcal{N}(\boldsymbol{x}_{t-1}\mid\boldsymbol{\mu}_{\theta}(\boldsymbol{x}_{t},t),\;\sigma_{t}^{2}\boldsymbol{I}), \qquad p_{\theta}(\boldsymbol{x}_{0:T}) = p(\boldsymbol{x}_{T})\prod_{t=1}^{T}p_{\theta}(\boldsymbol{x}_{t-1}\mid\boldsymbol{x}_{t}). \tag{7.15} $$
+            </div>
+
+            <p>DDPM 选择固定 $\sigma_{t}^{2}=\beta_{t}$，让 $\boldsymbol{\mu}_{\theta}$ 为神经网络。理论上，若我们能预测前向过程中加入的噪声 $\boldsymbol{\varepsilon}$，则可以反解 $\boldsymbol{x}_{0}$ 并得到后验均值 $\boldsymbol{\mu}_{\theta}(\boldsymbol{x}_{t},t)$。具体地，DDPM 让网络直接预测噪声 $\boldsymbol{\hat{\varepsilon}}_{\theta}(\boldsymbol{x}_{t},t)$，此时</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{\mu}_{\theta}(\boldsymbol{x}_{t},t) = \frac{1}{\sqrt{\alpha_{t}}}\Big(\boldsymbol{x}_{t} - \frac{\beta_{t}}{\sqrt{1-\bar{\alpha}_{t}}}\,\boldsymbol{\hat{\varepsilon}}_{\theta}(\boldsymbol{x}_{t},t)\Big). \tag{7.16} $$
+            </div>
+
+            <h3>7.4.3 训练目标（简化版 ELBO）</h3>
+
+            <p>最小化负对数似然 $\mathbb{E}[-\log p_{\theta}(\boldsymbol{x}_{0})]$ 的变分上界（类似 VAE 的 ELBO 推导）得到一个关于 $q$ 的加权 $L_{2}$ 回归问题，DDPM 进一步简化为：</p>
+
+            <div class="theorem" data-label="定理 7.9 · DDPM 简化训练目标">
+                <div class="formula-box centered">
+                    $$ L_{\text{simple}}(\theta) = \mathbb{E}_{t,\boldsymbol{x}_{0},\boldsymbol{\varepsilon}}\Big[\big\|\boldsymbol{\varepsilon} - \boldsymbol{\hat{\varepsilon}}_{\theta}(\underbrace{\sqrt{\bar{\alpha}_{t}}\boldsymbol{x}_{0} + \sqrt{1-\bar{\alpha}_{t}}\boldsymbol{\varepsilon}}_{=\,\boldsymbol{x}_{t}},t)\big\|_{2}^{2}\Big]. \tag{7.17} $$
+                </div>
+            </div>
+
+            <p>直观理解：对每个样本，随机挑一个时间步 $t$，按 (7.14) 添加标准高斯噪声 $\boldsymbol{\varepsilon}$ 得到 $\boldsymbol{x}_{t}$，让网络预测该噪声——这把整个生成建模问题转化为一个带时间条件的回归任务。</p>
+
+            <h3>7.4.4 采样算法</h3>
+
+            <div class="code-block"><span class="code-lang">算法 7.3 · DDPM 采样</span>
+<div class="algorithm-block">
+<span class="code-keyword">输入：</span>训练好的 $\boldsymbol{\hat{\varepsilon}}_{\theta}(\boldsymbol{x}_{t},t)$；预定义 $\{\alpha_{t},\bar{\alpha}_{t},\beta_{t}\}_{t=1}^{T}$<br><br>
+采样 $\boldsymbol{x}_{T} \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$<br>
+<span class="code-keyword">for</span> $t = T, T-1, \dots, 1$:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$z \sim \mathcal{N}(\boldsymbol{0},\boldsymbol{I})$&nbsp;&nbsp;<span class="code-comment"># 当 t=1 时令 z=0</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{\hat{\varepsilon}} \leftarrow \boldsymbol{\hat{\varepsilon}}_{\theta}(\boldsymbol{x}_{t},t)$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{\mu}_{\theta} \leftarrow \dfrac{1}{\sqrt{\alpha_{t}}}\Big(\boldsymbol{x}_{t} - \dfrac{\beta_{t}}{\sqrt{1-\bar{\alpha}_{t}}}\,\boldsymbol{\hat{\varepsilon}}\Big)$<br>
+&nbsp;&nbsp;&nbsp;&nbsp;$\boldsymbol{x}_{t-1} \leftarrow \boldsymbol{\mu}_{\theta} + \sqrt{\beta_{t}}\,z$&nbsp;&nbsp;&nbsp;<span class="code-comment"># (若 t=1 则无噪声项)</span><br><br>
+<span class="code-keyword">输出：</span>$\boldsymbol{x}_{0}$
+</div>
+            </div>
+
+            <h3>7.4.5 扩散加速与改进</h3>
+
+            <ul>
+                <li><strong>DDIM（Song et al., 2020）</strong>：让反向过程变为确定性（移除 $\sqrt{\beta_{t}}z$ 项），可大幅减少采样步数，并给出"非马尔可夫"采样的闭式外推；</li>
+                <li><strong>DPM-Solver / DPM-Solver++</strong>：把采样视为求解 ODE，用高阶数值方法在 10–20 步内得到高质量样本；</li>
+                <li><strong>Classifier-Free Guidance（CFG）</strong>（Ho & Salimans, 2021）：在条件扩散模型中用 $p(\boldsymbol{x}_{t}\mid c)$ 与无条件 $p(\boldsymbol{x}_{t})$ 的组合（线性插值对数似然）作为更新方向，强度 $s\ge 1$ 控制样本质量/多样性的权衡：</li>
+            </ul>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{\hat{\varepsilon}}_{\text{cfg}} = (1+s)\,\boldsymbol{\hat{\varepsilon}}(\boldsymbol{x}_{t},t,c) - s\,\boldsymbol{\hat{\varepsilon}}(\boldsymbol{x}_{t},t,\varnothing). \tag{7.18} $$
+            </div>
+
+            <p>CFG 是 Stable Diffusion 等大规模文本-图像生成模型的关键技术。</p>
+
+        </div>
+
+        <!-- 7.5 比较 -->
+        <div class="content-section">
+            <h2>7.5 三类生成模型的比较</h2>
+
+            <table>
+                <thead><tr><th>方面</th><th>VAE</th><th>GAN</th><th>扩散模型</th></tr></thead>
+                <tbody>
+                    <tr><td>密度估计</td><td>✅（ELBO ≤ log-likelihood）</td><td>❌ 隐式</td><td>△ 有 ELBO 但通常用于采样</td></tr>
+                    <tr><td>样本质量</td><td>中等、偏模糊</td><td>最高（BigGAN 等）</td><td>极高（Stable Diffusion）</td></tr>
+                    <tr><td>训练稳定性</td><td>稳定，标准 SGD 即可</td><td>不稳定（JS、模式崩溃）</td><td>较稳定（回归目标）</td></tr>
+                    <tr><td>采样速度</td><td>单次前向</td><td>单次前向</td><td>需 20–1000 步迭代</td></tr>
+                    <tr><td>潜在空间</td><td>显式、可解释</td><td>有但非正则化</td><td>有但非单步</td></tr>
+                    <tr><td>可扩展性</td><td>良好</td><td>极佳（StyleGAN-XL、BigGAN）</td><td>极佳（Stable Diffusion、DALL·E 3、Sora）</td></tr>
+                </tbody>
+            </table>
+
+            <p>近年研究趋势是把各类方法混合：例如把扩散过程的反向 SDE 与 score-matching 的框架统一（Song & Ermon, 2019–2021）；在 GAN 中引入感知损失与风格损失（StyleGAN）；在扩散模型中加入 VAE 编码/解码的潜在空间（Latent Diffusion / Stable Diffusion）以显著降低内存开销。</p>
+
+        </div>
+
+        <!-- 7.6 代码 -->
+        <div class="content-section">
+            <h2>7.6 代码：从零实现一个简单 VAE</h2>
+
+            <p>以 MNIST（手写数字，28×28 二值图）为例，下面给出基于 NumPy 的简化 VAE 前向/反向传播与梯度推导关键公式，帮助读者理解反向如何通过"重参数化技巧"把梯度从重构端回传到编码器。</p>
+
+            <h3>关键梯度公式（推导）</h3>
+
+            <p>设解码器输出 $\boldsymbol{\mu}_{\text{dec}}$（对 $\sigma$ 固定的高斯似然最小化等价于最小化 MSE），编码器输出均值 $\boldsymbol{\mu}_{\text{enc}}$、$\log\boldsymbol{\sigma}_{\text{enc}}^{2}$：</p>
+
+            <div class="formula-box centered">
+                $$ \begin{aligned} \mathcal{L} &= \tfrac{1}{2}\|\boldsymbol{x}-\boldsymbol{\mu}_{\text{dec}}(\boldsymbol{z})\|^{2} + \tfrac{1}{2}\sum_{j}\big(\mu_{\text{enc},j}^{2} + \sigma_{\text{enc},j}^{2} - \log\sigma_{\text{enc},j}^{2} - 1\big), \\ \boldsymbol{z} &= \boldsymbol{\mu}_{\text{enc}} + \boldsymbol{\sigma}_{\text{enc}}\odot\boldsymbol{\varepsilon}, \qquad \sigma_{\text{enc},j} = \exp(\tfrac{1}{2}\log\sigma_{\text{enc},j}^{2}). \end{aligned} \tag{7.19} $$
+            </div>
+
+            <p>由链式法则易得：</p>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial\mathcal{L}}{\partial\boldsymbol{\mu}_{\text{dec}}} = \boldsymbol{\mu}_{\text{dec}} - \boldsymbol{x}, \quad \frac{\partial\mathcal{L}}{\partial\boldsymbol{\mu}_{\text{enc}}} = \boldsymbol{\mu}_{\text{enc}} + \tfrac{\partial\mathcal{L}}{\partial\boldsymbol{z}}, \quad \frac{\partial\mathcal{L}}{\partial\log\sigma_{\text{enc},j}^{2}} = \tfrac{1}{2}\Big(\sigma_{\text{enc},j}^{2} - 1 + \varepsilon_{j}\sigma_{\text{enc},j}\,\tfrac{\partial\mathcal{L}}{\partial z_{j}}\Big). \tag{7.20} $$
+            </div>
+
+            <div class="code-block"><span class="code-lang">python</span>
+<pre>
+<span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-function">sigmoid</span>(x): <span class="code-keyword">return</span> 1 / (1 + np.exp(-x))
+<span class="code-keyword">def</span> <span class="code-function">relu</span>(x): <span class="code-keyword">return</span> np.maximum(0, x)
+
+<span class="code-keyword">class</span> <span class="code-function">VAE</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, D=784, H=256, dz=32):
+        <span class="code-comment"># 编码器: x -> h_enc -> mu, logvar</span>
+        self.We1 = np.random.randn(D, H) * np.sqrt(2/D)
+        self.be1 = np.zeros((1, H))
+        self.Wmu = np.random.randn(H, dz) * 0.01
+        self.bmu = np.zeros((1, dz))
+        self.Wlv = np.random.randn(H, dz) * 0.01
+        self.blv = np.zeros((1, dz))
+        <span class="code-comment"># 解码器: z -> h_dec -> x_hat</span>
+        self.Wd1 = np.random.randn(dz, H) * np.sqrt(2/dz)
+        self.bd1 = np.zeros((1, H))
+        self.Wd2 = np.random.randn(H, D) * 0.01
+        self.bd2 = np.zeros((1, D))
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, X):
+        <span class="code-comment"># 编码</span>
+        self.h_e = relu(X @ self.We1 + self.be1)
+        self.mu = self.h_e @ self.Wmu + self.bmu
+        self.logvar = self.h_e @ self.Wlv + self.blv
+        <span class="code-comment"># 重参数化</span>
+        self.std = np.exp(0.5 * self.logvar)
+        self.eps = np.random.randn(*self.std.shape)
+        self.z = self.mu + self.std * self.eps
+        <span class="code-comment"># 解码 (伯努利)</span>
+        self.h_d = relu(self.z @ self.Wd1 + self.bd1)
+        self.x_hat = sigmoid(self.h_d @ self.Wd2 + self.bd2)
+        <span class="code-keyword">return</span> self.x_hat, self.mu, self.logvar
+
+    <span class="code-keyword">def</span> <span class="code-function">loss_and_grads</span>(self, X):
+        x_hat, mu, logvar = self.forward(X)
+        <span class="code-comment"># BCE 重构 + KL 正则</span>
+        eps = 1e-7
+        recon = -np.mean(np.sum(X*np.log(x_hat+eps) + (1-X)*np.log(1-x_hat+eps), axis=1))
+        kl = -0.5 * np.mean(np.sum(1 + logvar - mu**2 - np.exp(logvar), axis=1))
+        loss = recon + kl
+
+        <span class="code-comment"># 反向传播</span>
+        N = X.shape[0]
+        dxh = (-(X / (x_hat+eps) - (1-X)/(1-x_hat+eps))) / N
+        dhd = dxh @ self.Wd2.T
+        dhd[self.h_d <= 0] = 0
+        self.gWd2 = self.h_d.T @ dxh; self.gbd2 = dxh.sum(0, keepdims=True)
+        dz = dhd @ self.Wd1.T; self.gWd1 = self.z.T @ dhd; self.gbd1 = dhd.sum(0, keepdims=True)
+        dmu = dz + mu / N                       <span class="code-comment"># 来自 KL 的梯度 mu</span>
+        dlogv = 0.5 * (dz * self.eps * self.std + (np.exp(logvar) - 1)/N)
+        self.gWmu = self.h_e.T @ dmu; self.gbmu = dmu.sum(0, keepdims=True)
+        self.gWlv = self.h_e.T @ dlogv; self.gblv = dlogv.sum(0, keepdims=True)
+        dhe = dmu @ self.Wmu.T + dlogv @ self.Wlv.T; dhe[self.h_e <= 0] = 0
+        self.gWe1 = X.T @ dhe; self.gbe1 = dhe.sum(0, keepdims=True)
+        <span class="code-keyword">return</span> loss, recon, kl
+
+<span class="code-comment"># ===== 小示例：训练 1000 步，每次取 64 张随机二值样本 =====</span>
+<span class="code-comment"># model = VAE(); opt = Adam(learning_rate=1e-3)</span>
+<span class="code-comment"># for step in range(1000):</span>
+<span class="code-comment">#     batch = sample_minibatch(64)</span>
+<span class="code-comment">#     loss, recon, kl = model.loss_and_grads(batch)</span>
+<span class="code-comment">#     opt.step(model)</span>
+</pre>
+            </div>
+
+        </div>
+
+        <!-- 7.7 小结与习题 -->
+        <div class="content-section">
+            <h2>7.7 小结与习题</h2>
+
+            <div class="summary-box">
+                <div class="summary-title">📌 本章要点</div>
+                <ul>
+                    <li><strong>VAE</strong>：显式变分推断，最大化 ELBO；核心技术：<em>重参数化技巧</em>，将对 $\boldsymbol{z}$ 的采样与参数解耦。</li>
+                    <li><strong>GAN</strong>：隐式对抗建模，极小极大 JS 散度；关键改进：<em>WGAN-GP、SNGAN</em> 使训练稳定。</li>
+                    <li><strong>扩散模型</strong>：前向加噪（闭式）、反向去噪（预测噪声）；训练目标简化为 $L_{2}$ 回归噪声 $\boldsymbol{\varepsilon}$。</li>
+                    <li>采样速度上 GAN/VAE 占优，但扩散模型在质量与多样性上综合最佳，成为当前 SOTA。</li>
+                </ul>
+            </div>
+
+            <div class="exercise" data-label="习题 7.1">
+                <p>证明：若 $p(\boldsymbol{z})=\mathcal{N}(\boldsymbol{0},\boldsymbol{I})$，$p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})=\mathcal{N}(\boldsymbol{f}_{\theta}(\boldsymbol{z}),\sigma^{2}\boldsymbol{I})$，则 ELBO 的重构项 $\mathbb{E}_{q_{\phi}(\boldsymbol{z}\mid\boldsymbol{x})}[\log p_{\theta}(\boldsymbol{x}\mid\boldsymbol{z})]$ 在固定 $\sigma$ 时等价于 $-\tfrac{1}{2\sigma^{2}}\mathbb{E}[\|\boldsymbol{x}-\boldsymbol{f}_{\theta}(\boldsymbol{z})\|^{2}] + \text{const}$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 7.2">
+                <p>设生成器 $G$ 恰好实现了真实分布（$p_{G}=p_{\text{data}}$），证明此时最优判别器 $D_{G}^{*}(\boldsymbol{x})\equiv 1/2$，且 $V(D_{G}^{*},G)=-\log 4$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 7.3">
+                <p>（JS 散度性质）对任意分布 $P,Q$，证明 $D_{\text{JS}}(P\parallel Q)\in[0,\log 2]$，且 $D_{\text{JS}}(P\parallel Q)=0$ 当且仅当 $P=Q$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 7.4">
+                <p>设前向扩散 $\beta_{t}=1/T$（均匀），对大 $T$，用 $\bar{\alpha}_{t}\approx e^{-\sum_{s\le t}\beta_{s}}$，给出 $\bar{\alpha}_{t}$ 的近似闭式。讨论当 $t$ 接近 $T$ 时 $\bar{\alpha}_{t}\to 0$ 的意义。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 7.5 · 编程">
+                <p>在 MNIST 上实现小型 DDPM（$T=500$，用简单 MLP/UNet 作为 $\boldsymbol{\hat{\varepsilon}}_{\theta}$）。训练后画出采样序列 $\boldsymbol{x}_{T}\to\boldsymbol{x}_{0}$ 的中间过程，并与 GAN 的单次生成结果做视觉对比。</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter6.html" class="nav-btn">← 第6章 Transformer 与注意力</a>
+        <a href="chapter8.html" class="nav-btn">第8章 应用实践 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

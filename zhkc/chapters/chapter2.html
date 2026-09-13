@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第2章 反向传播算法 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第2章</span></div>
+            <div class="chapter-big-num">02</div>
+            <h1>前馈神经网络</h1>
+            <p>本章系统介绍前馈神经网络（FFNN）的数学描述、损失函数设计与反向传播（Backpropagation）算法。通过严格推导误差对各层参数的梯度，读者将掌握神经网络训练的完整数学基础，并能从零实现一个简单的 MLP。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 8 课时</span><span class="info-chip">🎯 10 个知识点</span><span class="info-chip">📐 20+ 公式</span><span class="info-chip">⭐ 核心章节</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>线性回归与平方损失</li>
+                <li>对数几率回归（Logistic 回归）</li>
+                <li>多分类与交叉熵损失</li>
+                <li>损失函数与极大似然估计</li>
+                <li>梯度下降法与学习率</li>
+                <li>反向传播算法（Backpropagation）</li>
+                <li>参数初始化策略</li>
+                <li>过拟合与欠拟合</li>
+                <li>数值稳定性：梯度消失与爆炸</li>
+                <li>从零实现 MLP：NumPy 版本</li>
+            </ol>
+        </div>
+
+        <!-- ===================== 2.1 ===================== -->
+        <div class="content-section">
+            <h2>2.1 损失函数</h2>
+
+            <p>训练神经网络需要定义一个衡量"当前预测效果有多差"的目标函数——<span class="term">损失函数（Loss Function）</span>。对一个样本 $(\boldsymbol{x}, y)$，记网络的预测为 $\hat{y} = f(\boldsymbol{x}; \theta)$，则我们希望最小化训练集上的总损失：</p>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = \frac{1}{N} \sum_{i=1}^{N} \ell\big(\hat{y}_i, y_i\big), \tag{2.1} $$
+            </div>
+
+            <p>其中 $\ell(\hat{y}, y)$ 为单个样本的损失。下面介绍三类最常用的损失。</p>
+
+            <h3>2.1.1 平方损失（MSE）</h3>
+
+            <p>平方损失用于回归任务，预测值 $\hat{y} \in \mathbb{R}$：</p>
+
+            <div class="formula-box centered">
+                $$ \ell(\hat{y}, y) = \frac{1}{2} (\hat{y} - y)^2. \tag{2.2} $$
+            </div>
+
+            <p>为何带因子 $1/2$？求导后会与平方的 $2$ 抵消，得到简洁的 $\hat{y} - y$。</p>
+
+            <h3>2.1.2 交叉熵损失（Cross-Entropy）</h3>
+
+            <p><strong>二分类情况：</strong>输出为 $p = \sigma(\boldsymbol{w}^T \boldsymbol{x} + b) \in (0, 1)$，表示"该样本为正类的概率"。真实标签 $y \in \{0, 1\}$，则</p>
+
+            <div class="formula-box centered">
+                $$ \ell(p, y) = -\big[y \log p + (1 - y) \log(1 - p)\big]. \tag{2.3} $$
+            </div>
+
+            <p>当 $y = 1$ 时，损失 $= -\log p$：$p$ 越接近 1，损失越小；当 $y = 0$ 时，损失 $= -\log(1 - p)$，意义对称。</p>
+
+            <p><strong>多分类情况：</strong>输出 $\boldsymbol{p} = \text{softmax}(\boldsymbol{z}) \in \mathbb{R}^K$，真实标签用 one-hot 向量 $\boldsymbol{y} \in \{0, 1\}^K$ 表示（只有正确类为 1），则</p>
+
+            <div class="formula-box centered">
+                $$ \ell(\boldsymbol{p}, \boldsymbol{y}) = -\sum_{k=1}^{K} y_k \log p_k = -\log p_{\text{correct}}. \tag{2.4} $$
+            </div>
+
+            <p>由于除正确类外所有 $y_k = 0$，交叉熵实际上等于"正确类概率负对数"。</p>
+
+            <div class="definition" data-label="定义 2.1　Softmax + Cross-Entropy 的梯度">
+                <p>设输出层预激活为 $\boldsymbol{z} \in \mathbb{R}^K$，Softmax 输出 $p_k = e^{z_k}/\sum_j e^{z_j}$，真实标签为 one-hot 向量 $\boldsymbol{y}$。则损失关于 $\boldsymbol{z}$ 的梯度为</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial \ell}{\partial z_k} = p_k - y_k. \tag{2.5} $$
+            </div>
+
+            <p>这个简洁而优美的结果正是 Softmax 搭配交叉熵在分类任务中被广泛采用的根本原因。推导见下。</p>
+
+            <div class="proof" data-label="推导">
+                <p>由链式法则：</p>
+                <p style="text-align:center; font-family:Consolas,monospace; color:#c4b5fd;">$\displaystyle \frac{\partial \ell}{\partial z_k} = \sum_{j=1}^{K} \frac{\partial \ell}{\partial p_j} \cdot \frac{\partial p_j}{\partial z_k}$。</p>
+                <p>首先计算偏导数：</p>
+                <div class="formula-box centered">
+                    $$ \frac{\partial \ell}{\partial p_j} = -\frac{y_j}{p_j}, \qquad \frac{\partial p_j}{\partial z_k} = \begin{cases} p_j(1 - p_k), & j = k, \\ -p_j p_k, & j \neq k. \end{cases} $$
+                </div>
+                <p>代入并化简：</p>
+                <div class="formula-box centered">
+                    $$ \frac{\partial \ell}{\partial z_k} = -\frac{y_k}{p_k} \cdot p_k(1 - p_k) + \sum_{j \neq k} \left(-\frac{y_j}{p_j}\right) (-p_j p_k) = -y_k(1 - p_k) + p_k \sum_{j \neq k} y_j. $$
+                </div>
+                <p>利用 $\sum_{j=1}^K y_j = 1$，则 $\sum_{j \neq k} y_j = 1 - y_k$，于是上式 = $-y_k + y_k p_k + p_k - y_k p_k = p_k - y_k$。$\blacksquare$</p>
+            </div>
+        </div>
+
+        <!-- ===================== 2.2 ===================== -->
+        <div class="content-section">
+            <h2>2.2 梯度下降法</h2>
+
+            <p>设 $\theta = (\boldsymbol{W}^{(1)}, \boldsymbol{b}^{(1)}, \dots, \boldsymbol{W}^{(L)}, \boldsymbol{b}^{(L)})$ 为网络全部参数。梯度下降（Gradient Descent）的基本迭代为</p>
+
+            <div class="formula-box centered">
+                $$ \theta \gets \theta - \eta \, \nabla_{\theta} L(\theta), \tag{2.6} $$
+            </div>
+
+            <p>其中 $\eta > 0$ 为学习率。$\nabla_{\theta} L(\theta)$ 是"对训练集全部样本求平均"的梯度，需遍历整个数据集才能计算一次——这在大数据集下十分昂贵。为此发展出以下变种：</p>
+
+            <ul>
+                <li><strong>SGD（Stochastic Gradient Descent）</strong>：每次只使用一个样本计算梯度，极其高效但噪声大，震荡严重。</li>
+                <li><strong>Mini-batch SGD</strong>：每次使用 $B$ 个样本（一个 mini-batch）计算梯度，$B$ 通常取 32 / 64 / 128 / 256，是效率与稳定性之间的最优折中。</li>
+                <li><strong>带动量的 SGD（SGD + Momentum）</strong>：在更新中加入"历史速度"，用于衰减震荡并加速收敛。</li>
+            </ul>
+
+            <div class="definition" data-label="定义 2.2　带动量的 SGD">
+                <p>设 $v$ 为"速度"（累积的梯度历史），$\gamma$ 为动量系数（通常取 0.9）。则每次迭代：</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{v}_{t+1} = \gamma \, \boldsymbol{v}_t + \eta \, \nabla_{\theta} L(\theta_t), \qquad \theta_{t+1} = \theta_t - \boldsymbol{v}_{t+1}. \tag{2.7} $$
+            </div>
+
+            <p>动量项使参数在下降方向平滑地累积速度，并抑制横向振荡。现代深度学习框架还提供了更先进的优化器（AdaGrad、RMSprop、Adam 等），见下一章。</p>
+
+            <div class="remark" data-label="关于学习率">
+                <p>学习率 $\eta$ 是最需要调试的超参数之一。若过大，训练可能不稳定甚至发散；若过小，收敛太慢。实际中常用随训练步数递减的学习率调度（Learning Rate Schedule），例如指数衰减 $\eta_t = \eta_0 \cdot 0.99^{t}$ 或分段衰减（每若干个 epoch 乘以 0.1）。</p>
+            </div>
+        </div>
+
+        <!-- ===================== 2.3 ===================== -->
+        <div class="content-section">
+            <h2>2.3 反向传播（Backpropagation）算法</h2>
+
+            <p>反向传播算法是计算参数梯度的高效方法——它本质上是巧妙使用的链式法则，使梯度的计算复杂度与前向传播同阶（$O(L)$）。</p>
+
+            <h3>2.3.1 记号系统</h3>
+
+            <p>考虑一个 $L$ 层网络（不计输入层），对每个样本 $\boldsymbol{x}$，定义：</p>
+
+            <table>
+                <tr><th>符号</th><th>含义</th><th>维度</th></tr>
+                <tr><td>$\boldsymbol{a}^{(0)}$</td><td>输入向量（记为 $\boldsymbol{x}$）</td><td>$n_0$</td></tr>
+                <tr><td>$\boldsymbol{W}^{(\ell)}$</td><td>第 $\ell$ 层权重矩阵</td><td>$n_{\ell} \times n_{\ell-1}$</td></tr>
+                <tr><td>$\boldsymbol{b}^{(\ell)}$</td><td>第 $\ell$ 层偏置向量</td><td>$n_{\ell}$</td></tr>
+                <tr><td>$\boldsymbol{z}^{(\ell)}$</td><td>第 $\ell$ 层预激活值 = $\boldsymbol{W}^{(\ell)}\boldsymbol{a}^{(\ell-1)} + \boldsymbol{b}^{(\ell)}$</td><td>$n_{\ell}$</td></tr>
+                <tr><td>$\boldsymbol{a}^{(\ell)}$</td><td>第 $\ell$ 层激活值 = $\varphi(\boldsymbol{z}^{(\ell)})$</td><td>$n_{\ell}$</td></tr>
+                <tr><td>$\hat{\boldsymbol{y}} = \boldsymbol{a}^{(L)}$</td><td>网络输出</td><td>$n_L$</td></tr>
+                <tr><td>$\delta^{(\ell)} = \partial \ell / \partial \boldsymbol{z}^{(\ell)}$</td><td>"误差"——损失对预激活的偏导</td><td>$n_{\ell}$</td></tr>
+            </table>
+
+            <h3>2.3.2 四个基本方程</h3>
+
+            <p>反向传播算法的核心是下面四条方程。</p>
+
+            <div class="theorem" data-label="定理 2.1　反向传播四大方程">
+                <p>（BP1）<em>输出层误差：</em></p>
+            </div>
+            <div class="formula-box centered">
+                $$ \delta^{(L)}_k = \frac{\partial \ell}{\partial z^{(L)}_k} = \big(a^{(L)}_k - y_k\big) \cdot \varphi'(z^{(L)}_k). \tag{2.8} $$
+            </div>
+
+            <div class="theorem" data-label="定理 2.1（续）">
+                <p>（BP2）<em>误差反向传播：</em></p>
+            </div>
+            <div class="formula-box centered">
+                $$ \delta^{(\ell)} = \big(\boldsymbol{W}^{(\ell+1)\,T} \delta^{(\ell+1)}\big) \odot \varphi'(\boldsymbol{z}^{(\ell)}), \quad \ell = L-1, \dots, 1. \tag{2.9} $$
+            </div>
+
+            <div class="theorem" data-label="定理 2.1（续）">
+                <p>（BP3）<em>偏置梯度：</em></p>
+            </div>
+            <div class="formula-box centered">
+                $$ \frac{\partial \ell}{\partial b^{(\ell)}_j} = \delta^{(\ell)}_j \quad \Longleftrightarrow \quad \nabla_{\boldsymbol{b}^{(\ell)}} \ell = \delta^{(\ell)}. \tag{2.10} $$
+            </div>
+
+            <div class="theorem" data-label="定理 2.1（续）">
+                <p>（BP4）<em>权重梯度：</em></p>
+            </div>
+            <div class="formula-box centered">
+                $$ \frac{\partial \ell}{\partial W^{(\ell)}_{jk}} = a^{(\ell-1)}_k \cdot \delta^{(\ell)}_j \quad \Longleftrightarrow \quad \nabla_{\boldsymbol{W}^{(\ell)}} \ell = \delta^{(\ell)} \, \boldsymbol{a}^{(\ell-1)\, T}. \tag{2.11} $$
+            </div>
+
+            <p>其中 $\odot$ 表示 Hadamard 乘积（逐元素相乘）。</p>
+
+            <h3>2.3.3 推导过程</h3>
+
+            <p><strong>（BP1 的推导）</strong>由链式法则</p>
+
+            <div class="formula-box centered">
+                $$ \delta^{(L)}_k = \frac{\partial \ell}{\partial z^{(L)}_k} = \frac{\partial \ell}{\partial a^{(L)}_k} \cdot \frac{\partial a^{(L)}_k}{\partial z^{(L)}_k} = \frac{\partial \ell}{\partial a^{(L)}_k} \cdot \varphi'(z^{(L)}_k). $$
+            </div>
+
+            <p>对于平方损失 $\ell = \tfrac{1}{2}(a^{(L)}_k - y_k)^2$，有 $\partial \ell / \partial a^{(L)}_k = a^{(L)}_k - y_k$。对于 Softmax + 交叉熵组合，由 (2.5) 直接给出 $\delta^{(L)}_k = p_k - y_k$，此时 $\varphi'$ 不再出现在公式中。</p>
+
+            <p><strong>（BP2 的推导）</strong>关键步骤：第 $\ell$ 层的预激活 $\boldsymbol{z}^{(\ell)}$ 通过 $\boldsymbol{z}^{(\ell+1)} = \boldsymbol{W}^{(\ell+1)}\varphi(\boldsymbol{z}^{(\ell)}) + \boldsymbol{b}^{(\ell+1)}$ 影响 $\boldsymbol{z}^{(\ell+1)}$。对每个分量：</p>
+
+            <div class="formula-box centered">
+                $$ \delta^{(\ell)}_j = \frac{\partial \ell}{\partial z^{(\ell)}_j} = \sum_{i=1}^{n_{\ell+1}} \frac{\partial \ell}{\partial z^{(\ell+1)}_i} \cdot \frac{\partial z^{(\ell+1)}_i}{\partial z^{(\ell)}_j} = \sum_{i=1}^{n_{\ell+1}} \delta^{(\ell+1)}_i \cdot W^{(\ell+1)}_{ij} \cdot \varphi'(z^{(\ell)}_j). $$
+            </div>
+
+            <p>写成向量形式即 $\delta^{(\ell)} = \big(\boldsymbol{W}^{(\ell+1)\,T} \delta^{(\ell+1)}\big) \odot \varphi'(\boldsymbol{z}^{(\ell)})$。</p>
+
+            <p><strong>（BP3 的推导）</strong>$z^{(\ell)}_j = \sum_k W^{(\ell)}_{jk} a^{(\ell-1)}_k + b^{(\ell)}_j$，显然 $\partial z^{(\ell)}_j / \partial b^{(\ell)}_j = 1$，其他偏导数为 0，因此 $\partial \ell / \partial b^{(\ell)}_j = \partial \ell / \partial z^{(\ell)}_j = \delta^{(\ell)}_j$。</p>
+
+            <p><strong>（BP4 的推导）</strong>同样对 $z^{(\ell)}_j$ 求 $W^{(\ell)}_{jk}$ 的偏导：$\partial z^{(\ell)}_j / \partial W^{(\ell)}_{jk} = a^{(\ell-1)}_k$，所以 $\partial \ell / \partial W^{(\ell)}_{jk} = \delta^{(\ell)}_j \, a^{(\ell-1)}_k$。用向量 / 矩阵外积形式表达就是 (2.11)。</p>
+
+            <h3>2.3.4 完整训练流程</h3>
+
+            <p>对一个 mini-batch $\{(\boldsymbol{x}_1, \boldsymbol{y}_1), \dots, (\boldsymbol{x}_B, \boldsymbol{y}_B)\}$，执行如下步骤：</p>
+
+            <div class="proof" data-label="算法 2.1　Mini-batch 反向传播">
+                <p>① <strong>前向传播：</strong>逐个输入 $\boldsymbol{x}_i$，依次计算并记录 $\boldsymbol{z}^{(\ell)}_i, \boldsymbol{a}^{(\ell)}_i$（$\ell = 1, \dots, L$）。</p>
+                <p>② <strong>计算输出层误差：</strong>$\delta^{(L)}_i = (\hat{\boldsymbol{y}}_i - \boldsymbol{y}_i) \odot \varphi'(\boldsymbol{z}^{(L)}_i)$（或使用 Softmax+CE 的简化形式）。</p>
+                <p>③ <strong>误差反向传播：</strong>对 $\ell = L-1, L-2, \dots, 1$，计算 $\delta^{(\ell)}_i = \big(\boldsymbol{W}^{(\ell+1)\,T} \delta^{(\ell+1)}_i\big) \odot \varphi'(\boldsymbol{z}^{(\ell)}_i)$。</p>
+                <p>④ <strong>对 mini-batch 内样本求平均：</strong>对每个 $\ell$，累加所有 $i$ 的 $\delta^{(\ell)}_i \boldsymbol{a}^{(\ell-1)\,T}_i$ 和 $\delta^{(\ell)}_i$，然后除以 $B$，得到 $\nabla_{\boldsymbol{W}^{(\ell)}} L$ 与 $\nabla_{\boldsymbol{b}^{(\ell)}} L$。</p>
+                <p>⑤ <strong>更新参数：</strong>$\boldsymbol{W}^{(\ell)} \gets \boldsymbol{W}^{(\ell)} - \eta \, \nabla_{\boldsymbol{W}^{(\ell)}} L$，$\boldsymbol{b}^{(\ell)} \gets \boldsymbol{b}^{(\ell)} - \eta \, \nabla_{\boldsymbol{b}^{(\ell)}} L$。</p>
+                <p>⑥ 重复①–⑤，直到达到指定 epoch 数或在验证集上性能不再提升。</p>
+            </div>
+        </div>
+
+        <!-- ===================== 2.4 ===================== -->
+        <div class="content-section">
+            <h2>2.4 参数初始化</h2>
+
+            <p>糟糕的参数初始化会让训练陷入困境——例如所有权重都取 0 会导致所有神经元产生完全相同的输出和相同的梯度，从而在整个训练过程中保持对称（这叫 <em>对称权重问题</em>）。</p>
+
+            <h3>2.4.1 Xavier / Glorot 初始化</h3>
+
+            <p>Xavier 初始化（Glorot & Bengio, 2010）的设计目标是让激活值和梯度的方差在各层间大致保持稳定。假设激活函数为 $\tanh$ 或恒等映射（对称且在 0 附近近似线性），令 $n_{\text{in}}$ 为输入维度，$n_{\text{out}}$ 为输出维度，则</p>
+
+            <div class="formula-box centered">
+                $$ W_{ij} \sim \mathcal{U}\!\left(-\frac{\sqrt{6}}{\sqrt{n_{\text{in}} + n_{\text{out}}}}, \frac{\sqrt{6}}{\sqrt{n_{\text{in}} + n_{\text{out}}}}\right). \tag{2.12} $$
+            </div>
+
+            <p>也有使用正态分布的版本 $\mathcal{N}(0, 2/(n_{\text{in}} + n_{\text{out}}))$。</p>
+
+            <h3>2.4.2 He / Kaiming 初始化</h3>
+
+            <p>ReLU 的半边为零，均值不再为 0，方差也不同于 tanh。He 初始化（He et al., 2015）专门针对 ReLU 及其变体设计：</p>
+
+            <div class="formula-box centered">
+                $$ W_{ij} \sim \mathcal{N}\!\left(0, \frac{2}{n_{\text{in}}}\right) \quad \text{或} \quad \mathcal{U}\!\left(-\sqrt{\frac{6}{n_{\text{in}}}}, \sqrt{\frac{6}{n_{\text{in}}}}\right). \tag{2.13} $$
+            </div>
+
+            <p>偏置向量通常初始化为 0（或 ReLU 下取一个很小的正值如 0.01，以避免大量单元在训练初期"死亡"）。</p>
+
+            <div class="example" data-label="例 2.1">
+                <p>某层有 $n_{\text{in}} = 512$ 个输入，$n_{\text{out}} = 256$ 个输出，使用 ReLU 激活。He 正态初始化应从 $\mathcal{N}(0, 2/512) = \mathcal{N}(0, 0.0039)$ 中采样权重。</p>
+            </div>
+        </div>
+
+        <!-- ===================== 2.5 ===================== -->
+        <div class="content-section">
+            <h2>2.5 数值稳定性：梯度消失与爆炸</h2>
+
+            <p>回顾误差反向传播方程 (2.9)。若每一层的 $\boldsymbol{W}$ 的谱范数（最大奇异值）$\rho$ 满足 $\rho > 1$，则 $\delta^{(\ell)}$ 的范数会随着反向传播层数的增加而指数增长——<span class="term">梯度爆炸（Exploding Gradient）</span>；若 $\rho < 1$，则 $\delta^{(\ell)}$ 指数衰减——<span class="term">梯度消失（Vanishing Gradient）</span>。</p>
+
+            <p>Sigmoid 与 tanh 在两端饱和时导数接近 0，会进一步加剧梯度消失。ReLU 通过 $z > 0$ 处导数为 1 一定程度缓解了这一问题，但 $z \leq 0$ 处梯度为 0 也会让部分单元"死亡"。</p>
+
+            <p>常见的缓解手段：</p>
+            <ul>
+                <li>使用 ReLU、GELU、Swish 等不饱和激活函数；</li>
+                <li>采用合理的权重初始化（Xavier / He）；</li>
+                <li>使用 <em>Batch Normalization</em>（Ioffe & Szegedy, 2015）或 <em>Layer Normalization</em>；</li>
+                <li>使用残差连接（Residual Connection，见 ResNet）；</li>
+                <li>使用梯度裁剪（Gradient Clipping）防止梯度爆炸：若 $\|\nabla L\| > C$ 则将其缩放为 $C \cdot \nabla L / \|\nabla L\|$。</li>
+            </ul>
+        </div>
+
+        <!-- ===================== 2.6 ===================== -->
+        <div class="content-section">
+            <h2>2.6 过拟合与欠拟合</h2>
+
+            <ul>
+                <li><strong>欠拟合（Underfitting）</strong>：模型在训练集上也表现差——模型容量不足或训练不足。应对：增加网络宽度 / 深度，延长训练，改用更强大的架构。</li>
+                <li><strong>过拟合（Overfitting）</strong>：训练集表现极佳但在测试集上明显下降——模型"记住了"训练样本而非学到通用规律。应对手段见下一章（正则化、Dropout、早停、数据增强等）。</li>
+            </ul>
+
+            <p>我们用 <em>训练误差</em> 与 <em>泛化误差（在新样本上的误差）</em> 的差距来衡量过拟合程度。实际中常从训练集划出 10%~20% 作为 <em>验证集（Validation Set）</em>，用于选择超参数和判断是否早停。</p>
+        </div>
+
+        <!-- ===================== 2.7 代码实现 ===================== -->
+        <div class="content-section">
+            <h2>2.7 从零实现 MLP（NumPy 版本）</h2>
+
+            <p>下面给出一个完整的两层 MLP 实现，用于 MNIST 手写数字识别（10 分类）。读者可对照本节公式阅读代码以加深理解。</p>
+
+            <div class="code-block">
+                <span class="code-lang">Python — MLP from scratch</span>
+<pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+<span class="code-keyword">import</span> pickle, gzip, urllib.request, os
+
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 1. 辅助函数（激活函数 + 损失函数）</span>
+<span class="code-comment"># ============================================================</span>
+<span class="code-keyword">def</span> <span class="code-function">relu</span>(Z):          <span class="code-keyword">return</span> np.maximum(<span class="code-number">0</span>, Z)
+<span class="code-keyword">def</span> <span class="code-function">relu_deriv</span>(Z):    <span class="code-keyword">return</span> (Z > <span class="code-number">0</span>).astype(float)
+<span class="code-keyword">def</span> <span class="code-function">softmax</span>(Z):
+    <span class="code-string">"""数值稳定的 Softmax，每行一个样本"""</span>
+    Z = Z - np.max(Z, axis=<span class="code-number">1</span>, keepdims=<span class="code-keyword">True</span>)
+    E = np.exp(Z)
+    <span class="code-keyword">return</span> E / np.sum(E, axis=<span class="code-number">1</span>, keepdims=<span class="code-keyword">True</span>)
+<span class="code-keyword">def</span> <span class="code-function">cross_entropy</span>(Y_hat, Y):
+    <span class="code-keyword">return</span> -np.mean(np.sum(Y * np.log(Y_hat + <span class="code-number">1e-12</span>), axis=<span class="code-number">1</span>))
+
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 2. 两层 MLP：784 (输入) -> 256 -> 128 -> 10 (输出)</span>
+<span class="code-comment"># ============================================================</span>
+<span class="code-keyword">class</span> <span class="code-function">TwoLayerMLP</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, in_dim=<span class="code-number">784</span>, h1=<span class="code-number">256</span>, h2=<span class="code-number">128</span>, out_dim=<span class="code-number">10</span>):
+        <span class="code-comment"># He 正态初始化</span>
+        self.W1 = np.random.randn(in_dim, h1) * np.sqrt(<span class="code-number">2</span>/in_dim)
+        self.b1 = np.zeros(h1)
+        self.W2 = np.random.randn(h1, h2) * np.sqrt(<span class="code-number">2</span>/h1)
+        self.b2 = np.zeros(h2)
+        self.W3 = np.random.randn(h2, out_dim) * np.sqrt(<span class="code-number">2</span>/h2)
+        self.b3 = np.zeros(out_dim)
+        self.cache = {}           <span class="code-comment"># 存储前向中间量用于反传</span>
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, X):
+        <span class="code-comment"># Z : (B, dim),  对偏置使用广播</span>
+        Z1 = X @ self.W1 + self.b1; A1 = relu(Z1)
+        Z2 = A1 @ self.W2 + self.b2; A2 = relu(Z2)
+        Z3 = A2 @ self.W3 + self.b3; Y_hat = softmax(Z3)
+        self.cache.update({<span class="code-string">'X'</span>:X,<span class="code-string">'Z1'</span>:Z1,<span class="code-string">'A1'</span>:A1,
+                           <span class="code-string">'Z2'</span>:Z2,<span class="code-string">'A2'</span>:A2,<span class="code-string">'Y_hat'</span>:Y_hat})
+        <span class="code-keyword">return</span> Y_hat
+
+    <span class="code-keyword">def</span> <span class="code-function">backward</span>(self, Y, lr=<span class="code-number">1e-3</span>):
+        X, A1, A2, Y_hat = self.cache[<span class="code-string">'X'</span>], self.cache[<span class="code-string">'A1'</span>], \
+                           self.cache[<span class="code-string">'A2'</span>], self.cache[<span class="code-string">'Y_hat'</span>]
+        Z1, Z2 = self.cache[<span class="code-string">'Z1'</span>], self.cache[<span class="code-string">'Z2'</span>]
+        B = X.shape[<span class="code-number">0</span>]
+
+        <span class="code-comment"># 输出层误差（Softmax + CE）: delta = Y_hat - Y</span>
+        dZ3 = (Y_hat - Y) / B                              <span class="code-comment"># (B, 10)</span>
+        dW3 = A2.T @ dZ3                                   <span class="code-comment"># (128, 10)</span>
+        db3 = dZ3.sum(axis=<span class="code-number">0</span>)                             <span class="code-comment"># (10,)</span>
+
+        <span class="code-comment"># 反向传播到第二层</span>
+        dA2 = dZ3 @ self.W3.T                              <span class="code-comment"># (B, 128)</span>
+        dZ2 = dA2 * relu_deriv(Z2)                         <span class="code-comment"># (B, 128)  Hadamard</span>
+        dW2 = A1.T @ dZ2
+        db2 = dZ2.sum(axis=<span class="code-number">0</span>)
+
+        <span class="code-comment"># 反向传播到第一层</span>
+        dA1 = dZ2 @ self.W2.T                              <span class="code-comment"># (B, 256)</span>
+        dZ1 = dA1 * relu_deriv(Z1)                         <span class="code-comment"># (B, 256)</span>
+        dW1 = X.T  @ dZ1
+        db1 = dZ1.sum(axis=<span class="code-number">0</span>)
+
+        <span class="code-comment"># 梯度下降更新</span>
+        self.W3 -= lr * dW3; self.b3 -= lr * db3
+        self.W2 -= lr * dW2; self.b2 -= lr * db2
+        self.W1 -= lr * dW1; self.b1 -= lr * db1
+
+<span class="code-comment"># ============================================================</span>
+<span class="code-comment"># 3. 训练主循环（需要 MNIST 数据集，可自行替换为任意分类任务）</span>
+<span class="code-comment"># ============================================================</span>
+<span class="code-keyword">def</span> <span class="code-function">to_onehot</span>(y, k=<span class="code-number">10</span>):
+    Y = np.zeros((len(y), k)); Y[np.arange(len(y)), y] = <span class="code-number">1</span>; <span class="code-keyword">return</span> Y
+
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    np.random.seed(<span class="code-number">2025</span>)
+    model = TwoLayerMLP()
+    batch_size, lr = <span class="code-number">64</span>, <span class="code-number">1e-3</span>
+    epochs = <span class="code-number">20</span>
+    <span class="code-keyword">for</span> epoch <span class="code-keyword">in</span> range(epochs):
+        perm = np.random.permutation(len(X_train))
+        <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(<span class="code-number">0</span>, len(X_train), batch_size):
+            idx = perm[i:i+batch_size]
+            Xb, Yb = X_train[idx], Y_train_onehot[idx]
+            Y_hat = model.forward(Xb)
+            model.backward(Yb, lr=lr)
+        <span class="code-comment"># 评估</span>
+        train_acc = np.mean(np.argmax(model.forward(X_train), <span class="code-number">1</span>) == Y_train)
+        valid_acc = np.mean(np.argmax(model.forward(X_valid), <span class="code-number">1</span>) == Y_valid)
+        <span class="code-keyword">print</span>(<span class="code-string">f"epoch={epoch+1:02d}  train={train_acc:.4f}  valid={valid_acc:.4f}"</span>)</code></pre>
+            </div>
+
+            <div class="remark" data-label="编程练习建议">
+                <p>读者可进一步尝试：① 加入 L2 正则化；② 加入动量项；③ 替换 Sigmoid/tanh 并观察训练速度的差异；④ 加入 Dropout；⑤ 将学习率改为指数衰减。这些改进将在 next chapter 中系统介绍。</p>
+            </div>
+        </div>
+
+        <!-- ===================== 小结 ===================== -->
+        <div class="summary-box">
+            <div class="summary-title">★ 本章要点 · KEY POINTS</div>
+            <ul>
+                <li>回归任务常用平方损失，分类任务常用交叉熵损失。Softmax + 交叉熵的梯度形式为 $p_k - y_k$，简洁而稳定。</li>
+                <li>梯度下降及其变种（Mini-batch SGD、带动量的 SGD）是训练神经网络的标准方法。</li>
+                <li>反向传播四大方程 (BP1)–(BP4) 系统化地给出了损失对每个参数的偏导数，使梯度计算开销与前向传播同阶。</li>
+                <li>合理的参数初始化（Xavier / He）对训练深度网络至关重要。</li>
+                <li>数值不稳定性体现为梯度消失和梯度爆炸，可通过合适的激活函数、归一化层、残差连接和梯度裁剪缓解。</li>
+                <li>从零实现一个两层 MLP 并在小型数据集上跑通是掌握神经网络原理的必经之路。</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>习 题</h2>
+
+            <div class="exercise" data-label="习题 2.1">
+                <p>考虑一个单神经元网络：输入 $\boldsymbol{x} \in \mathbb{R}^2$，权重 $\boldsymbol{w} \in \mathbb{R}^2$，偏置 $b$，激活函数为 Sigmoid，输出 $\hat{y} = \sigma(\boldsymbol{w}^T \boldsymbol{x} + b)$。损失取二分类交叉熵 $\ell = -y \log \hat{y} - (1-y) \log(1-\hat{y})$。直接写出 $\partial \ell / \partial w_1, \partial \ell / \partial b$。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 2.2">
+                <p>考虑一个三层网络：$784 \to 128$（ReLU）$\to 64$（ReLU）$\to 10$（Softmax），使用交叉熵损失。请写出各层 $\delta^{(\ell)}$ 的表达式以及 $\partial \ell / \partial \boldsymbol{W}^{(\ell)}$ 的矩阵维度。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 2.3">
+                <p>使用 NumPy 实现上题中的网络，并在合成的二维二分类数据集上训练；画出训练过程中决策边界的演化（每 10 个 epoch 一张图）。</p>
+            </div>
+
+            <div class="exercise" data-label="习题 2.4">
+                <p>（数值实验）在相同的 MLP 上比较：全零初始化、均匀 $\mathcal{U}(-0.1, 0.1)$、Xavier、He 四种初始化策略的收敛速度和最终测试精度，并画出训练误差曲线。</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter1.html" class="nav-btn">← 第1章 神经网络基础</a>
+        <a href="chapter3.html" class="nav-btn">第3章 优化与正则化 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

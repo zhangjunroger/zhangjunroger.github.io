@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神经网络与深度学习 - 智慧课程系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="20" cy="30" r="6" fill="#6366f1" class="node"/>
+                        <circle cx="20" cy="70" r="6" fill="#6366f1" class="node"/>
+                        <circle cx="50" cy="20" r="5" fill="#8b5cf6" class="node"/>
+                        <circle cx="50" cy="50" r="5" fill="#8b5cf6" class="node"/>
+                        <circle cx="50" cy="80" r="5" fill="#8b5cf6" class="node"/>
+                        <circle cx="80" cy="30" r="6" fill="#ec4899" class="node"/>
+                        <circle cx="80" cy="70" r="6" fill="#ec4899" class="node"/>
+                        <line x1="26" y1="30" x2="45" y2="20" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="26" y1="30" x2="45" y2="50" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="26" y1="30" x2="45" y2="80" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="26" y1="70" x2="45" y2="20" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="26" y1="70" x2="45" y2="50" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="26" y1="70" x2="45" y2="80" stroke="#a855f7" stroke-width="1"/>
+                        <line x1="55" y1="20" x2="74" y2="30" stroke="#ec4899" stroke-width="1"/>
+                        <line x1="55" y1="20" x2="74" y2="70" stroke="#ec4899" stroke-width="1"/>
+                        <line x1="55" y1="50" x2="74" y2="30" stroke="#ec4899" stroke-width="1"/>
+                        <line x1="55" y1="50" x2="74" y2="70" stroke="#ec4899" stroke-width="1"/>
+                        <line x1="55" y1="80" x2="74" y2="30" stroke="#ec4899" stroke-width="1"/>
+                        <line x1="55" y1="80" x2="74" y2="70" stroke="#ec4899" stroke-width="1"/>
+                    </svg>
+                </div>
+                <span>沈阳工业大学 人工智能学院 NN&DL智慧课程平台</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="active">首页</a></li>
+                <li><a href="#chapters">课程章节</a></li>
+                <li><a href="#lab">实验平台</a></li>
+                <li><a href="#tools">教学工具</a></li>
+                <li><a href="#resources">学习资源</a></li>
+                <li><a href="#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user">
+                <div class="user-avatar">学</div>
+                <span class="user-name">学习者</span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-bg">
+            <canvas id="neuralCanvas"></canvas>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">神经网络与深度学习</span>
+            </h1>
+            <p class="hero-subtitle">Neural Networks and Deep Learning</p>
+            <p class="hero-desc">
+                探索人工智能的核心技术，从感知机到深度学习，构建智能系统的完整知识体系。
+                通过交互式学习、可视化演示和在线实验，掌握深度学习的理论与实践。
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num" data-target="8">0</div>
+                    <div class="stat-label">课程章节</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" data-target="32">0</div>
+                    <div class="stat-label">教学课件</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" data-target="24">0</div>
+                    <div class="stat-label">实验项目</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num" data-target="128">0</div>
+                    <div class="stat-label">练习题</div>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a href="#chapters" class="btn btn-primary">开始学习</a>
+                <a href="#lab" class="btn btn-secondary">进入实验平台</a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="section-container">
+            <h2 class="section-title">智慧学习特色</h2>
+            <p class="section-subtitle">融合先进教育理念与人工智能技术，打造沉浸式学习体验</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </div>
+                    <h3>交互式课件</h3>
+                    <p>支持动画演示、参数调节和实时响应的动态学习内容</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </div>
+                    <h3>在线实验</h3>
+                    <p>浏览器内完成神经网络编程实验，无需本地环境配置</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h3>智能测评</h3>
+                    <p>自适应练习与即时反馈，精准定位知识薄弱环节</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    </div>
+                    <h3>进度追踪</h3>
+                    <p>可视化学习进度，个人学习数据一目了然</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="chapters" class="chapters">
+        <div class="section-container">
+            <h2 class="section-title">课程章节</h2>
+            <p class="section-subtitle">从基础理论到前沿应用，系统化掌握深度学习</p>
+            
+            <div class="chapters-grid">
+                <a href="chapters/chapter1.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">01</span>
+                        <span class="chapter-tag">基础</span>
+                    </div>
+                    <h3 class="chapter-title">神经网络基础</h3>
+                    <p class="chapter-desc">神经元模型、感知机、激活函数，理解神经网络的基本构成与工作原理</p>
+                    <div class="chapter-meta">
+                        <span>4 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 75%"></span></span>
+                            <span>75%</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter2.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">02</span>
+                        <span class="chapter-tag">核心</span>
+                    </div>
+                    <h3 class="chapter-title">前馈神经网络</h3>
+                    <p class="chapter-desc">多层感知机、反向传播算法、损失函数，掌握训练神经网络的核心方法</p>
+                    <div class="chapter-meta">
+                        <span>5 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 50%"></span></span>
+                            <span>50%</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter3.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">03</span>
+                        <span class="chapter-tag">进阶</span>
+                    </div>
+                    <h3 class="chapter-title">优化与正则化</h3>
+                    <p class="chapter-desc">梯度下降优化器、学习率调度、Dropout、Batch Normalization等关键技术</p>
+                    <div class="chapter-meta">
+                        <span>4 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 30%"></span></span>
+                            <span>30%</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter4.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">04</span>
+                        <span class="chapter-tag">视觉</span>
+                    </div>
+                    <h3 class="chapter-title">卷积神经网络</h3>
+                    <p class="chapter-desc">CNN架构、经典模型（LeNet/ResNet）、迁移学习与图像识别实践</p>
+                    <div class="chapter-meta">
+                        <span>6 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 20%"></span></span>
+                            <span>20%</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter5.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">05</span>
+                        <span class="chapter-tag">序列</span>
+                    </div>
+                    <h3 class="chapter-title">循环神经网络</h3>
+                    <p class="chapter-desc">RNN、LSTM、GRU架构，序列建模、时间序列预测与文本处理</p>
+                    <div class="chapter-meta">
+                        <span>5 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 10%"></span></span>
+                            <span>10%</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter6.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">06</span>
+                        <span class="chapter-tag">前沿</span>
+                    </div>
+                    <h3 class="chapter-title">Transformer与注意力</h3>
+                    <p class="chapter-desc">自注意力机制、Transformer架构、BERT与GPT系列大模型解析</p>
+                    <div class="chapter-meta">
+                        <span>6 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 0%"></span></span>
+                            <span>未开始</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter7.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">07</span>
+                        <span class="chapter-tag">生成</span>
+                    </div>
+                    <h3 class="chapter-title">生成式模型</h3>
+                    <p class="chapter-desc">GAN、VAE、扩散模型，理解图像生成与AIGC核心原理</p>
+                    <div class="chapter-meta">
+                        <span>5 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 0%"></span></span>
+                            <span>未开始</span>
+                        </span>
+                    </div>
+                </a>
+
+                <a href="chapters/chapter8.html" class="chapter-card">
+                    <div class="chapter-header">
+                        <span class="chapter-num">08</span>
+                        <span class="chapter-tag">应用</span>
+                    </div>
+                    <h3 class="chapter-title">深度学习应用实践</h3>
+                    <p class="chapter-desc">计算机视觉、自然语言处理、强化学习，综合案例分析与项目实战</p>
+                    <div class="chapter-meta">
+                        <span>6 课时</span>
+                        <span class="chapter-progress">
+                            <span class="progress-bar"><span class="progress-fill" style="width: 0%"></span></span>
+                            <span>未开始</span>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="lab" class="lab-section">
+        <div class="section-container">
+            <h2 class="section-title">在线实验平台</h2>
+            <p class="section-subtitle">17 个浏览器内交互实验，覆盖从激活函数到生成式模型的完整知识链</p>
+
+            <!-- ========== 实验目录（分类导航） ========== -->
+            <div class="lab-index" id="labIndex">
+                <div class="lab-index-header">
+                    <span class="lab-index-title">实验目录</span>
+                    <span class="lab-index-count">共 17 个实验 · 点击卡片直达</span>
+                </div>
+                <div class="lab-filter">
+                    <button class="lab-filter-btn active" data-filter="all">全部</button>
+                    <button class="lab-filter-btn" data-filter="basis">基础原理</button>
+                    <button class="lab-filter-btn" data-filter="train">训练优化</button>
+                    <button class="lab-filter-btn" data-filter="model">网络结构</button>
+                    <button class="lab-filter-btn" data-filter="gen">生成与前沿</button>
+                </div>
+                <div class="lab-index-grid">
+                    <a class="lab-index-card" data-cat="basis" href="#lab-act"><span class="li-num">01</span><span class="li-name">激活函数可视化</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="basis" href="#lab-gd"><span class="li-num">02</span><span class="li-name">梯度下降优化</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="basis" href="#lab-perceptron"><span class="li-num">03</span><span class="li-name">感知机二分类</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="basis" href="#lab-nn"><span class="li-num">04</span><span class="li-name">前向传播计算</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="basis" href="#lab-bp"><span class="li-num">05</span><span class="li-name">反向传播梯度流</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="basis" href="#lab-softmax"><span class="li-num">10</span><span class="li-name">Softmax 多分类</span><span class="li-tag">基础</span></a>
+                    <a class="lab-index-card" data-cat="train" href="#lab-vanish"><span class="li-num">11</span><span class="li-name">梯度消失与爆炸</span><span class="li-tag">训练</span></a>
+                    <a class="lab-index-card" data-cat="train" href="#lab-optim"><span class="li-num">12</span><span class="li-name">优化器对比大赛</span><span class="li-tag">训练</span></a>
+                    <a class="lab-index-card" data-cat="train" href="#lab-scheduler"><span class="li-num">13</span><span class="li-name">学习率调度器</span><span class="li-tag">训练</span></a>
+                    <a class="lab-index-card" data-cat="train" href="#lab-reg"><span class="li-num">09</span><span class="li-name">正则化对比</span><span class="li-tag">训练</span></a>
+                    <a class="lab-index-card" data-cat="model" href="#lab-cnn"><span class="li-num">06</span><span class="li-name">CNN 卷积可视化</span><span class="li-tag">结构</span></a>
+                    <a class="lab-index-card" data-cat="model" href="#lab-rnn"><span class="li-num">07</span><span class="li-name">RNN / LSTM 序列</span><span class="li-tag">结构</span></a>
+                    <a class="lab-index-card" data-cat="model" href="#lab-attn"><span class="li-num">08</span><span class="li-name">注意力机制</span><span class="li-tag">结构</span></a>
+                    <a class="lab-index-card" data-cat="model" href="#lab-playground"><span class="li-num">14</span><span class="li-name">神经网络 Playground</span><span class="li-tag">结构</span></a>
+                    <a class="lab-index-card" data-cat="gen" href="#lab-ae"><span class="li-num">15</span><span class="li-name">自编码器与流形</span><span class="li-tag">生成</span></a>
+                    <a class="lab-index-card" data-cat="gen" href="#lab-gan"><span class="li-num">16</span><span class="li-name">GAN 对抗训练</span><span class="li-tag">生成</span></a>
+                    <a class="lab-index-card" data-cat="gen" href="#lab-diffusion"><span class="li-num">17</span><span class="li-name">扩散模型去噪</span><span class="li-tag">生成</span></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="lab-section lab-demo-section" style="padding-top:0;">
+        <div class="section-container">
+
+            <!-- ========== 实验1: 激活函数演示 ========== -->
+            <div class="lab-demo" id="lab-act">
+                <div class="lab-panel">
+                    <h3>实验一：激活函数可视化</h3>
+                    <p class="lab-tip">调整参数观察不同激活函数的曲线变化与导数</p>
+                    
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>选择激活函数</label>
+                            <select id="activationSelect">
+                                <option value="sigmoid">Sigmoid</option>
+                                <option value="tanh">Tanh</option>
+                                <option value="relu">ReLU</option>
+                                <option value="leakyrelu">Leaky ReLU</option>
+                                <option value="elu">ELU</option>
+                                <option value="softplus">Softplus</option>
+                                <option value="swish">Swish (SiLU)</option>
+                                <option value="gelu">GELU</option>
+                                <option value="mish">Mish</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>缩放参数 $s$: <span id="scaleValue">1.0</span></label>
+                            <input type="range" id="scaleSlider" min="0.1" max="3" step="0.1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>偏置 $b$: <span id="biasValue">0.0</span></label>
+                            <input type="range" id="biasSlider" min="-5" max="5" step="0.1" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label><input type="checkbox" id="showDerivative" checked> 显示导数曲线</label>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">函数表达式</span>
+                            <span class="info-value" id="formulaDisplay">$f(x) = \frac{1}{1 + e^{-x}}$</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">导数表达式</span>
+                            <span class="info-value" id="derivFormulaDisplay" style="font-size:11px;">$f'(x) = f(x)(1 - f(x))$</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">函数特性</span>
+                            <span class="info-value" id="featureDisplay">S形曲线，输出范围(0,1)，常用于二分类输出层</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper" style="position:relative;">
+                    <canvas id="activationCanvas" width="500" height="400"></canvas>
+                    <div id="actFormulaOverlay" style="position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none;"></div>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验一 · 激活函数</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>激活函数为神经网络引入<strong>非线性</strong>，是多层网络能够拟合复杂函数的关键。没有它，再深的网络也等价于一个线性变换。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>Sigmoid: $f(x)=\dfrac{1}{1+e^{-x}}$, $\;f'(x)=f(x)(1-f(x))$<br>Tanh: $f(x)=\tanh(x)$, $\;f'(x)=1-f^2(x)$<br>ReLU: $f(x)=\max(0,x)$, $\;f'(x)=\mathbb{1}[x>0]$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>Sigmoid/Tanh 两端导数趋近 0，深层连乘导致<strong>梯度消失</strong></li><li>ReLU 负半轴恒为 0，学习率过大时神经元可能"死亡"（Dead ReLU）</li><li>隐藏层首选 ReLU 家族（含 LeakyReLU/GELU），二分类输出层用 Sigmoid</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>调整缩放参数 s 后导数曲线峰值如何变化？为什么这会影响该层梯度的最大可能值？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验2: 梯度下降优化 ========== -->
+            <div class="lab-demo" id="lab-gd">
+                <div class="lab-panel">
+                    <h3>实验二：梯度下降优化过程</h3>
+                    <p class="lab-tip">观察小球沿损失曲面滚动，理解学习率与动量的影响</p>
+                    
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="lrValue">0.05</span></label>
+                            <input type="range" id="lrSlider" min="0.001" max="0.5" step="0.001" value="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>动量系数 $\mu$: <span id="momentumValue">0.0</span></label>
+                            <input type="range" id="momentumSlider" min="0" max="0.99" step="0.01" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>初始位置 $\theta$: <span id="initPosValue">-3.0</span></label>
+                            <input type="range" id="initPosSlider" min="-4" max="4" step="0.1" value="-3">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="gdResetBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                            <button id="gdPlayBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">开始</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">当前步数</span>
+                            <span class="info-value" id="gdStepCount">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">当前损失</span>
+                            <span class="info-value" id="gdLossValue">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">优化器</span>
+                            <span class="info-value" id="gdOptimizerName">SGD</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="gdCanvas" width="500" height="500"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验二 · 梯度下降</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>梯度下降是神经网络训练的基石：每一步沿着损失函数<strong>最陡下降方向</strong>（负梯度）移动一小步，反复迭代逼近极小值。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\theta_{t+1} = \theta_t - \eta\,\nabla L(\theta_t)$<br>带动量: $v_{t+1} = \mu v_t - \eta \nabla L$, $\;\theta_{t+1}=\theta_t + v_{t+1}$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>学习率 η 过大 → 来回震荡甚至发散；过小 → 收敛极慢</li><li>非凸损失曲面上，初始化位置决定了落入哪个"山谷"（局部极小）</li><li>动量项积累历史梯度，能冲过小坑、加速在平坦区前进</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>把学习率调到 0.5 观察震荡，再加 0.9 的动量——为什么动量反而让震荡更剧烈？何时动量才有正面作用？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验3: 感知机二分类 ========== -->
+            <div class="lab-demo" id="lab-perceptron">
+                <div class="lab-panel">
+                    <h3>实验三：感知机二分类器</h3>
+                    <p class="lab-tip">点击画布添加数据点，观察决策边界自动调整</p>
+                    
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>选择数据类别后点击画布添加点</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button id="classABtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer; pointer-events:auto;">类别 A</button>
+                                <button id="classBBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer; pointer-events:auto;">类别 B</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="perceptronLrValue">0.01</span></label>
+                            <input type="range" id="perceptronLrSlider" min="0.001" max="0.2" step="0.001" value="0.01">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="perceptronTrainBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练</button>
+                            <button id="perceptronClearBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">清空</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">数据点数</span>
+                            <span class="info-value" id="perceptronPointCount">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">训练准确率</span>
+                            <span class="info-value" id="perceptronAccuracy">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">决策边界</span>
+                            <span class="info-value" id="perceptronBoundary">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="perceptronCanvas" width="500" height="400"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验三 · 感知机</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>感知机是最早的神经元模型（1957, Rosenblatt）：对输入做加权求和，通过符号函数输出类别，几何上是一条<strong>线性决策边界</strong>。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$y = \mathrm{sign}(w^T x + b)$<br>更新规则（误分类时）: $w \leftarrow w + \eta\, y_i x_i$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>感知机收敛定理：数据线性可分时必在有限步内收敛</li><li>无法解决 XOR 这类非线性问题——这是 1969 年"AI 寒冬"的导火索</li><li>多层感知机（MLP）+ 非线性激活突破了线性限制</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>尝试添加一组 XOR 分布的点（左上/右下为 A，右上/左下为 B），观察准确率为什么卡在 50% 附近？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验4: 神经网络前向传播 ========== -->
+            <div class="lab-demo" id="lab-nn">
+                <div class="lab-panel">
+                    <h3>实验四：神经网络前向传播</h3>
+                    <p class="lab-tip">调整输入与权重，观察多层网络各层激活值与计算过程</p>
+                    
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>输入 x₁: <span id="input1Value">0.5</span></label>
+                            <input type="range" id="input1Slider" min="-2" max="2" step="0.1" value="0.5">
+                        </div>
+                        <div class="control-group">
+                            <label>输入 x₂: <span id="input2Value">0.3</span></label>
+                            <input type="range" id="input2Slider" min="-2" max="2" step="0.1" value="0.3">
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层激活函数</label>
+                            <select id="nnActivation">
+                                <option value="sigmoid">Sigmoid</option>
+                                <option value="tanh" selected>Tanh</option>
+                                <option value="relu">ReLU</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层1神经元数: <span id="nnNeuronCountValue">4</span></label>
+                            <input type="range" id="nnNeuronCount" min="2" max="6" step="1" value="4">
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层2神经元数: <span id="nnNeuronCount2Value">4</span></label>
+                            <input type="range" id="nnNeuronCount2" min="2" max="6" step="1" value="4">
+                        </div>
+                        <div class="control-group">
+                            <label>偏置初始化范围: <span id="nnBiasRangeValue">0.5</span></label>
+                            <input type="range" id="nnBiasRange" min="0" max="2" step="0.1" value="0.5">
+                        </div>
+                        <div class="control-group">
+                            <button id="nnResetBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">随机权重</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">隐藏层1激活值 $\mathbf{h}^{(1)}$</span>
+                            <span class="info-value" id="nnHiddenActivations" style="font-size: 11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">隐藏层1预激活 $\mathbf{z}^{(1)}$</span>
+                            <span class="info-value" id="nnHiddenPreActivations" style="font-size: 11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">隐藏层2激活值 $\mathbf{h}^{(2)}$</span>
+                            <span class="info-value" id="nnHidden2Activations" style="font-size: 11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">隐藏层2预激活 $\mathbf{z}^{(2)}$</span>
+                            <span class="info-value" id="nnHidden2PreActivations" style="font-size: 11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">输出层 $\mathbf{o}$</span>
+                            <span class="info-value" id="nnOutput">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">预测类别</span>
+                            <span class="info-value" id="nnPrediction">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper" style="position:relative;">
+                    <canvas id="nnCanvas" width="520" height="440"></canvas>
+                    <div id="nnFormulaOverlay" style="position:absolute; top:6px; left:0; right:0; text-align:center; color:rgba(139,92,246,0.7); font-size:13px; pointer-events:none;"></div>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验四 · 前向传播</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>前向传播是数据在网络中逐层流动的计算过程：每一层先做<strong>线性变换</strong>（权重矩阵乘加），再过<strong>非线性激活</strong>，最终得到预测输出。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\mathbf{z}^{(l)} = W^{(l)}\mathbf{h}^{(l-1)} + \mathbf{b}^{(l)}$<br>$\mathbf{h}^{(l)} = \varphi(\mathbf{z}^{(l)})$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>维数链规则：$W^{(l)}$ 的形状是 (本层神经元数 × 上层神经元数)</li><li>中间量 z（预激活）与 h（激活值）在反向传播中都要复用，需缓存</li><li>拖动输入滑块，观察每层激活值如何"接力"变化</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>隐藏层 4 个神经元、输入 2 维时，第一层有多少个权重+偏置参数？改成 6 个神经元呢？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验5: 反向传播可视化 ========== -->
+            <div class="lab-demo" id="lab-bp">
+                <div class="lab-panel">
+                    <h3>实验五：反向传播梯度流动</h3>
+                    <p class="lab-tip">双层神经网络：x → h₁ (σ) → y (σ) → Loss，观察梯度从输出逐层反向传播到输入层参数的完整链式法则</p>
+                    
+                    <div class="lab-controls" style="display:grid; grid-template-columns: 1fr 1fr; gap:6px 16px;">
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="bpLrValue">0.5</span></label>
+                            <input type="range" id="bpLrSlider" min="0.01" max="2" step="0.01" value="0.5">
+                        </div>
+                        <div class="control-group">
+                            <label>目标 $y^*$: <span id="bpTargetValue">1.0</span></label>
+                            <input type="range" id="bpTargetSlider" min="0" max="1" step="0.05" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>权重 $w_1$ (x→h₁): <span id="bpW1Value">1.5</span></label>
+                            <input type="range" id="bpW1Slider" min="-3" max="3" step="0.05" value="1.5">
+                        </div>
+                        <div class="control-group">
+                            <label>偏置 $b_1$: <span id="bpB1Value">0.0</span></label>
+                            <input type="range" id="bpB1Slider" min="-2" max="2" step="0.05" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>权重 $w_2$ (h₁→y): <span id="bpW2Value">2.0</span></label>
+                            <input type="range" id="bpW2Slider" min="-3" max="3" step="0.05" value="2.0">
+                        </div>
+                        <div class="control-group">
+                            <label>偏置 $b_2$: <span id="bpB2Value">0.0</span></label>
+                            <input type="range" id="bpB2Slider" min="-2" max="2" step="0.05" value="0">
+                        </div>
+                        <div class="control-group" style="grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+                            <button id="bpTrainBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练一步</button>
+                            <button id="bpTrain50Btn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练50步</button>
+                            <button id="bpResetBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info" style="grid-template-columns: 1fr 1fr; font-size:11.5px;">
+                        <div class="info-item">
+                            <span class="info-label">当前损失 $L$</span>
+                            <span class="info-value" id="bpLossValue">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">输出梯度 $\partial L/\partial y$</span>
+                            <span class="info-value" id="bpGradYValue">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">输出层 $\partial L/\partial w_2\;/\;\partial L/\partial b_2$</span>
+                            <span class="info-value" id="bpGradOutValue" style="font-size:10.5px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">隐藏层 $\partial L/\partial w_1\;/\;\partial L/\partial b_1$</span>
+                            <span class="info-value" id="bpGradHidValue" style="font-size:10.5px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">参数 $(w_1, b_1, w_2, b_2)$</span>
+                            <span class="info-value" id="bpWeightValue" style="font-size:10.5px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">训练步数</span>
+                            <span class="info-value" id="bpStepCount">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="bpCanvas" width="840" height="640"></canvas>
+                </div>
+                <div id="bpFormulaOverlay" style="margin-top:12px; padding:14px 18px; border-radius:12px; background:rgba(15,23,42,0.6); border:1px solid rgba(255,255,255,0.06); color:#94a3b8; font-size:12px; line-height:1.7; text-align:center;"></div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验五 · 反向传播</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>反向传播利用<strong>链式法则</strong>高效计算损失对全部参数的梯度：先前向计算并缓存中间量，再从输出层向输入层逐层回传误差信号。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\dfrac{\partial L}{\partial w^{(l)}} = \dfrac{\partial L}{\partial \mathbf{h}^{(L)}} \cdot \prod_{k=l+1}^{L} W^{(k)}\varphi' \cdot \dfrac{\partial \mathbf{z}^{(l)}}{\partial w^{(l)}}$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>梯度 = 上游梯度 × 本层权重 × 本层激活函数导数（链式连乘）</li><li>点击"训练一步"，对照图中箭头读出每一段偏导数的数值</li><li>Sigmoid 导数最大仅 0.25，两层相乘就衰减到 1/16 —— 梯度消失的根源</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>把 w₂ 从 2.0 调到 0.5，观察 ∂L/∂w₁ 如何变化？这揭示了权重大小与梯度衰减的关系。</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验6: CNN 卷积神经网络可视化 ========== -->
+            <div class="lab-demo" id="lab-cnn">
+                <div class="lab-panel">
+                    <h3>实验六：CNN 卷积神经网络可视化</h3>
+                    <p class="lab-tip">选择卷积核与输入图像，观察卷积滑动窗口与特征图提取过程</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>输入图像</label>
+                            <select id="cnnInputSelect">
+                                <option value="checker">棋盘格</option>
+                                <option value="gradient">水平渐变</option>
+                                <option value="digit5">数字 "5"</option>
+                                <option value="cross">十字图案</option>
+                                <option value="diag">对角条纹</option>
+                                <option value="random">随机噪声</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>卷积核类型</label>
+                            <select id="cnnKernelSelect">
+                                <option value="edge">边缘检测 (Laplacian)</option>
+                                <option value="sobelX">Sobel-X (垂直边缘)</option>
+                                <option value="sobelY">Sobel-Y (水平边缘)</option>
+                                <option value="blur" selected>高斯模糊</option>
+                                <option value="sharpen">锐化</option>
+                                <option value="emboss">浮雕</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>卷积核大小 K×K</label>
+                            <select id="cnnKernelSize">
+                                <option value="3">3 × 3</option>
+                                <option value="5">5 × 5</option>
+                                <option value="7">7 × 7</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>步长 stride: <span id="cnnStrideValue">1</span></label>
+                            <input type="range" id="cnnStrideSlider" min="1" max="3" step="1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>Padding: <select id="cnnPadSelect" style="display:inline-block; width:auto; padding:6px 10px;">
+                                <option value="0">valid (无填充)</option>
+                                <option value="1" selected>same (填充 1 圈)</option>
+                            </select></label>
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="cnnPlayBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">▶ 动画扫描</button>
+                            <button id="cnnResetBtn" type="button" style="padding:6px 16px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label" id="cnnKernelLabel">卷积核 (3×3)</span>
+                            <span class="info-value" id="cnnKernelDisplay" style="font-size:11.5px; line-height:1.6;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">输出特征图尺寸</span>
+                            <span class="info-value" id="cnnOutputSize">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">卷积运算</span>
+                            <span class="info-value" id="cnnFormula" style="font-size:11.5px;">$(I * K)_{i,\, j} = \sum_m \sum_n I_{i+m,\, j+n} \cdot K_{m,\, n}$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="cnnCanvas" width="860" height="480"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验六 · 卷积神经网络</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>CNN 用<strong>局部感受野</strong>和<strong>权值共享</strong>两大先验处理图像：一个小卷积核滑过整幅图提取局部特征（边缘/纹理），参数量远小于全连接。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$(I * K)_{i,j} = \sum_m \sum_n I_{i+m,\,j+n}\cdot K_{m,n}$<br>输出尺寸 $= \left\lfloor \dfrac{N + 2p - K}{s} \right\rfloor + 1$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>卷积核就是可学习的"特征探测器"，同一核在整图共享</li><li>stride 减小采样密度、padding 保持尺寸——试着改变并观察输出尺寸公式</li><li>点击"动画扫描"可逐格观察卷积窗口滑动与对应输出值的计算</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>两层 3×3 卷积的感受野与一层 5×5 相同，为什么深度网络偏爱前者（提示：参数量、非线性层数）？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验7: RNN/LSTM 序列建模 ========== -->
+            <div class="lab-demo" id="lab-rnn">
+                <div class="lab-panel">
+                    <h3>实验七：RNN / LSTM 序列建模</h3>
+                    <p class="lab-tip">时间步展开 + 门控机制可视化，训练网络预测正弦波形</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>网络类型</label>
+                            <select id="rnnTypeSelect">
+                                <option value="rnn">Vanilla RNN</option>
+                                <option value="lstm" selected>LSTM</option>
+                                <option value="gru">GRU</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层大小: <span id="rnnHiddenValue">8</span></label>
+                            <input type="range" id="rnnHiddenSlider" min="4" max="20" step="1" value="8">
+                        </div>
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="rnnLrValue">0.05</span></label>
+                            <input type="range" id="rnnLrSlider" min="0.005" max="0.3" step="0.005" value="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>序列长度 (时间步): <span id="rnnSeqValue">20</span></label>
+                            <input type="range" id="rnnSeqSlider" min="10" max="40" step="2" value="20">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="rnnTrainBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练 1 步</button>
+                            <button id="rnnTrain50Btn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#ec4899,#f43f5e); color:white; border:none; cursor:pointer;">训练 50 步</button>
+                            <button id="rnnAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 持续训练</button>
+                            <button id="rnnResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">训练步数 / Loss</span>
+                            <span class="info-value" id="rnnStats">0  /  --</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">前向公式</span>
+                            <span class="info-value" id="rnnFormula" style="font-size:11.5px;">$h_t = \tanh(W_{hh}\, h_{t-1} + W_{xh}\, x_t + b_h)$</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">门控状态 (LSTM)</span>
+                            <span class="info-value" id="rnnGates" style="font-size:11px;">$f,\, i,\, o,\, \tilde{c}$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="rnnCanvas" width="840" height="500"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验七 · 循环神经网络</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>RNN 引入<strong>隐状态</strong>在时间步之间传递信息，天然适合序列数据；LSTM/GRU 用门控机制控制"记忆"与"遗忘"，缓解长程依赖的学习困难。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>RNN: $\mathbf{h}_t = \tanh(W_{hh}\mathbf{h}_{t-1} + W_{xh}x_t + b)$<br>LSTM: $\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} + \mathbf{i}_t \odot \tilde{\mathbf{c}}_t$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>展开图显示：RNN 沿时间共享同一组权重，用 BPTT 训练</li><li>遗忘门 f、输入门 i、输出门 o 的条形图展示了各维度的记忆读写强度</li><li>切换 Vanilla RNN 与 LSTM 训练同一正弦预测任务，对比收敛速度</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>Vanilla RNN 的梯度含 $W_{hh}^{T}$ 的连乘，为什么这导致它难以学习间隔 20 步以上的依赖？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验8: 注意力机制与 Transformer ========== -->
+            <div class="lab-demo" id="lab-attn">
+                <div class="lab-panel">
+                    <h3>实验八：注意力机制与 Transformer</h3>
+                    <p class="lab-tip">Self-Attention 的 QKV 运算 + 注意力热力图 + 多头并行 + 位置编码</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>输入句子</label>
+                            <select id="attnInputSelect">
+                                <option value="cat">The cat sat on the mat</option>
+                                <option value="bird">A bird flies in the sky</option>
+                                <option value="fish">Fish swim in deep water</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>注意力头数: <span id="attnHeadValue">4</span></label>
+                            <input type="range" id="attnHeadSlider" min="1" max="8" step="1" value="4">
+                        </div>
+                        <div class="control-group">
+                            <label>温度缩放 $\sqrt{d_k}$: <span id="attnScaleValue">2.0</span></label>
+                            <input type="range" id="attnScaleSlider" min="0.5" max="4" step="0.5" value="2">
+                        </div>
+                        <div class="control-group">
+                            <label>关注词位置 (query)</label>
+                            <select id="attnQuerySelect">
+                                <option value="0">词 0</option>
+                                <option value="1">词 1</option>
+                                <option value="2">词 2</option>
+                                <option value="3">词 3</option>
+                                <option value="4">词 4</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label><input type="checkbox" id="attnShowPE" checked> 显示位置编码波形</label>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">Attention 公式</span>
+                            <span class="info-value" id="attnFormula" style="font-size:11.5px;">$\text{Attn}(Q,\, K,\, V) = \text{softmax}\!\left(\frac{Q\, K^T}{\sqrt{d_k}}\right) V$</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">序列长度 / 头数</span>
+                            <span class="info-value" id="attnStats">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">最大注意力权重</span>
+                            <span class="info-value" id="attnMax">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="attnCanvas" width="840" height="860"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验八 · 注意力机制</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>Self-Attention 让序列中每个位置直接"查询"所有其他位置：Q 与 K 相似度经 Softmax 得到注意力权重，再对 V 加权求和——一步建立全局依赖，且可完全并行。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\mathrm{Attn}(Q,K,V) = \mathrm{softmax}\!\left(\dfrac{QK^T}{\sqrt{d_k}}\right)V$<br>多头: $\mathrm{MultiHead} = \mathrm{Concat}(\text{head}_1,\dots,\text{head}_h)W^O$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>热力图行=Query 词，列=Key 词，颜色越亮注意力权重越大</li><li>除以 $\sqrt{d_k}$ 防止点积过大导致 Softmax 饱和、梯度消失</li><li>多头让不同子空间学习不同关系（句法/语义/位置）</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>选择不同的 Query 词（如"sat"），它的注意力集中在哪些词上？把缩放系数从 2 调到 0.5，热力图会发生什么？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验9: Dropout / L2 正则化对比 ========== -->
+            <div class="lab-demo" id="lab-reg">
+                <div class="lab-panel">
+                    <h3>实验九：Dropout / L2 正则化对比</h3>
+                    <p class="lab-tip">三种网络并行训练同一数据集，对比过拟合程度与决策边界</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>Dropout 率 $p$: <span id="regDropValue">0.3</span></label>
+                            <input type="range" id="regDropSlider" min="0" max="0.8" step="0.05" value="0.3">
+                        </div>
+                        <div class="control-group">
+                            <label>L2 正则系数 $\lambda$: <span id="regL2Value">0.01</span></label>
+                            <input type="range" id="regL2Slider" min="0" max="0.2" step="0.005" value="0.01">
+                        </div>
+                        <div class="control-group">
+                            <label>每轮训练 epoch: <span id="regEpochValue">20</span></label>
+                            <input type="range" id="regEpochSlider" min="5" max="100" step="5" value="20">
+                        </div>
+                        <div class="control-group">
+                            <label>数据集</label>
+                            <select id="regDataSelect">
+                                <option value="moon" selected>月牙形 (非线性)</option>
+                                <option value="circle">同心圆</option>
+                                <option value="xor">XOR</option>
+                            </select>
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="regTrainBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练</button>
+                            <button id="regAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 持续训练</button>
+                            <button id="regResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">无正则 (训练/验证 acc)</span>
+                            <span class="info-value" id="regNoneStat" style="font-size:11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Dropout (训练/验证 acc)</span>
+                            <span class="info-value" id="regDropStat" style="font-size:11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">L2 (训练/验证 acc)</span>
+                            <span class="info-value" id="regL2Stat" style="font-size:11px;">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="regCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验九 · 正则化</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>过拟合 = 训练集表现好、验证集表现差（决策边界扭曲地贴合噪声）。Dropout 随机失活神经元强迫冗余表达；L2 约束权重幅值使函数更平滑。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>L2: $L = L_{data} + \lambda \|W\|_2^2$<br>Dropout 训练时以概率 p 置零，推理时输出乘 $\dfrac{1}{1-p}$ 缩放</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>观察三个网络的 训练/验证准确率 gap：gap 大 = 过拟合</li><li>噪声大的数据集（XOR+噪声）上正则化收益最明显</li><li>Dropout 过大（>0.5）会欠拟合——正则强度是权衡</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>把 Dropout 率设为 0.8，训练准确率为什么大幅下降？这和欠拟合有什么联系？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验10: Softmax 多分类 ========== -->
+            <div class="lab-demo" id="lab-softmax">
+                <div class="lab-panel">
+                    <h3>实验十：Softmax 多分类器</h3>
+                    <p class="lab-tip">全连接网络对三维数据集做三分类，观察 Softmax 概率分布、交叉熵损失与决策区域</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>数据集</label>
+                            <select id="smDataSelect">
+                                <option value="blob3" selected>三簇高斯团</option>
+                                <option value="spiral3">三螺旋臂</option>
+                                <option value="rings3">三同心环</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层大小: <span id="smHiddenValue">16</span></label>
+                            <input type="range" id="smHiddenSlider" min="8" max="32" step="4" value="24">
+                        </div>
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="smLrValue">0.10</span></label>
+                            <input type="range" id="smLrSlider" min="0.01" max="0.5" step="0.01" value="0.1">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="smTrainBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练 50 步</button>
+                            <button id="smAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 持续训练</button>
+                            <button id="smResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">交叉熵损失 $L$</span>
+                            <span class="info-value" id="smLoss">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">训练 / 验证准确率</span>
+                            <span class="info-value" id="smAcc">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">测试点 Softmax 概率 $p_1, p_2, p_3$</span>
+                            <span class="info-value" id="smProbs" style="font-size:11.5px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">公式</span>
+                            <span class="info-value" style="font-size:11.5px;">$p_k = \frac{e^{z_k}}{\sum_j e^{z_j}}, \quad L = -\sum y_k \ln p_k$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="smCanvas" width="840" height="460"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十 · Softmax 多分类</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>Softmax 把实数 logits 压缩为合法概率分布（全正、和为 1），配合交叉熵损失构成多分类标准范式："最大 logit 对应最高概率"。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$p_k = \dfrac{e^{z_k}}{\sum_{j} e^{z_j}}$, $\quad L_{CE} = -\sum_k y_k \ln p_k$<br>梯度: $\dfrac{\partial L}{\partial z_k} = p_k - y_k$（极简形式）</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>点击"分步计算演示"逐步观察 logits → exp → 归一化 → 交叉熵的完整计算链</li><li>概率条形图实时显示测试点属于三类的置信度</li><li>交叉熵梯度恰好是 (预测−真值)，这正是它被广泛使用的原因之一</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>如果把温度参数引入 $p_k \propto e^{z_k/T}$，T 变大时概率分布会变"尖"还是变"平"？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验11: 梯度消失与爆炸 ========== -->
+            <div class="lab-demo" id="lab-vanish">
+                <div class="lab-panel">
+                    <h3>实验十一：梯度消失与梯度爆炸</h3>
+                    <p class="lab-tip">逐层扫描深网络中的梯度范数，观察激活函数与初始化对梯度流动的影响</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>激活函数</label>
+                            <select id="vdActSelect">
+                                <option value="sigmoid" selected>Sigmoid</option>
+                                <option value="tanh">Tanh</option>
+                                <option value="relu">ReLU</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>层数: <span id="vdDepthValue">20</span></label>
+                            <input type="range" id="vdDepthSlider" min="4" max="40" step="1" value="20">
+                        </div>
+                        <div class="control-group">
+                            <label>权重标准差 $\sigma_W$: <span id="vdStdValue">0.5</span></label>
+                            <input type="range" id="vdStdSlider" min="0.1" max="2.5" step="0.05" value="0.5">
+                        </div>
+                        <div class="control-group">
+                            <label>初始化方案</label>
+                            <select id="vdInitSelect">
+                                <option value="manual" selected>手动 (调节 σ)</option>
+                                <option value="xavier">Xavier (Glorot)</option>
+                                <option value="he">He (Kaiming)</option>
+                            </select>
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="vdResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重新初始化</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">输出层梯度范数 $\|\partial L/\partial z_L\|$</span>
+                            <span class="info-value" id="vdGradTop">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">第 1 层梯度范数 $\|\partial L/\partial z_1\|$</span>
+                            <span class="info-value" id="vdGradBottom">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">衰减比 (第1层 / 输出层)</span>
+                            <span class="info-value" id="vdRatio">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">诊断结论</span>
+                            <span class="info-value" id="vdDiag" style="font-size:11.5px;">--</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="vdCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十一 · 梯度消失与爆炸</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>反向传播是导数的连乘：每层乘一个激活导数（≤1）和一个权重。因子整体 <1 则梯度指数级衰减（消失），>1 则指数级放大（爆炸）。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\left\|\dfrac{\partial L}{\partial \mathbf{z}^{(l)}}\right\| \approx \prod_{k=l+1}^{L} \|W^{(k)}\|\cdot\|\varphi'\|$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>切到 Sigmoid 看"悬崖式"衰减，切到 ReLU 看健康梯度</li><li>Xavier 初始化保持每层方差不变（配合 tanh），He 初始化配合 ReLU</li><li>点击"播放梯度流动画"观看梯度粒子逐层回传的衰减过程</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>把 σ_W 从 0.5 慢慢调大到 2.0，曲线何时从"消失"翻转为"爆炸"？临界值与层数有什么关系？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验12: 优化器对比大赛 ========== -->
+            <div class="lab-demo" id="lab-optim">
+                <div class="lab-panel">
+                    <h3>实验十二：优化器对比大赛</h3>
+                    <p class="lab-tip">SGD、Momentum、RMSProp、Adam 四种优化器从同一初点出发，在复杂损失曲面上赛跑</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="opLrValue">0.05</span></label>
+                            <input type="range" id="opLrSlider" min="0.005" max="0.2" step="0.005" value="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>损失曲面</label>
+                            <select id="opLossSelect">
+                                <option value="rosenbrock" selected>Rosenbrock 山谷</option>
+                                <option value="saddle">鞍面 (Saddle)</option>
+                                <option value="multimodal">多峰曲面</option>
+                            </select>
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="opStepBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">单步</button>
+                            <button id="opRunBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 竞速 200 步</button>
+                            <button id="opResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">当前位置损失</span>
+                            <span class="info-value" id="opStats" style="font-size:11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">已训练步数</span>
+                            <span class="info-value" id="opStepCount">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">更新公式</span>
+                            <span class="info-value" style="font-size:11px;">Adam: $m \leftarrow \beta_1 m + (1{-}\beta_1) g$, $v \leftarrow \beta_2 v + (1{-}\beta_2) g^2$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="opCanvas" width="840" height="480"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十二 · 优化器对比</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>SGD 每步沿当前梯度走；Momentum 累积历史梯度形成"惯性"；RMSProp 用梯度平方的滑动平均自适应缩放各维步长；Adam 二者兼得并做偏差修正，是最常用的默认选择。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>Adam: $m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t$, $\;v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2$<br>$\theta_t \leftarrow \theta_{t-1} - \eta\,\hat{m}_t / (\sqrt{\hat{v}_t} + \epsilon)$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>Rosenbrock 山谷：梯度几乎垂直于谷底方向，SGD 震荡最明显</li><li>观察轨迹上箭头 = 各优化器当前的负梯度方向</li><li>自适应优化器前期快，但 SGD+Momentum 的最终泛化常更好</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>为什么 RMSProp/Adam 在"峡谷"里能走得更直？（提示：它们对大梯度维缩小步长、小梯度维放大步长）</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验13: 学习率调度器 ========== -->
+            <div class="lab-demo" id="lab-scheduler">
+                <div class="lab-panel">
+                    <h3>实验十三：学习率调度器</h3>
+                    <p class="lab-tip">同一网络用不同调度策略训练，观察学习率曲线与损失收敛速度的差异</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>调度策略 (按住 Ctrl 可多选)</label>
+                            <select id="schSelect" multiple size="4" style="height:auto; min-height:96px;">
+                                <option value="constant" selected>常数 Constant</option>
+                                <option value="step" selected>阶梯 StepLR</option>
+                                <option value="cosine" selected>余弦 Cosine</option>
+                                <option value="exp" selected>指数衰减 Exp</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>初始学习率 $\eta_0$: <span id="schLr0Value">0.30</span></label>
+                            <input type="range" id="schLr0Slider" min="0.05" max="1.0" step="0.05" value="0.3">
+                        </div>
+                        <div class="control-group">
+                            <label>每轮训练步数: <span id="schEpochValue">10</span></label>
+                            <input type="range" id="schEpochSlider" min="2" max="30" step="2" value="10">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="schTrainBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">训练 1 轮</button>
+                            <button id="schAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 持续训练</button>
+                            <button id="schResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">当前轮次 / 各策略损失</span>
+                            <span class="info-value" id="schStats" style="font-size:11px;">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">结论提示</span>
+                            <span class="info-value" style="font-size:11px;">大学习率先探索、小学习率精收敛；调度器能加速收敛并抑制后期振荡</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="schCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十三 · 学习率调度</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>固定学习率面临两难：大了无法精收敛，小了前期太慢。调度器让学习率随训练<strong>先大后小</strong>：前期大步探索，后期小步精修，兼得速度与精度。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>Cosine: $\eta_t = \eta_{min} + \dfrac{1}{2}(\eta_0 - \eta_{min})\left(1 + \cos\dfrac{t\pi}{T}\right)$<br>Step: 每 $S$ 轮 $\eta \leftarrow \eta \times \gamma$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>对比四条损失曲线：Constant 常在末期震荡</li><li>Cosine 平滑退火是现代深度学习默认选择（配合 warmup）</li><li>指数衰减最激进，后期可能过早"冻结"</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>为什么几乎所有人都给 Cosine 加 warmup（前几个 epoch 线性升温）？大初始学习率在训练初期有什么风险？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验14: 神经网络 Playground ========== -->
+            <div class="lab-demo" id="lab-playground">
+                <div class="lab-panel">
+                    <h3>实验十四：神经网络 Playground</h3>
+                    <p class="lab-tip">自由搭建网络（1~2 隐藏层），实时训练并观察决策边界与损失曲线</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>数据集</label>
+                            <select id="pgDataSelect">
+                                <option value="circle" selected>同心圆</option>
+                                <option value="xor">XOR</option>
+                                <option value="spiral">螺旋</option>
+                                <option value="moon">双月牙</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层 1 神经元: <span id="pgH1Value">6</span></label>
+                            <input type="range" id="pgH1Slider" min="1" max="8" step="1" value="6">
+                        </div>
+                        <div class="control-group">
+                            <label>隐藏层 2 神经元: <span id="pgH2Value">0</span> (0 = 无)</label>
+                            <input type="range" id="pgH2Slider" min="0" max="6" step="1" value="0">
+                        </div>
+                        <div class="control-group">
+                            <label>激活函数</label>
+                            <select id="pgActSelect">
+                                <option value="tanh" selected>Tanh</option>
+                                <option value="relu">ReLU</option>
+                                <option value="sigmoid">Sigmoid</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="pgLrValue">0.10</span></label>
+                            <input type="range" id="pgLrSlider" min="0.01" max="1.0" step="0.01" value="0.1">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="pgAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 开始训练</button>
+                            <button id="pgStepBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">单步</button>
+                            <button id="pgResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">训练步数 / 损失</span>
+                            <span class="info-value" id="pgStats">0 / --</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">测试准确率</span>
+                            <span class="info-value" id="pgAcc">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">网络结构</span>
+                            <span class="info-value" id="pgArch" style="font-size:11.5px;">2 → 6 → 1</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="pgCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十四 · 神经网络 Playground</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>万能近似定理：单隐层足够宽即可近似任意连续函数，但<strong>更深的网络用更少神经元</strong>达到同样效果——深度 = 层级化特征复用。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>二分类输出: $P(y{=}1|x) = \sigma\big(W^{(L)}\mathbf{h}^{(L-1)} + b\big)$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>鼠标悬停决策区域：十字线显示该点输入与网络给出的概率</li><li>XOR 用 2-3 个神经元即可；螺旋需要 ≥2 层（特征逐层组合）</li><li>把鼠标移到边界附近，观察网络结构图中隐层神经元的激活强度变化</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>只用 1 个隐藏层解决螺旋数据需要多少神经元？加第二层后呢？验证"深度更高效"。</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验15: 自编码器 ========== -->
+            <div class="lab-demo" id="lab-ae">
+                <div class="lab-panel">
+                    <h3>实验十五：自编码器与数据降维</h3>
+                    <p class="lab-tip">训练瓶颈自编码器，观察低维隐变量如何重构二维"瑞士卷"流形，以及去噪效果</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>瓶颈维度: <span id="aeBottleValue">1</span></label>
+                            <input type="range" id="aeBottleSlider" min="1" max="4" step="1" value="1">
+                        </div>
+                        <div class="control-group">
+                            <label>学习率 $\eta$: <span id="aeLrValue">0.05</span></label>
+                            <input type="range" id="aeLrSlider" min="0.005" max="0.3" step="0.005" value="0.05">
+                        </div>
+                        <div class="control-group">
+                            <label>输入噪声 $\sigma$: <span id="aeNoiseValue">0.00</span></label>
+                            <input type="range" id="aeNoiseSlider" min="0" max="0.4" step="0.02" value="0">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="aeAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 持续训练</button>
+                            <button id="aeResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">重构损失 (MSE)</span>
+                            <span class="info-value" id="aeLoss">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">训练步数</span>
+                            <span class="info-value" id="aeStep">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">网络结构与压缩率</span>
+                            <span class="info-value" id="aeRatio" style="font-size:11.5px;">2 → 1 → 2</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="aeCanvas" width="840" height="640"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十五 · 自编码器</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>自编码器 = 编码器（压缩）+ 解码器（重构），只以"输出=输入"为目标训练。瓶颈层迫使网络学习数据的<strong>本质低维结构（流形）</strong>。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>编码: $\mathbf{h} = \varphi(W_e \mathbf{x} + b_e)$<br>解码: $\hat{\mathbf{x}} = \varphi(W_d \mathbf{h} + b_d)$<br>损失: $L = \|\mathbf{x} - \hat{\mathbf{x}}\|^2$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>1 维瓶颈把 2D 瑞士卷压成一条线——信息被迫排序编码</li><li>加输入噪声（σ>0）训练 = 去噪自编码器，学到更鲁棒的表示</li><li>AE 不是生成模型：隐空间没有先验分布，随机采样解码可能无效</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>瑞士卷本身是 1 维流形，为什么 1 维瓶颈仍带来重构误差？（提示：流形的"折叠"）</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验16: GAN 对抗训练 ========== -->
+            <div class="lab-demo" id="lab-gan">
+                <div class="lab-panel">
+                    <h3>实验十六：GAN 对抗训练</h3>
+                    <p class="lab-tip">生成器与判别器在真实分布（双峰）上博弈，观察生成样本逐渐逼近真实分布</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>训练速度 (步/帧): <span id="ganSpeedValue">5</span></label>
+                            <input type="range" id="ganSpeedSlider" min="1" max="30" step="1" value="12">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="ganAutoBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; cursor:pointer;">▶ 开始对抗</button>
+                            <button id="ganResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">判别器损失 $L_D$ / 生成器损失 $L_G$</span>
+                            <span class="info-value" id="ganStats">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">生成分布宽度 (std)</span>
+                            <span class="info-value" id="ganStd">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">对抗原理</span>
+                            <span class="info-value" style="font-size:11px;">$\min_G \max_D \; \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1 - D(G(z)))]$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="ganCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十六 · GAN 对抗训练</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>GAN 是双人博弈：生成器 G 造假样本骗过判别器 D，判别器学习分辨真假。纳什均衡时 G 生成分布=真实分布，D 输出恒为 0.5（完全分不清）。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>$\min_G \max_D \; \mathbb{E}_{x\sim p_{data}}[\log D(x)] + \mathbb{E}_{z\sim p(z)}[\log(1 - D(G(z)))]$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>训练早期 D 压倒性获胜（L_D→0），G 学不到东西——观察双方损失此消彼长</li><li>粉色直方图逐渐贴合蓝色真实分布 = 生成质量提升</li><li>模式塌缩：G 只生成单一模式骗 D——本实验用方差正则缓解</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>理论上均衡时 L_D = ln2 ≈ 0.693。训练几千步后观察 L_D 是否在 0.693 附近波动？这说明什么？</p></div>
+    </div>
+</details>
+
+
+            <!-- ========== 实验17: 扩散模型 ========== -->
+            <div class="lab-demo" id="lab-diffusion">
+                <div class="lab-panel">
+                    <h3>实验十七：扩散模型去噪演示</h3>
+                    <p class="lab-tip">正向加噪 $q(x_t|x_{t-1})$ 与反向去噪 $p_\theta(x_{t-1}|x_t)$，观察样本从纯噪声中"浮现"</p>
+
+                    <div class="lab-controls">
+                        <div class="control-group">
+                            <label>扩散步数 $T$: <span id="dfTValue">30</span></label>
+                            <input type="range" id="dfTSlider" min="10" max="60" step="5" value="30">
+                        </div>
+                        <div class="control-group" style="display:flex; gap:8px;">
+                            <button id="dfFwdBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:white; border:none; cursor:pointer;">▶ 正向加噪</button>
+                            <button id="dfRevBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:linear-gradient(135deg,#ec4899,#f43f5e); color:white; border:none; cursor:pointer;">▶ 反向去噪</button>
+                            <button id="dfResetBtn" type="button" style="padding:6px 14px; font-size:13px; border-radius:8px; background:rgba(255,255,255,0.05); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); cursor:pointer;">重置</button>
+                        </div>
+                    </div>
+
+                    <div class="lab-info">
+                        <div class="info-item">
+                            <span class="info-label">当前时间步 $t$</span>
+                            <span class="info-value" id="dfStep">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">信号保留系数 $\bar{\alpha}_t$</span>
+                            <span class="info-value" id="dfAlpha">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">前向公式</span>
+                            <span class="info-value" style="font-size:11px;">$q(x_t) = \sqrt{\bar{\alpha}_t}\, x_0 + \sqrt{1-\bar{\alpha}_t}\, \epsilon$</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="lab-canvas-wrapper">
+                    <canvas id="dfCanvas" width="840" height="440"></canvas>
+                </div>
+            </div>
+<details class="lab-lesson">
+    <summary>📖 本实验知识点 · 实验十七 · 扩散模型</summary>
+    <div class="lesson-body">
+        <div class="lesson-block"><h5>🎯 核心概念</h5><p>扩散模型（Stable Diffusion / DDPM 的核心）分两阶段：<strong>前向</strong>按 β 调度逐步加噪直至纯噪声（有闭式解）；<strong>反向</strong>训练网络逐步去噪，最终从噪声"生成"数据。</p></div>
+        <div class="lesson-block"><h5>📐 关键公式</h5><p>前向闭式: $q(x_t|x_0) = \mathcal{N}\big(\sqrt{\bar\alpha_t}\,x_0,\; (1-\bar\alpha_t)I\big)$<br>反向学习: $\epsilon_\theta(x_t, t) \approx \epsilon$, $\;\bar\alpha_t = \prod_{s\le t}(1-\beta_s)$</p></div>
+        <div class="lesson-block"><h5>💡 教学要点</h5><ul><li>点击"正向加噪"：数据结构逐渐溶解为高斯噪声</li><li>再点"反向去噪"：样本从噪声中逐步"浮现"回目标分布</li><li>右侧快照条展示 x₀→x_T 的完整轨迹；β 调度决定噪声增长速度</li></ul></div>
+        <div class="lesson-block lesson-q"><h5>🔽 课堂思考</h5><p>前向过程每一步只加一点噪声而不是一步到位，这为什么让反向去噪网络更容易学习？</p></div>
+    </div>
+</details>
+
+        </div>
+    </section>
+
+    <section id="tools" class="tools-section">
+        <div class="section-container">
+            <h2 class="section-title">课堂智慧工具</h2>
+            <p class="section-subtitle">为每一节课设计的实用教学模块 · 点名提问测验计时分组一站搞定 · 数据保存在本机浏览器</p>
+
+            <div class="tools-tabs">
+                <button class="tool-tab active" data-tool="rollcall">🙋 智能点名</button>
+                <button class="tool-tab" data-tool="askq">🎲 随机提问</button>
+                <button class="tool-tab" data-tool="quiz">📝 随堂测验</button>
+                <button class="tool-tab" data-tool="flash">🃏 概念闪卡</button>
+                <button class="tool-tab" data-tool="timer">⏱ 课堂计时</button>
+                <button class="tool-tab" data-tool="group">👥 随机分组</button>
+                <button class="tool-tab" data-tool="live">📲 扫码签到·实时答题</button>
+                <button class="tool-tab" data-tool="stats">📊 使用统计</button>
+                <button class="tool-tab" data-tool="notes">📒 学习笔记</button>
+            </div>
+
+            <!-- ========== 智能点名 ========== -->
+            <div class="tool-panel active" id="tool-rollcall">
+                <div class="tool-grid tool-grid-3">
+                    <div class="tool-card">
+                        <h4>📋 名单管理</h4>
+                        <input type="text" id="rcClassName" class="tool-input" placeholder="班级名称" value="示例班级">
+                        <textarea id="rcRoster" class="tool-textarea" rows="10" placeholder="每行一个学生姓名"></textarea>
+                        <div class="tool-row">
+                            <button id="rcSave" class="tool-btn primary">保存名单</button>
+                            <span class="tool-hint" id="rcCount"></span>
+                        </div>
+                        <label class="tool-check"><input type="checkbox" id="rcNoRepeat" checked> 不重复点名（抽完全员后自动重新开始）</label>
+                        <div class="tool-row">
+                            <button id="rcLoadSample" class="tool-btn ghost">载入示例名单</button>
+                            <button id="rcResetHist" class="tool-btn ghost">清空记录</button>
+                        </div>
+                    </div>
+                    <div class="tool-card rc-stage">
+                        <h4>🎯 点名抽奖</h4>
+                        <div class="rc-slot" id="rcSlot">准备就绪</div>
+                        <button id="rcStart" class="tool-btn primary big">▶ 开始点名</button>
+                        <div class="rc-result" id="rcResult"></div>
+                        <div class="tool-hint">第二次点击可立即停止滚动</div>
+                    </div>
+                    <div class="tool-card">
+                        <h4>📜 点名记录</h4>
+                        <ul class="rc-history" id="rcHistory"></ul>
+                        <div class="tool-hint" id="rcStats"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 随机提问 ========== -->
+            <div class="tool-panel" id="tool-askq">
+                <div class="tool-grid tool-grid-2">
+                    <div class="tool-card">
+                        <h4>🎲 提问设置</h4>
+                        <label class="tool-label">章节范围</label>
+                        <select id="aqChapter" class="tool-input">
+                            <option value="0">全部章节</option>
+                            <option value="1">第1章 · 神经网络基础</option>
+                            <option value="2">第2章 · 前馈神经网络</option>
+                            <option value="3">第3章 · 优化与正则化</option>
+                            <option value="4">第4章 · 卷积神经网络</option>
+                            <option value="5">第5章 · 循环神经网络</option>
+                            <option value="6">第6章 · Transformer与注意力</option>
+                            <option value="7">第7章 · 生成式模型</option>
+                            <option value="8">第8章 · 深度学习应用实践</option>
+                        </select>
+                        <label class="tool-check"><input type="checkbox" id="aqLinkRoll" checked> 联动点名名单，同时随机抽一名学生回答</label>
+                        <button id="aqDraw" class="tool-btn primary big">🎲 抽取问题</button>
+                        <button id="aqAnother" class="tool-btn ghost">换一个问题</button>
+                        <div class="tool-hint" id="aqStats"></div>
+                    </div>
+                    <div class="tool-card aq-card">
+                        <div class="aq-badges"><span class="aq-chip" id="aqChapterTag" style="display:none"></span><span class="aq-chip student" id="aqStudentBadge" style="display:none"></span></div>
+                        <div class="aq-question" id="aqQuestion">点击「抽取问题」开始课堂提问</div>
+                        <div class="aq-actions">
+                            <button id="aqGood" class="tool-btn small success">✓ 回答优秀</button>
+                            <button id="aqBad" class="tool-btn small warn">✗ 需再练习</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 随堂测验 ========== -->
+            <div class="tool-panel" id="tool-quiz">
+                <div class="tool-card quiz-setup" id="quizSetup">
+                    <h4>📝 测验设置</h4>
+                    <div class="tool-row wrap">
+                        <div><label class="tool-label">章节</label>
+                            <select id="qzChapter" class="tool-input">
+                                <option value="0">全部章节</option>
+                                <option value="1">第1章 神经网络基础</option>
+                                <option value="2">第2章 前馈神经网络</option>
+                                <option value="3">第3章 优化与正则化</option>
+                                <option value="4">第4章 卷积神经网络</option>
+                                <option value="5">第5章 循环神经网络</option>
+                                <option value="6">第6章 Transformer</option>
+                                <option value="7">第7章 生成式模型</option>
+                            </select></div>
+                        <div><label class="tool-label">题目数量</label>
+                            <select id="qzCount" class="tool-input">
+                                <option value="5">5 题</option>
+                                <option value="10" selected>10 题</option>
+                                <option value="99">全部</option>
+                            </select></div>
+                        <div><label class="tool-label">每题限时</label>
+                            <select id="qzTime" class="tool-input">
+                                <option value="0">不限时</option>
+                                <option value="30">30 秒</option>
+                                <option value="60" selected>60 秒</option>
+                            </select></div>
+                    </div>
+                    <button id="qzStart" class="tool-btn primary big">开始测验</button>
+                    <div class="tool-hint" id="qzBest"></div>
+                </div>
+                <div class="tool-card quiz-run" id="quizRun" style="display:none">
+                    <div class="quiz-head">
+                        <span id="qzProgress"></span>
+                        <span id="qzTimer"></span>
+                    </div>
+                    <div class="quiz-bar"><div class="quiz-bar-fill" id="qzBarFill"></div></div>
+                    <div class="quiz-question" id="qzQuestion"></div>
+                    <div class="quiz-options" id="qzOptions"></div>
+                    <div class="quiz-explain" id="qzExplain"></div>
+                    <button id="qzNext" class="tool-btn primary" style="display:none">下一题 →</button>
+                </div>
+                <div class="tool-card quiz-result" id="quizResult" style="display:none">
+                    <h4>测验完成</h4>
+                    <div class="quiz-score" id="qzScore"></div>
+                    <div class="quiz-review" id="qzReview"></div>
+                    <button id="qzRestart" class="tool-btn primary">再测一次</button>
+                </div>
+            </div>
+
+            <!-- ========== 概念闪卡 ========== -->
+            <div class="tool-panel" id="tool-flash">
+                <div class="tool-card flash-stage">
+                    <div class="tool-row" style="justify-content:center">
+                        <select id="flChapter" class="tool-input slim">
+                            <option value="0">全部章节</option>
+                            <option value="1">第1章</option><option value="2">第2章</option>
+                            <option value="3">第3章</option><option value="4">第4章</option>
+                            <option value="5">第5章</option><option value="6">第6章</option>
+                            <option value="7">第7章</option>
+                        </select>
+                        <button id="flShuffle" class="tool-btn ghost">🔀 洗牌</button>
+                        <span class="tool-hint" id="flCounter"></span>
+                    </div>
+                    <div class="flash-wrap">
+                        <div class="flash-card" id="flashCard">
+                            <div class="flash-face flash-front" id="flashFront"></div>
+                            <div class="flash-face flash-back" id="flashBack"></div>
+                        </div>
+                    </div>
+                    <div class="tool-hint">点击卡片翻面查看释义</div>
+                    <div class="tool-row" style="justify-content:center">
+                        <button id="flPrev" class="tool-btn ghost">← 上一个</button>
+                        <button id="flKnow" class="tool-btn small success">😊 认识</button>
+                        <button id="flUnknow" class="tool-btn small warn">🤔 不认识</button>
+                        <button id="flNext" class="tool-btn ghost">下一个 →</button>
+                    </div>
+                    <div class="tool-hint" id="flStats"></div>
+                </div>
+            </div>
+
+            <!-- ========== 课堂计时 ========== -->
+            <div class="tool-panel" id="tool-timer">
+                <div class="tool-card timer-stage">
+                    <div class="timer-ring" id="timerRing">
+                        <div class="timer-inner">
+                            <div class="timer-time" id="timerTime">05:00</div>
+                            <div class="timer-sub" id="timerSub">练习计时</div>
+                        </div>
+                    </div>
+                    <div class="tool-row" style="justify-content:center">
+                        <button class="tool-btn ghost timer-preset" data-min="1">1 分钟</button>
+                        <button class="tool-btn ghost timer-preset" data-min="3">3 分钟</button>
+                        <button class="tool-btn ghost timer-preset" data-min="5">5 分钟</button>
+                        <button class="tool-btn ghost timer-preset" data-min="10">10 分钟</button>
+                        <input type="number" id="timerCustom" class="tool-input slim-num" min="1" max="90" placeholder="自定义">
+                        <button id="timerSet" class="tool-btn ghost">设定</button>
+                    </div>
+                    <div class="tool-row" style="justify-content:center">
+                        <button id="timerStart" class="tool-btn primary big">▶ 开始</button>
+                        <button id="timerReset" class="tool-btn ghost">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 随机分组 ========== -->
+            <div class="tool-panel" id="tool-group">
+                <div class="tool-grid tool-grid-2">
+                    <div class="tool-card">
+                        <h4>👥 分组设置</h4>
+                        <textarea id="gRoster" class="tool-textarea" rows="9" placeholder="每行一个学生姓名（留空则使用点名名单）"></textarea>
+                        <div class="tool-row wrap">
+                            <div><label class="tool-label">分组方式</label>
+                                <select id="gMode" class="tool-input">
+                                    <option value="count">按组数</option>
+                                    <option value="size">按每组人数</option>
+                                </select></div>
+                            <div><label class="tool-label">数值</label>
+                                <input type="number" id="gNum" class="tool-input slim-num" min="2" max="20" value="4"></div>
+                            <div style="align-self:flex-end">
+                                <button id="gGo" class="tool-btn primary">开始分组</button>
+                                <button id="gShuffle" class="tool-btn ghost">重新打乱</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tool-card">
+                        <h4>分组结果</h4>
+                        <div class="g-results" id="gResults"><div class="tool-hint">点击「开始分组」随机生成</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 扫码签到·实时答题 ========== -->
+            <div class="tool-panel" id="tool-live">
+                <div class="tool-grid tool-grid-2">
+                    <div class="tool-card lv-left">
+                        <h4>📲 学生扫码入口</h4>
+                        <div class="tool-row">
+                            <input type="text" id="lvClass" class="tool-input" style="margin-bottom:0" value="示例班级" title="班级名称">
+                            <span class="tool-hint" id="lvStatus">正在检测服务器…</span>
+                        </div>
+                        <div class="lv-qr-row">
+                            <div id="lvQRBox" class="lv-qrbox"></div>
+                            <div class="lv-qr-side">
+                                <div class="lv-link" id="lvLink"></div>
+                                <button id="lvCopyLink" class="tool-btn ghost small">复制链接</button>
+                                <button id="lvSyncRoster" class="tool-btn small">② 同步点名名单到服务器</button>
+                                <button id="lvDemo" class="tool-btn warn small">🎬 演示模式：模拟全班签到答题</button>
+                            </div>
+                        </div>
+                        <div class="tool-row">
+                            <select id="lvPushChapter" class="tool-input" style="margin-bottom:0">
+                                <option value="0">全部章节</option>
+                                <option value="1">第1章</option><option value="2">第2章</option>
+                                <option value="3">第3章</option><option value="4">第4章</option>
+                                <option value="5">第5章</option><option value="6">第6章</option>
+                                <option value="7">第7章</option>
+                            </select>
+                            <button id="lvPush" class="tool-btn primary small">③ 推送题目到学生手机</button>
+                            <button id="lvCloseQ" class="tool-btn ghost small">结束本题</button>
+                        </div>
+                        <div class="lv-curq" id="lvCurQ">尚未推送题目。</div>
+                        <button id="lvReset" class="tool-btn ghost small" style="margin-top:8px">🗑 清空本班签到与答题记录</button>
+                    </div>
+                    <div class="tool-card">
+                        <h4>✅ 签到实况 <span class="tool-hint" id="lvSignedCount"></span></h4>
+                        <div class="lv-wall" id="lvSignedWall"></div>
+                        <div class="lv-cloud-title">☁ 未签到学生（词云）</div>
+                        <canvas id="lvAbsentCloud" width="640" height="180" style="width:100%;height:auto"></canvas>
+                        <div class="lv-cloud-title">☁ 已签到学生（词云）</div>
+                        <canvas id="lvSignedCloud" width="640" height="150" style="width:100%;height:auto"></canvas>
+                    </div>
+                </div>
+                <div class="tool-card" style="margin-top:20px">
+                    <h4>📊 实时答题统计</h4>
+                    <div class="lv-bars" id="lvAnswerBars"></div>
+                    <div class="tool-hint" id="lvAnswerStats" style="margin-bottom:10px"></div>
+                    <canvas id="lvAnswerCloud" width="960" height="200" style="width:100%;height:auto"></canvas>
+                </div>
+            </div>
+
+            <!-- ========== 使用统计 ========== -->
+            <div class="tool-panel" id="tool-stats">
+                <div class="stat-cards" id="stCards"></div>
+
+                <div class="tool-grid tool-grid-2" style="margin-top:20px">
+                    <div class="tool-card">
+                        <h4>📊 各模块使用次数</h4>
+                        <canvas id="stBars" width="560" height="330" style="width:100%;height:auto"></canvas>
+                    </div>
+                    <div class="tool-card">
+                        <h4>📈 活跃度趋势</h4>
+                        <canvas id="stLine" width="560" height="330" style="width:100%;height:auto"></canvas>
+                    </div>
+                </div>
+
+                <div class="tool-grid tool-grid-2" style="margin-top:20px">
+                    <div class="tool-card">
+                        <h4>📋 模块使用明细</h4>
+                        <div class="st-table-wrap"><table class="st-table" id="stTable"></table></div>
+                    </div>
+                    <div class="tool-card">
+                        <h4>🕒 最近动态</h4>
+                        <div class="st-feed" id="stFeed"></div>
+                    </div>
+                </div>
+
+                <div class="tool-card" style="margin-top:20px">
+                    <h4>🎓 学习档案</h4>
+                    <div class="archive-grid" id="stArchive"></div>
+                </div>
+
+                <div class="tool-row" style="margin-top:18px; justify-content:center">
+                    <button id="stExport" class="tool-btn primary">⬇ 导出统计数据 (JSON)</button>
+                    <button id="stClear" class="tool-btn ghost">🗑 清空统计数据</button>
+                </div>
+            </div>
+
+            <!-- ========== 学习笔记 ========== -->
+            <div class="tool-panel" id="tool-notes">
+                <div class="tool-card">
+                    <h4>📒 学习笔记</h4>
+                    <div class="tool-row wrap">
+                        <select id="nChapter" class="tool-input">
+                            <option value="1">第1章 · 神经网络基础</option>
+                            <option value="2">第2章 · 前馈神经网络</option>
+                            <option value="3">第3章 · 优化与正则化</option>
+                            <option value="4">第4章 · 卷积神经网络</option>
+                            <option value="5">第5章 · 循环神经网络</option>
+                            <option value="6">第6章 · Transformer与注意力</option>
+                            <option value="7">第7章 · 生成式模型</option>
+                            <option value="8">第8章 · 深度学习应用实践</option>
+                        </select>
+                        <span class="tool-hint" id="nStatus"></span>
+                    </div>
+                    <textarea id="nText" class="tool-textarea tall" placeholder="在这里记录本章重点、疑问与心得…（自动保存到本机）"></textarea>
+                    <div class="tool-row">
+                        <button id="nExport" class="tool-btn ghost">导出为 TXT</button>
+                        <span class="tool-hint" id="nChars"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="resources" class="resources">
+        <div class="section-container">
+            <h2 class="section-title">学习资源</h2>
+            <p class="section-subtitle">精心整理的深度学习学习资料（点击链接访问）</p>
+            
+            <div class="resources-grid">
+                <div class="resource-item">
+                    <div class="resource-icon">📘</div>
+                    <h4>推荐教材</h4>
+                    <ul>
+                        <li><a href="http://www.deeplearningbook.org/" target="_blank" rel="noopener">《深度学习》Deep Learning - Goodfellow</a></li>
+                        <li><a href="https://nndl.github.io/" target="_blank" rel="noopener">《神经网络与深度学习》- 邱锡鹏</a></li>
+                        <li><a href="https://zh.d2l.ai/" target="_blank" rel="noopener">《动手学深度学习》- 李沐 d2l.ai</a></li>
+                        <li><a href="https://www.deeplearningbook.com.br/" target="_blank" rel="noopener">《Pattern Recognition & ML》- Bishop</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">🎥</div>
+                    <h4>视频课程</h4>
+                    <ul>
+                        <li><a href="https://cs231n.github.io/" target="_blank" rel="noopener">Stanford CS231n 计算机视觉</a></li>
+                        <li><a href="https://www.coursera.org/specializations/deep-learning" target="_blank" rel="noopener">吴恩达 - 深度学习专项 5课</a></li>
+                        <li><a href="https://course.fast.ai/" target="_blank" rel="noopener">Fast.ai 实用深度学习 2024</a></li>
+                        <li><a href="http://speech.ee.ntu.edu.tw/~hylee/ml/" target="_blank" rel="noopener">台大李宏毅 - 机器学习/深度学习</a></li>
+                        <li><a href="https://web.stanford.edu/class/cs224n/" target="_blank" rel="noopener">Stanford CS224n 自然语言处理</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">🔧</div>
+                    <h4>框架工具</h4>
+                    <ul>
+                        <li><a href="https://pytorch.org/tutorials/" target="_blank" rel="noopener">PyTorch 官方教程 中文版</a></li>
+                        <li><a href="https://www.tensorflow.org/guide" target="_blank" rel="noopener">TensorFlow 官方指南</a></li>
+                        <li><a href="https://keras.io/guides/" target="_blank" rel="noopener">Keras 快速入门 (Keras 3)</a></li>
+                        <li><a href="https://paddlepaddle.org.cn/documentation/docs/zh/guides/" target="_blank" rel="noopener">百度 PaddlePaddle 文档</a></li>
+                        <li><a href="https://huggingface.co/docs/" target="_blank" rel="noopener">Hugging Face Transformers</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">📄</div>
+                    <h4>经典论文 (arXiv)</h4>
+                    <ul>
+                        <li><a href="https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks" target="_blank" rel="noopener">AlexNet: ImageNet Classification</a></li>
+                        <li><a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">Deep Residual Networks (ResNet)</a></li>
+                        <li><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">Attention Is All You Need</a></li>
+                        <li><a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">Denoising Diffusion Probabilistic</a></li>
+                        <li><a href="https://arxiv.org/abs/2005.14165" target="_blank" rel="noopener">GPT-3: Language Models are Few-Shot</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">🌐</div>
+                    <h4>博客与社区</h4>
+                    <ul>
+                        <li><a href="https://distill.pub/" target="_blank" rel="noopener">Distill - 交互式机器学习文章</a></li>
+                        <li><a href="https://jalammar.github.io/" target="_blank" rel="noopener">Jay Alammar - 图解 Transformer/GPT</a></li>
+                        <li><a href="https://colah.github.io/" target="_blank" rel="noopener">Chris Olah - 神经网络可视化</a></li>
+                        <li><a href="https://zhuanlan.zhihu.com/c_1039627996341686272" target="_blank" rel="noopener">知乎 - 机器学习与深度学习专栏</a></li>
+                        <li><a href="https://kexue.fm/" target="_blank" rel="noopener">科学空间 - 苏剑林博客</a></li>
+                        <li><a href="https://www.reddit.com/r/MachineLearning/" target="_blank" rel="noopener">Reddit r/MachineLearning</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">🛠️</div>
+                    <h4>可视化 & 学习工具</h4>
+                    <ul>
+                        <li><a href="https://playground.tensorflow.org/" target="_blank" rel="noopener">TensorFlow Playground - NN 可视化</a></li>
+                        <li><a href="https://poloclub.github.io/cnn-explainer/" target="_blank" rel="noopener">CNN Explainer - CNN 交互可视化</a></li>
+                        <li><a href="https://bost.ocks.org/mike/chart/" target="_blank" rel="noopener">Interactive Visualizations of NN</a></li>
+                        <li><a href="https://nnfs.io/" target="_blank" rel="noopener">NNFS Book + Code - 从零构建 NN</a></li>
+                        <li><a href="https://github.com/jayleicn/recurrent-inference-nets" target="_blank" rel="noopener">Awesome Deep Learning 资源列表</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">📊</div>
+                    <h4>公开数据集</h4>
+                    <ul>
+                        <li><a href="https://www.kaggle.com/datasets" target="_blank" rel="noopener">Kaggle Datasets 平台</a></li>
+                        <li><a href="https://huggingface.co/datasets" target="_blank" rel="noopener">Hugging Face Datasets Hub</a></li>
+                        <li><a href="https://datasetsearch.research.google.com/" target="_blank" rel="noopener">Google Dataset 搜索引擎</a></li>
+                        <li><a href="https://paperswithcode.com/datasets" target="_blank" rel="noopener">Papers With Code 数据集榜单</a></li>
+                        <li><a href="https://rosinality.github.io/awesome-dl-nlp/" target="_blank" rel="noopener">公开中文数据集列表 (NLU)</a></li>
+                    </ul>
+                </div>
+                <div class="resource-item">
+                    <div class="resource-icon">🎓</div>
+                    <h4>学术与竞赛</h4>
+                    <ul>
+                        <li><a href="https://arxiv.org/list/cs.LG/recent" target="_blank" rel="noopener">arXiv cs.LG 每日更新</a></li>
+                        <li><a href="https://paperswithcode.com/" target="_blank" rel="noopener">Papers With Code 论文+复现</a></li>
+                        <li><a href="https://www.kaggle.com/competitions" target="_blank" rel="noopener">Kaggle 数据科学竞赛平台</a></li>
+                        <li><a href="https://tianchi.aliyun.com/competition/gameList" target="_blank" rel="noopener">阿里天池 - 国内AI竞赛</a></li>
+                        <li><a href="https://openreview.net/" target="_blank" rel="noopener">OpenReview 会议论文评审</a></li>
+                        <li><a href="https://dblp.org/" target="_blank" rel="noopener">DBLP 计算机论文检索</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="about">
+        <div class="section-container about-content">
+            <div class="about-text">
+                <h2 class="section-title">关于本课程</h2>
+                <p>《神经网络与深度学习A》是智能科学与技术专业的专业核心课程，它系统讲授神经网络与深度学习常见模型的理论基础、算法原理与工程实践方法，帮助学生在“数学—模型—应用”三个层面建立完整认知。教学注重理论与实验并重，融合课堂讲授、上机实验和项目驱动学习，培养学生透彻理解主流神经网络与深度学习模型及训练机制的能力、使用 PaddlePaddle等框架独立完成数据处理、网络搭建、调试与优化的工程技能、将模型迁移到视觉、语言、语音等典型场景的综合创新能力。</p>
+                <p>本智慧课程系统通过交互式课件、可视化实验和在线编程平台，为学习者提供全方位的学习体验。无论是理论理解还是实践应用，都能获得充分的学习支持。</p>
+                <div class="about-tags">
+                    <span class="tag">人工智能</span>
+                    <span class="tag">机器学习</span>
+                    <span class="tag">神经网络</span>
+                    <span class="tag">深度学习</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">PyTorch</span>
+                </div>
+            </div>
+            <div class="about-card">
+                <h3>课程信息</h3>
+                <div class="info-row"><span>开课学期</span><span>2025-2026 秋季第1学期</span></div>
+                <div class="info-row"><span>课程学分</span><span>3.5 学分</span></div>
+                <div class="info-row"><span>总学时</span><span>56 学时</span></div>
+                <div class="info-row"><span>授课教师</span><span>NN&DL智慧课程教学团队</span></div>
+                <div class="info-row"><span>考核方式</span><span>平时10% + 实验30% + 比赛10% + 期末考试50%</span></div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <h5>沈阳工业大学 人工智能学院</h5>
+                <h4>神经网络与深度学习</h4>
+                <p>智慧课程教学系统</p>
+            </div>
+            <div class="footer-right">
+                <p>&copy; 2026 SUT NN&DL Smart Course System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js?v=202609132"></script>
+    <script src="js/labs2.js?v=202609132"></script>
+    <script src="js/analytics.js?v=202609132"></script>
+    <script src="js/qrcode.min.js?v=202609132"></script>
+    <script src="js/live.js?v=202609132"></script>
+    <script src="js/tools.js?v=202609132"></script>
+</body>
+</html>

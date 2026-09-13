@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第4章 正则化策略与模型选择 | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第4章</span></div>
+            <div class="chapter-big-num">04</div>
+            <h1>卷积神经网络</h1>
+            <p>本章系统介绍卷积神经网络（CNN）的核心组件：卷积层、池化层、Padding 与 Stride、感受野的概念，以及经典架构 LeNet / AlexNet / VGG / GoogLeNet / ResNet / EfficientNet 的设计思想。读者将能够从零实现一个卷积层，并能读懂主流 CNN 架构。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 12 课时</span><span class="info-chip">🎯 12 个知识点</span><span class="info-chip">📐 20+ 公式</span><span class="info-chip">🖼️ 视觉为主</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>为什么使用卷积？</li>
+                <li>卷积的数学定义（离散二维卷积、互相关）</li>
+                <li>Padding、Stride 与输出尺寸</li>
+                <li>多通道输入与多通道输出、1×1 卷积</li>
+                <li>池化层（Pooling）</li>
+                <li>感受野（Receptive Field）</li>
+                <li>卷积层的梯度与反传</li>
+                <li>LeNet-5：首个成功的 CNN</li>
+                <li>AlexNet：深度学习兴起的标志</li>
+                <li>VGG：小卷积核的堆叠</li>
+                <li>GoogLeNet / Inception：多尺度与稀疏连接</li>
+                <li>ResNet：残差连接带来的深度革命</li>
+                <li>MobileNet / EfficientNet：轻量化与复合缩放</li>
+                <li>代码实现：用 NumPy 实现 Conv2d 与 MaxPool2d</li>
+            </ol>
+        </div>
+
+        <!-- 4.1 -->
+        <div class="content-section">
+            <h2>4.1 为什么需要卷积</h2>
+
+            <p>将一张 $224 \times 224$ 的 RGB 图像展平为一个 15 万维的向量直接送给 MLP，会立刻遇到两个难题：</p>
+            <ul>
+                <li><strong>参数量爆炸</strong>：第一层若有 1024 个神经元，参数达 $150{,}528 \times 1024 \approx 1.5$ 亿；</li>
+                <li><strong>丢失空间结构信息</strong>：MLP 对像素的排列顺序是完全不敏感的——若把一张图的所有像素随机打乱再喂给同一个 MLP，输出结果会非常不同。</li>
+            </ul>
+
+            <p>卷积神经网络利用了自然图像的两个先验：</p>
+            <ol>
+                <li><strong>局部相关性</strong>：图像中的某个像素主要与其相邻的几个像素强相关；</li>
+                <li><strong>平移不变性</strong>："猫的耳朵"出现在图像左上角或右上角都仍然是"猫的耳朵"，同样的特征检测子可以在整幅图上被复用。</li>
+            </ol>
+        </div>
+
+        <!-- 4.2 -->
+        <div class="content-section">
+            <h2>4.2 卷积的数学定义</h2>
+
+            <p>严格来说，深度学习中的"卷积"其实是 <em>互相关（Cross-Correlation）</em>，与信号处理中的卷积相比缺了一个核翻转。</p>
+
+            <div class="definition" data-label="定义 4.1　二维互相关">
+                <p>设输入矩阵 $\boldsymbol{X} \in \mathbb{R}^{H \times W}$，卷积核（滤波器）$\boldsymbol{K} \in \mathbb{R}^{k \times k}$。输出特征图 $Y \in \mathbb{R}^{(H-k+1) \times (W-k+1)}$ 的元素为：</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ Y_{i,j} = \sum_{p=0}^{k-1} \sum_{q=0}^{k-1} X_{i+p,\,j+q} \cdot K_{p,\,q}. \tag{4.1} $$
+            </div>
+
+            <p>在真实实现中，每个卷积核还带有一个标量偏置 $b$，并且会对整个 mini-batch、多通道同时并行计算。</p>
+        </div>
+
+        <!-- 4.3 -->
+        <div class="content-section">
+            <h2>4.3 Padding、Stride 与输出尺寸</h2>
+
+            <ul>
+                <li><strong>Padding</strong>：在输入的四周填充 $p$ 行/列零值（或其他值），用来避免边缘信息损失、控制输出尺寸；</li>
+                <li><strong>Stride</strong>：滤波器每次滑动的步长 $s$。$s=1$ 即 dense convolution；$s>1$ 同时起到下采样作用。</li>
+            </ul>
+
+            <div class="definition" data-label="定义 4.2　输出尺寸公式">
+                <p>给定输入尺寸 $H_{\text{in}} \times W_{\text{in}}$，卷积核大小 $k$，填充 $p$，步长 $s$。输出尺寸为：</p>
+            </div>
+
+            <div class="formula-box centered">
+                $$ H_{\text{out}} = \left\lfloor \frac{H_{\text{in}} + 2p - k}{s} \right\rfloor + 1, \qquad W_{\text{out}} = \left\lfloor \frac{W_{\text{in}} + 2p - k}{s} \right\rfloor + 1. \tag{4.2} $$
+            </div>
+
+            <p>常见的两种设计：</p>
+            <ul>
+                <li><strong>same padding</strong>：选 $p = \lfloor k/2 \rfloor$，使得当 $s=1$ 时 $H_{\text{out}} \approx H_{\text{in}}$，空间维度近似保持不变；</li>
+                <li><strong>valid padding</strong>：$p = 0$，即不填充，输出必小于输入。</li>
+            </ul>
+
+            <div class="example" data-label="例 4.1">
+                <p>输入 $32 \times 32$，卷积核 $3 \times 3$，$p=1$，$s=1$。输出 = $\lfloor(32+2-3)/1\rfloor+1 = 32$。保持空间尺寸不变。</p>
+                <p>若 $s=2$，$p=1$，$k=3$，则输出 = $\lfloor(32+2-3)/2\rfloor+1 = \lfloor 31/2 \rfloor+1 = 16$。</p>
+            </div>
+        </div>
+
+        <!-- 4.4 -->
+        <div class="content-section">
+            <h2>4.4 多输入通道、多输出通道、1×1 卷积</h2>
+
+            <p>一幅 RGB 图像有 3 个通道。一般地，记输入通道数为 $C_{\text{in}}$，输出通道数为 $C_{\text{out}}$。</p>
+            <ul>
+                <li>对每个输出通道 $c \in \{1,\dots,C_{\text{out}}\}$，使用一个卷积核张量 $\boldsymbol{K}_c \in \mathbb{R}^{C_{\text{in}} \times k \times k}$（即对每个输入通道使用一个二维核并求和）；</li>
+                <li>输出通道 $c$ 的特征图为 $\boldsymbol{Y}_c = \sum_{d=1}^{C_{\text{in}}} \boldsymbol{X}_d \star \boldsymbol{K}_{c,d} + b_c$，其中 $\star$ 表示二维互相关；</li>
+                <li>整个卷积层的参数为 $C_{\text{out}} \times C_{\text{in}} \times k \times k + C_{\text{out}}$。</li>
+            </ul>
+
+            <h3>4.4.1 1×1 卷积（Network in Network / Lin et al., 2013）</h3>
+
+            <p>当 $k=1$ 且 $s=1$，$p=0$ 时，输出空间尺寸与输入相同，但通道数可由 $C_{\text{in}}$ 被"组合"为 $C_{\text{out}}$。这等价于对每个 <em>空间位置</em> 独立地做一次仿射变换 + 非线性。主要用于：</p>
+            <ul>
+                <li>通道数升/降维（跨通道特征融合）；</li>
+                <li>在不增加空间变换参数的前提下增加非线性；</li>
+                <li>作为现代 Transformer 中 1×1 卷积替代 MLP 的灵感来源。</li>
+            </ul>
+
+            <h3>4.4.2 分组卷积（Grouped Convolution）</h3>
+
+            <p>将输入通道分成 $G$ 组，每组只与自己的 $C_{\text{in}}/G$ 个通道卷积，输出通道也相应被分成 $G$ 组。参数量与计算量下降 $G$ 倍。ResNeXt、MobileNet、ShuffleNet 都大量使用分组卷积与可分离卷积来获得轻量高效模型。</p>
+        </div>
+
+        <!-- 4.5 -->
+        <div class="content-section">
+            <h2>4.5 池化层（Pooling）</h2>
+
+            <p>池化层在每个局部窗口上取最大值（Max Pooling）或平均值（Average Pooling），起到以下作用：</p>
+            <ul>
+                <li>降低空间维度，减少后续层的计算量；</li>
+                <li>提供一定程度的平移/旋转/缩放不变性；</li>
+                <li>扩大后续层的感受野。</li>
+            </ul>
+
+            <p>典型设置：$2 \times 2$ 窗口、步长 $2$，使得长宽各减半。输出尺寸公式与卷积层类似：</p>
+
+            <div class="formula-box centered">
+                $$ H_{\text{out}} = \left\lfloor \frac{H_{\text{in}} + 2p - k}{s} \right\rfloor + 1. \tag{4.3} $$
+            </div>
+
+            <div class="remark" data-label="池化的替代">
+                <p>现代 CNN 设计中，池化层越来越多被"带 stride=2 的卷积"所取代。原因：(a) 卷积可学习；(b) 能在降采样的同时融合通道信息。ResNet 的过渡层即是典型例子。</p>
+            </div>
+        </div>
+
+        <!-- 4.6 -->
+        <div class="content-section">
+            <h2>4.6 感受野（Receptive Field）</h2>
+
+            <p>第 $\ell$ 层的某个神经元的 <em>感受野</em> 是指：原始输入图像中能影响该神经元输出值的区域大小。记第 $\ell$ 层的感受野大小为 $R^{(\ell)}$，该层卷积/池化的核大小为 $k^{(\ell)}$、步长为 $s^{(\ell)}$，则有递推公式：</p>
+
+            <div class="formula-box centered">
+                $$ R^{(\ell)} = R^{(\ell-1)} + \big(k^{(\ell)} - 1\big) \cdot \prod_{i=1}^{\ell-1} s^{(i)}. \tag{4.4} $$
+            </div>
+
+            <p>初始 $R^{(0)} = 1$，$\prod_{i=1}^{0} s^{(i)} = 1$。这个公式在设计目标检测与分割模型时非常有用：需要保证深层特征图的每个位置对应的感受野覆盖到足够大的物体。</p>
+        </div>
+
+        <!-- 4.7 -->
+        <div class="content-section">
+            <h2>4.7 卷积层的梯度与反向传播</h2>
+
+            <p>考虑一个简化的单通道情况：输入 $\boldsymbol{X} \in \mathbb{R}^{H \times W}$，核 $\boldsymbol{K} \in \mathbb{R}^{k \times k}$，无 padding、stride 1，则输出 $\boldsymbol{Y} = \boldsymbol{X} \star \boldsymbol{K}$。</p>
+
+            <p>设上游传来的对 $Y$ 的梯度为 $\partial \ell / \partial Y_{i,j} = \delta_{i,j}$。求：</p>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial \ell}{\partial K_{p,q}} = \sum_{i,j} \delta_{i,j} \cdot X_{i+p,\,j+q}, \tag{4.5} $$
+            </div>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial \ell}{\partial X_{u,v}} = \sum_{i,j} \delta_{i,j} \cdot K_{u-i,\,v-j}. \tag{4.6} $$
+            </div>
+
+            <p>换言之，核参数的梯度 = 以 $\delta$ 为核、对 $\boldsymbol{X}$ 做互相关；输入 $\boldsymbol{X}$ 的梯度 = 以 $\delta$ 为核、对 $\boldsymbol{K}$ 做 <em>全卷积（Full Convolution）</em>（相当于零填充后的 cross-correlation）。这正是反卷积 / 转置卷积（Transposed Convolution）的理论基础。</p>
+        </div>
+
+        <!-- 4.8 -->
+        <div class="content-section">
+            <h2>4.8 经典 CNN 架构纵览</h2>
+
+            <h3>4.8.1 LeNet-5（LeCun et al., 1998）</h3>
+            <p>首个在手写数字识别（MNIST）上取得成功的 CNN，奠定了"卷积-池化-非线性-全连接"的基本范式。典型结构：</p>
+            <ul>
+                <li>输入 $28 \times 28 \to \texttt{Conv}(5 \times 5, 6) \to \text{Tanh} \to \text{AvgPool}(2)$</li>
+                <li>$\to \texttt{Conv}(5 \times 5, 16) \to \text{Tanh} \to \text{AvgPool}(2) \to \text{FC}(120) \to \text{FC}(84) \to \text{Gaussian}(10)$</li>
+            </ul>
+
+            <h3>4.8.2 AlexNet（Krizhevsky et al., 2012）</h3>
+            <p>ImageNet 2012 冠军，将 Top-5 错误率从传统方法的约 26% 拉低到约 15%。与 LeNet 相比主要创新点：</p>
+            <ul>
+                <li>更大更深的网络，使用 ReLU 激活（解决深层 Sigmoid 梯度消失）；</li>
+                <li>使用 Dropout 防止过拟合；</li>
+                <li>使用数据增强（随机裁剪、颜色抖动）；</li>
+                <li>使用双 GPU 并行训练；</li>
+                <li>使用 Local Response Normalization（LRN），后被 BN 取代。</li>
+            </ul>
+
+            <h3>4.8.3 VGG（Simonyan & Zisserman, 2014）</h3>
+            <p>VGG 的核心洞察是：<strong>堆叠两个 $3 \times 3$ 卷积（带 ReLU）等价于一个 $5 \times 5$ 的有效感受野，却参数更少、非线性更多</strong>。因此整个网络都只用 $3 \times 3$ 卷积、$2 \times 2$ max-pooling，空间维度每次减半、通道数每次翻倍。</p>
+
+            <p>VGG-16 总层数 = 13 个卷积层 + 3 个全连接层；VGG-19 再多 3 个卷积层。</p>
+
+            <h3>4.8.4 GoogLeNet / Inception（Szegedy et al., 2014）</h3>
+            <p>核心思想是在同一层内 <em>并行使用多种不同尺寸的卷积核（1×1, 3×3, 5×5）</em>，并通过 1×1 卷积进行瓶颈降维，再将它们的输出在通道维度拼接。这种"Inception module"以极少的参数实现了多尺度特征提取。</p>
+
+            <h3>4.8.5 ResNet（He et al., 2016）</h3>
+            <p>残差网络通过引入残差连接（Residual Connection / Skip Connection）让深层网络的训练变得容易：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{x}_{\ell+1} = \boldsymbol{x}_{\ell} + \mathcal{F}(\boldsymbol{x}_{\ell}; \theta_{\ell}), \tag{4.7} $$
+            </div>
+
+            <p>其中 $\mathcal{F}$ 是残差分支（典型：$\text{Conv} \to \text{BN} \to \text{ReLU} \to \text{Conv} \to \text{BN}$，在与主路径相加后再过一次 ReLU）。当通道数需要增加或空间维度需要降采样时，主路径通过一个 $1 \times 1$、stride=2 的卷积来匹配尺寸。</p>
+
+            <p>ResNet 使训练 100 层甚至 1000 层的网络变得可行。后续的 ResNeXt、SENet、CBAM、ConvNeXt 等，均在残差基本模块上做了精细化改造。</p>
+
+            <h3>4.8.6 MobileNet / EfficientNet</h3>
+            <ul>
+                <li><strong>MobileNet</strong>（Howard et al., 2017）：使用 <em>深度可分离卷积</em>（Depthwise + Pointwise）显著削减参数：一个 $3 \times 3$ 卷积的计算量可以降低约 8~9 倍。</li>
+                <li><strong>EfficientNet</strong>（Tan & Le, 2019）：在基础网络上同时进行 <em>深度、宽度、分辨率</em> 的复合缩放（Compound Scaling），配合 NAS 搜索到的基础模型，在同等精度下比之前的模型小得多也快得多。</li>
+            </ul>
+
+            <table>
+                <tr><th>模型</th><th>Top-1 Acc (ImageNet)</th><th>参数量</th><th>核心设计</th></tr>
+                <tr><td>AlexNet</td><td>~60%</td><td>60M</td><td>ReLU, Dropout, DataAug</td></tr>
+                <tr><td>VGG-16</td><td>~71%</td><td>138M</td><td>堆叠 3×3 卷积</td></tr>
+                <tr><td>GoogLeNet-v1</td><td>~69%</td><td>6.7M</td><td>Inception 模块</td></tr>
+                <tr><td>ResNet-50</td><td>~76%</td><td>25M</td><td>残差连接</td></tr>
+                <tr><td>ResNeXt-50</td><td>~77%</td><td>25M</td><td>残差 + 分组卷积</td></tr>
+                <tr><td>EfficientNet-B0</td><td>~77%</td><td>5.3M</td><td>复合缩放 + Mobile Inverted Bottleneck</td></tr>
+                <tr><td>ConvNeXt-Base</td><td>~83%</td><td>88M</td><td>大核、LayerNorm、GELU、Depthwise Conv</td></tr>
+            </table>
+        </div>
+
+        <!-- 4.9 代码实现 -->
+        <div class="content-section">
+            <h2>4.9 代码实现：用 NumPy 实现 Conv2d 与 MaxPool2d</h2>
+
+            <div class="code-block">
+                <span class="code-lang">Python / NumPy</span>
+<pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-function">conv2d</span>(X: np.ndarray, K: np.ndarray, bias: np.ndarray,
+             stride=<span class="code-number">1</span>, padding=<span class="code-number">0</span>) -> np.ndarray:
+    <span class="code-string">"""
+    X: (C_in, H_in, W_in)
+    K: (C_out, C_in, k, k)
+    bias: (C_out,)
+    输出: (C_out, H_out, W_out)
+    """</span>
+    C_in, H_in, W_in = X.shape
+    C_out, _, k, _ = K.shape
+    s, p = stride, padding
+
+    <span class="code-comment"># padding</span>
+    X_pad = np.pad(X, ((<span class="code-number">0</span>, <span class="code-number">0</span>), (p, p), (p, p)), mode=<span class="code-string">'constant'</span>)
+    H_out = (H_in + <span class="code-number">2</span>*p - k) // s + <span class="code-number">1</span>
+    W_out = (W_in + <span class="code-number">2</span>*p - k) // s + <span class="code-number">1</span>
+
+    Y = np.zeros((C_out, H_out, W_out))
+    <span class="code-keyword">for</span> c <span class="code-keyword">in</span> range(C_out):
+        <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(H_out):
+            <span class="code-keyword">for</span> j <span class="code-keyword">in</span> range(W_out):
+                X_block = X_pad[:, i*s : i*s + k, j*s : j*s + k]
+                Y[c, i, j] = np.sum(K[c, :, :, :] * X_block) + bias[c]
+    <span class="code-keyword">return</span> Y
+
+<span class="code-keyword">def</span> <span class="code-function">maxpool2d</span>(X: np.ndarray, k=<span class="code-number">2</span>, stride=<span class="code-number">2</span>) -> np.ndarray:
+    C, H, W = X.shape
+    H_out = (H - k) // stride + <span class="code-number">1</span>
+    W_out = (W - k) // stride + <span class="code-number">1</span>
+    Y = np.zeros((C, H_out, W_out))
+    <span class="code-keyword">for</span> i <span class="code-keyword">in</span> range(H_out):
+        <span class="code-keyword">for</span> j <span class="code-keyword">in</span> range(W_out):
+            block = X[:, i*stride:i*stride+k, j*stride:j*stride+k]
+            Y[:, i, j] = np.max(block, axis=(<span class="code-number">1</span>, <span class="code-number">2</span>))
+    <span class="code-keyword">return</span> Y
+
+<span class="code-comment"># ---- 测试：复现一个 VGG-like block ----</span>
+<span class="code-keyword">if</span> __name__ == <span class="code-string">"__main__"</span>:
+    X = np.random.randn(<span class="code-number">3</span>, <span class="code-number">8</span>, <span class="code-number">8</span>)
+    K = np.random.randn(<span class="code-number">8</span>, <span class="code-number">3</span>, <span class="code-number">3</span>, <span class="code-number">3</span>)
+    b = np.zeros(<span class="code-number">8</span>)
+    Y = conv2d(X, K, b, padding=<span class="code-number">1</span>)
+    P = maxpool2d(Y, k=<span class="code-number">2</span>, stride=<span class="code-number">2</span>)
+    print(<span class="code-string">"输入 X.shape:"</span>, X.shape)
+    print(<span class="code-string">"卷积后 Y.shape:"</span>, Y.shape)
+    print(<span class="code-string">"池化后 P.shape:"</span>, P.shape)</code></pre>
+            </div>
+        </div>
+
+        <!-- 小结 -->
+        <div class="summary-box">
+            <div class="summary-title">★ 本章要点 · KEY POINTS</div>
+            <ul>
+                <li>卷积层通过局部连接与参数共享，显著降低参数量同时保持空间结构信息；</li>
+                <li>输出尺寸 = $\lfloor (H_{\text{in}} + 2p - k)/s \rfloor + 1$，这是设计网络必须掌握的基本公式；</li>
+                <li>池化提供平移不变性与降采样，stride 卷积是其现代替代；</li>
+                <li>残差连接让超深网络的训练成为可能，是 ResNet 及其后继结构的核心；</li>
+                <li>理解经典架构的演进：LeNet $\to$ AlexNet $\to$ VGG $\to$ GoogLeNet $\to$ ResNet $\to$ EfficientNet/ConvNeXt。</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>习 题</h2>
+            <div class="exercise" data-label="习题 4.1">
+                <p>输入 $3 \times 32 \times 32$，依次通过：(1) Conv(k=3, p=1, C_out=64)；(2) Conv(k=3, p=1, stride=2, C_out=128)；(3) MaxPool(k=2, s=2)；(4) Conv(k=1, C_out=64)。求每层输出维度，并计算该子网络中可训练参数总数（含偏置）。</p>
+            </div>
+            <div class="exercise" data-label="习题 4.2">
+                <p>参考公式 (4.4)：从一个 $256 \times 256$ 的输入开始，依次通过：3×3 conv, s=1, p=1；3×3 conv, s=1, p=1；2×2 pool, s=2；3×3 conv, s=1, p=1；3×3 conv, s=1, p=1；2×2 pool, s=2。求最后一层每个神经元的感受野大小。</p>
+            </div>
+            <div class="exercise" data-label="习题 4.3">
+                <p>在 CIFAR-10 上实现一个基于 ResNet-18 的图像分类模型（使用 PyTorch <code>torchvision.models.resnet18</code>），并微调冻结前若干层的训练策略，比较：从零开始训练 vs. 使用 ImageNet 预训练权重的收敛速度与最终精度。</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter3.html" class="nav-btn">← 第3章 优化与正则化</a>
+        <a href="chapter5.html" class="nav-btn">第5章 循环神经网络 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

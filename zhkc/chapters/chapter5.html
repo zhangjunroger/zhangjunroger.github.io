@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第5章 卷积神经网络（CNN） | 神经网络与深度学习</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            },
+            startup: {
+                typeset: true
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><div class="logo-icon"><svg viewBox="0 0 100 100"><circle cx="20" cy="50" r="6" fill="#fff"/><circle cx="50" cy="50" r="5" fill="#fff"/><circle cx="80" cy="50" r="6" fill="#fff"/></svg></div><span>NN&DL 智慧课程</span></div>
+            <ul class="nav-menu">
+                <li><a href="../index.html">首页</a></li>
+                <li><a href="../index.html#chapters" class="active">课程章节</a></li>
+                <li><a href="../index.html#lab">实验平台</a></li>
+                <li><a href="../index.html#resources">学习资源</a></li>
+                <li><a href="../index.html#about">关于课程</a></li>
+            </ul>
+            <div class="nav-user"><div class="user-avatar">学</div><span class="user-name">学习者</span></div>
+        </div>
+    </nav>
+
+    <section class="chapter-hero">
+        <div class="chapter-hero-inner">
+            <div class="breadcrumb"><a href="../index.html">首页</a><span>›</span><a href="../index.html#chapters">课程章节</a><span>›</span><span>第5章</span></div>
+            <div class="chapter-big-num">05</div>
+            <h1>循环神经网络（RNN / LSTM / GRU）</h1>
+            <p>本章介绍处理序列数据的循环神经网络（RNN），推导沿时间反向传播算法（BPTT），并详细阐述 LSTM 与 GRU 的门控机制如何缓解长序列的梯度消失问题。读者将掌握序列到序列（seq2seq）模型的基本框架。</p>
+            <div class="chapter-info-bar"><span class="info-chip">📚 10 课时</span><span class="info-chip">🎯 8 个知识点</span><span class="info-chip">📐 20+ 公式</span><span class="info-chip">📝 文本建模</span></div>
+        </div>
+    </section>
+
+    <section class="chapter-content">
+
+        <div class="chapter-outline">
+            <h4>本章目录 · OUTLINE</h4>
+            <ol>
+                <li>序列数据与循环计算</li>
+                <li>基本 RNN 的前向传播</li>
+                <li>沿时间反向传播（BPTT）</li>
+                <li>RNN 的训练难点：梯度消失/爆炸</li>
+                <li>LSTM：长短期记忆网络</li>
+                <li>GRU：门控循环单元</li>
+                <li>双向 RNN 与深层 RNN</li>
+                <li>Seq2Seq 与神经机器翻译概览</li>
+                <li>代码：从零实现一个 LSTM 单元</li>
+            </ol>
+        </div>
+
+        <!-- 5.1 -->
+        <div class="content-section">
+            <h2>5.1 序列数据与循环计算图</h2>
+
+            <p>一段文本、一段语音、一个时间序列都是序列数据：输入 $\boldsymbol{x}_{1:T} = (\boldsymbol{x}_1, \boldsymbol{x}_2, \dots, \boldsymbol{x}_T)$，每个 $\boldsymbol{x}_t \in \mathbb{R}^{d_{\text{in}}}$。输出可以是每个位置的预测（POS tagging），一个全局标签（文本分类），或另一段序列（翻译、摘要）。</p>
+
+            <p>RNN 的核心思想是维护一个 <em>隐藏状态（Hidden State）</em> $\boldsymbol{h}_t \in \mathbb{R}^{d_h}$，它把"到 $t$ 为止所看到的信息"压缩表示：</p>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{h}_t = \varphi(\boldsymbol{W}_{xh} \boldsymbol{x}_t + \boldsymbol{W}_{hh} \boldsymbol{h}_{t-1} + \boldsymbol{b}_h), \tag{5.1} $$
+            </div>
+
+            <p>其中 $\varphi$ 常取 $\tanh$。输出预测：</p>
+
+            <div class="formula-box centered">
+                $$ \hat{\boldsymbol{y}}_t = \text{Softmax}(\boldsymbol{W}_{hy} \boldsymbol{h}_t + \boldsymbol{b}_y). \tag{5.2} $$
+            </div>
+
+            <p>注意：<strong>权重矩阵 $\boldsymbol{W}_{xh}, \boldsymbol{W}_{hh}, \boldsymbol{W}_{hy}$ 在所有时间步上共享</strong>。这是 RNN"循环"的真正含义——不是简单的循环循环，而是 <em>参数共享 + 状态传递</em>。</p>
+        </div>
+
+        <!-- 5.2 -->
+        <div class="content-section">
+            <h2>5.2 沿时间反向传播（Backpropagation Through Time, BPTT）</h2>
+
+            <p>给定训练序列 $\boldsymbol{x}_{1:T}$ 与标签 $\boldsymbol{y}_{1:T}$，整个序列的总损失为：</p>
+
+            <div class="formula-box centered">
+                $$ L(\theta) = -\frac{1}{T} \sum_{t=1}^{T} \log \hat{y}_{t, y_t}. \tag{5.3} $$
+            </div>
+
+            <p>关键是求对循环权重 $\boldsymbol{W}_{hh}$ 的梯度。由链式法则，误差对第 $t$ 步 $\boldsymbol{h}_t$ 的偏导数 $\delta_t = \partial L / \partial \boldsymbol{h}_t$ 需沿时间反传：</p>
+
+            <div class="formula-box centered">
+                $$ \delta_t = \big(\boldsymbol{W}_{hy}^T (\hat{\boldsymbol{y}}_t - \boldsymbol{y}_t)\big) + \big(\boldsymbol{W}_{hh}^T \delta_{t+1}\big) \odot \varphi'(\boldsymbol{z}_t), \quad \boldsymbol{z}_t = \boldsymbol{W}_{xh}\boldsymbol{x}_t + \boldsymbol{W}_{hh}\boldsymbol{h}_{t-1} + \boldsymbol{b}_h. \tag{5.4} $$
+            </div>
+
+            <p>然后对参数的梯度为：</p>
+
+            <div class="formula-box centered">
+                $$ \frac{\partial L}{\partial \boldsymbol{W}_{hh}} = \frac{1}{T} \sum_{t=1}^{T} \delta_t \boldsymbol{h}_{t-1}^T, \quad \frac{\partial L}{\partial \boldsymbol{W}_{xh}} = \frac{1}{T} \sum_{t=1}^{T} \delta_t \boldsymbol{x}_t^T. \tag{5.5} $$
+            </div>
+
+            <h3>5.2.1 梯度消失与爆炸的来源</h3>
+
+            <p>把 $\delta_t$ 递归展开至时间步 $s < t$，会出现累乘因子 $(\boldsymbol{W}_{hh}^T)^{t-s} \odot \prod_{k=s}^{t-1} \varphi'(\boldsymbol{z}_k)$。若 $\boldsymbol{W}_{hh}$ 的最大奇异值 $>1$，则梯度随时间差指数膨胀——<em>梯度爆炸</em>；若 $<1$，则指数衰减——<em>梯度消失</em>。</p>
+
+            <p>主流缓解手段：</p>
+            <ul>
+                <li><strong>梯度裁剪（Gradient Clipping）</strong>：$\delta \gets \min(\|\delta\|, C)/\|\delta\| \cdot \delta$</li>
+                <li><strong>门控机制（LSTM / GRU）</strong>：引入显式的"记忆单元"与门控，使梯度有更稳定的路径</li>
+                <li><strong>权重正则化与正交初始化</strong></li>
+                <li><strong>Skip Connection</strong> 与残差 LSTM</li>
+            </ul>
+        </div>
+
+        <!-- 5.3 LSTM -->
+        <div class="content-section">
+            <h2>5.3 LSTM：长短期记忆网络（Hochreiter & Schmidhuber, 1997）</h2>
+
+            <p>LSTM 引入了一个额外的单元状态 $\boldsymbol{c}_t \in \mathbb{R}^{d_h}$ 和三个门：<strong>遗忘门 $\boldsymbol{f}_t$</strong>、<strong>输入门 $\boldsymbol{i}_t$</strong>、<strong>输出门 $\boldsymbol{o}_t$</strong>。令 $[\boldsymbol{a}; \boldsymbol{b}]$ 表示在第一维拼接向量，则完整公式为：</p>
+
+            <div class="formula-box centered">
+                    $$ \begin{aligned}
+                    \boldsymbol{f}_t &= \sigma(\boldsymbol{W}_f [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_f), \\
+                    \boldsymbol{i}_t &= \sigma(\boldsymbol{W}_i [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_i), \\
+                    \tilde{\boldsymbol{c}}_t &= \tanh(\boldsymbol{W}_c [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_c), \\
+                    \boldsymbol{c}_t &= \boldsymbol{f}_t \odot \boldsymbol{c}_{t-1} + \boldsymbol{i}_t \odot \tilde{\boldsymbol{c}}_t, \\
+                    \boldsymbol{o}_t &= \sigma(\boldsymbol{W}_o [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_o), 
+                    \end{aligned} \tag{5.6} $$
+                </div>
+
+            <p>直观理解：</p>
+            <ul>
+                <li><strong>遗忘门 $\boldsymbol{f}_t$</strong>：控制"保留多少上一时刻的单元状态"（取 0 完全遗忘，取 1 完全保留）；</li>
+                <li><strong>输入门 $\boldsymbol{i}_t$</strong>：控制"从候选 $\tilde{\boldsymbol{c}}_t$ 中写入多少新信息"；</li>
+                <li><strong>$\boldsymbol{c}_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t$</strong>：这是一条 <em>线性通道</em>，梯度能以稳定的幅度在长时间跨度上传播，从根本上缓解了梯度消失；</li>
+                <li><strong>输出门 $\boldsymbol{o}_t$</strong>：控制"从 $\boldsymbol{c}_t$ 放出多少到外部隐藏状态 $\boldsymbol{h}_t$"。</li>
+            </ul>
+
+            <p>现代实现中，常在 $[\boldsymbol{x}_t; \boldsymbol{h}_{t-1}]$ 的拼接上一次性计算四个门，以并行性提升效率；偏置 $\boldsymbol{b}_f$ 常初始化为一个小的正数（如 1），使网络在初始阶段倾向于记住信息，缓解早期训练不稳定。</p>
+        </div>
+
+        <!-- 5.4 GRU -->
+        <div class="content-section">
+            <h2>5.4 GRU：门控循环单元（Cho et al., 2014）</h2>
+
+            <p>GRU 把 LSTM 的遗忘门与输入门合并为一个 <strong>更新门 $\boldsymbol{z}_t$</strong>，并引入 <strong>重置门 $\boldsymbol{r}_t$</strong>，整体公式更简洁、参数更少：</p>
+
+            <div class="formula-box centered">
+                    $$ \begin{aligned}
+                    \boldsymbol{r}_t &= \sigma(\boldsymbol{W}_r [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_r), \\
+                    \boldsymbol{z}_t &= \sigma(\boldsymbol{W}_z [\boldsymbol{x}_t; \boldsymbol{h}_{t-1}] + \boldsymbol{b}_z), \\
+                    \tilde{\boldsymbol{h}}_t &= \tanh(\boldsymbol{W}_h [\boldsymbol{x}_t; \boldsymbol{r}_t \odot \boldsymbol{h}_{t-1}] + \boldsymbol{b}_h), \\
+                    \boldsymbol{h}_t &= (1 - \boldsymbol{z}_t) \odot \boldsymbol{h}_{t-1} + \boldsymbol{z}_t \odot \tilde{\boldsymbol{h}}_t.
+                    \end{aligned} \tag{5.7} $$
+                </div>
+
+            <p>GRU 在许多任务上与 LSTM 性能接近，但训练速度更快、参数更少。两者是实际项目中最常见的循环单元选择。</p>
+        </div>
+
+        <!-- 5.5 -->
+        <div class="content-section">
+            <h2>5.5 双向 RNN 与深层 RNN</h2>
+
+            <ul>
+                <li><strong>双向 RNN（Bi-RNN）</strong>（Schuster & Paliwal, 1997）：维护前向隐藏状态 $\overrightarrow{\boldsymbol{h}}_t$（从左到右）与后向隐藏状态 $\overleftarrow{\boldsymbol{h}}_t$（从右到左），最终位置特征为 $[\overrightarrow{\boldsymbol{h}}_t; \overleftarrow{\boldsymbol{h}}_t]$。在序列标注、命名实体识别等任务中非常有效。注意：<em>双向 RNN 不适合实时生成任务</em>。</li>
+                <li><strong>深层 RNN</strong>：堆叠 L 个 RNN 层，第 $\ell$ 层的隐藏状态 $\boldsymbol{h}_t^{(\ell)}$ 以第 $\ell-1$ 层的 $\boldsymbol{h}_t^{(\ell-1)}$ 为输入。中间可插入残差连接（Residual Connection）与 Dropout。</li>
+            </ul>
+        </div>
+
+        <!-- 5.6 Seq2Seq -->
+        <div class="content-section">
+            <h2>5.6 Seq2Seq 与编码器-解码器框架</h2>
+
+            <p><strong>任务</strong>：给定源序列 $\boldsymbol{x}_{1:T}$，生成目标序列 $\boldsymbol{y}_{1:S}$。</p>
+
+            <ul>
+                <li><strong>编码器（Encoder）</strong>：使用一个 RNN（LSTM / GRU）把源序列映射到一个最终的隐藏状态 $\boldsymbol{h}_T$（或整序列的编码矩阵）。</li>
+                <li><strong>解码器（Decoder）</strong>：另一个 RNN，从 $\boldsymbol{h}_T$ 起逐步生成下一个 token，每步预测：</li>
+            </ul>
+
+            <div class="formula-box centered">
+                $$ \boldsymbol{h}_t^{(d)} = \text{LSTM}(\boldsymbol{y}_{t-1}, \boldsymbol{h}_{t-1}^{(d)}), \quad p(y_t \mid y_{<t}, \boldsymbol{x}) = \text{Softmax}(\boldsymbol{W}_{hy}^{(d)} \boldsymbol{h}_t^{(d)} + \boldsymbol{b}_y). \tag{5.8} $$
+            </div>
+
+            <p>训练使用 <em>teacher forcing</em>：每步的输入是 <em>真实</em> 的前一个 token；推理时则用 <em>自身生成</em> 的前一个 token——这种训练/推理的不一致叫 <em>exposure bias</em>，常通过 scheduled sampling、beam search 等手段缓解。</p>
+
+            <div class="remark" data-label">
+                <p>Seq2Seq 是机器翻译、文本摘要、语音识别、图像描述（Image Captioning）等任务的基本框架。<strong>注意力机制（Attention）</strong>与 Transformer 的出现进一步显著提升了这些任务的性能——这是第 6 章的主题。</p>
+            </div>
+        </div>
+
+        <!-- 5.7 代码实现 -->
+        <div class="content-section">
+            <h2>5.7 代码实现：从零实现一个 LSTM 单元</h2>
+
+            <div class="code-block">
+                <span class="code-lang">Python / NumPy</span>
+<pre><code><span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np
+
+<span class="code-keyword">def</span> <span class="code-function">sigmoid</span>(z): <span class="code-keyword">return</span> <span class="code-number">1.0</span> / (<span class="code-number">1.0</span> + np.exp(-z))
+
+<span class="code-keyword">class</span> <span class="code-function">LSTMCell</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, in_dim, h_dim):
+        self.Wf = np.random.randn(h_dim, in_dim + h_dim) * <span class="code-number">0.1</span>
+        self.Wi = np.random.randn(h_dim, in_dim + h_dim) * <span class="code-number">0.1</span>
+        self.Wc = np.random.randn(h_dim, in_dim + h_dim) * <span class="code-number">0.1</span>
+        self.Wo = np.random.randn(h_dim, in_dim + h_dim) * <span class="code-number">0.1</span>
+        self.bf = np.ones(h_dim) * <span class="code-number">1.0</span>   <span class="code-comment"># 遗忘门偏置初值大，有助早期记忆</span>
+        self.bi = np.zeros(h_dim)
+        self.bc = np.zeros(h_dim)
+        self.bo = np.zeros(h_dim)
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(self, x, h_prev, c_prev):
+        <span class="code-string">"""x: (B, in_dim); h_prev, c_prev: (B, h_dim)"""</span>
+        concat = np.concatenate([x, h_prev], axis=<span class="code-number">1</span>)  <span class="code-comment"># (B, in+h)</span>
+        f = sigmoid(concat @ self.Wf.T + self.bf)
+        i = sigmoid(concat @ self.Wi.T + self.bi)
+        c_tilde = np.tanh(concat @ self.Wc.T + self.bc)
+        c = f * c_prev + i * c_tilde
+        o = sigmoid(concat @ self.Wo.T + self.bo)
+        h = o * np.tanh(c)
+        self.cache = (concat, f, i, c_tilde, c, o, h, c_prev, h_prev, x)
+        <span class="code-keyword">return</span> h, c
+
+    <span class="code-keyword">def</span> <span class="code-function">backward</span>(self, dh, dc):
+        concat, f, i, c_tilde, c, o, h, c_prev, h_prev, x = self.cache
+        do = dh * np.tanh(c)                         <span class="code-comment"># elementwise</span>
+        dc_total = dc + dh * o * (<span class="code-number">1</span> - np.tanh(c)**<span class="code-number">2</span>)
+        dc_prev = dc_total * f
+        df = dc_total * c_prev
+        di = dc_total * c_tilde
+        dc_tilde = dc_total * i
+        <span class="code-comment"># activation gradient</span>
+        dconcat = (df * f * (<span class="code-number">1</span> - f)) @ self.Wf \
+                + (di * i * (<span class="code-number">1</span> - i)) @ self.Wi \
+                + (dc_tilde * (<span class="code-number">1</span> - c_tilde**<span class="code-number">2</span>)) @ self.Wc \
+                + (do * o * (<span class="code-number">1</span> - o)) @ self.Wo
+        dx = dconcat[:, :x.shape[<span class="code-number">1</span>]]
+        dh_prev = dconcat[:, x.shape[<span class="code-number">1</span>]:]
+        <span class="code-keyword">return</span> dx, dh_prev, dc_prev
+
+<span class="code-keyword">class</span> <span class="code-function">LSTM</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self, in_dim, h_dim, num_layers=<span class="code-number">1</span>):
+        self.cells = [LSTMCell(in_dim, h_dim) if l == <span class="code-number">0</span>
+                      else LSTMCell(h_dim, h_dim) for l in range(num_layers)]
+
+    <span class="code-keyword">def</span> <span class="code-function">forward</span>(X):
+        <span class="code-string">"""X: (T, B, in_dim) -> h: (T, B, h_dim)"""</span>
+        T, B, _ = X.shape
+        h, c = np.zeros_like(X[:, :, :self.cells[<span class="code-number">0</span>].Wf.shape[<span class="code-number">0</span>]]), \
+               np.zeros_like(X[:, :, :self.cells[<span class="code-number">0</span>].Wf.shape[<span class="code-number">0</span>]])
+        <span class="code-keyword">for</span> l, cell in enumerate(self.cells):
+            h_prev, c_prev = np.zeros((B, cell.Wf.shape[<span class="code-number">0</span>])), np.zeros((B, cell.Wf.shape[<span class="code-number">0</span>]))
+            <span class="code-keyword">for</span> t in range(T):
+                x_t = X[t] if l == <span class="code-number">0</span> else h[t]
+                h_prev, c_prev = cell.forward(x_t, h_prev, c_prev)
+                h[t], c[t] = h_prev, c_prev
+        <span class="code-keyword">return</span> h, (h_prev, c_prev)</code></pre>
+            </div>
+        </div>
+
+        <!-- 小结 -->
+        <div class="summary-box">
+            <div class="summary-title">★ 本章要点 · KEY POINTS</div>
+            <ul>
+                <li>RNN 通过在时间步之间传递隐藏状态 $\boldsymbol{h}_t$ 来建模序列依赖，并在所有时间步共享权重。</li>
+                <li>训练使用 BPTT，长序列会因累乘因子导致梯度消失/爆炸；<strong>门控单元 LSTM / GRU</strong> 为梯度提供稳定的线性通道，从根本上缓解此问题。</li>
+                <li>LSTM 维护遗忘门、输入门、输出门与单元状态 $\boldsymbol{c}_t$；GRU 将遗忘与输入门合并为更新门，并引入重置门，参数量略少。</li>
+                <li>Seq2Seq（编码器-解码器）是翻译、摘要、问答等序列到序列任务的基础框架，注意力机制在其之上进一步提升。</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>习 题</h2>
+            <div class="exercise" data-label="习题 5.1">
+                <p>推导：一个"无激活、无偏置、单层线性 RNN"，即 $\boldsymbol{h}_t = \boldsymbol{W} \boldsymbol{h}_{t-1}$。设 $\boldsymbol{h}_0$ 为初始向量，写出 $\boldsymbol{h}_T$ 的表达式，并分析当 $\boldsymbol{W}$ 的最大奇异值 $> 1$、$< 1$、$= 1$ 时，$\|\boldsymbol{h}_T\|$ 随 $T$ 的变化。</p>
+            </div>
+            <div class="exercise" data-label="习题 5.2">
+                <p>在 PTB 或其他小型文本语料上训练一个字符级语言模型（单层 LSTM，隐藏层大小 256），然后用它采样生成一段看起来像自然语言的文本，记录温度 $t$（softmax 的输入除以 $t$）分别为 0.5、1.0、1.5 时的结果差异。</p>
+            </div>
+            <div class="exercise" data-label="习题 5.3">
+                <p>在"加法"的 seq2seq 任务：输入为字符串 <code>"123+45"</code>，输出为 <code>"168"</code>。比较 RNN/LSTM/GRU 在此任务上的收敛速度与测试精度。</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="chapter-nav">
+        <a href="chapter4.html" class="nav-btn">← 第4章 卷积神经网络</a>
+        <a href="chapter6.html" class="nav-btn">第6章 Transformer与注意力 →</a>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left"><h4>神经网络与深度学习</h4><p>智慧课程教学系统</p></div>
+            <div class="footer-right"><p>&copy; 2026 NN&DL Smart Course System</p></div>
+        </div>
+    </footer>
+</body>
+</html>

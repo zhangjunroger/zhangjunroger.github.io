@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>课堂签到 · 神经网络与深度学习</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%);
+    color: #f1f5f9;
+    min-height: 100vh;
+    padding: 18px 16px 40px;
+}
+.wrap { max-width: 420px; margin: 0 auto; }
+h1 { font-size: 20px; text-align:center; margin-bottom: 6px; }
+.sub { text-align:center; font-size: 12px; color:#94a3b8; margin-bottom: 22px; }
+.card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+.card h2 { font-size: 15px; margin-bottom: 12px; color: #c4b5fd; }
+input, select {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    margin-bottom: 12px;
+    appearance: none;
+}
+input:focus { border-color: #6366f1; }
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6,#ec4899);
+    cursor: pointer;
+}
+button:disabled { opacity:.45; }
+button.ghost { background: rgba(255,255,255,0.08); font-weight: 400; }
+.msg { text-align:center; font-size: 14px; min-height: 20px; margin-top: 10px; }
+.msg.ok { color: #4ade80; }
+.msg.err { color: #f87171; }
+.datalist-wrap { position: relative; }
+.suggest {
+    position: absolute; left:0; right:0; top: 100%;
+    background:#1e293b; border:1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; margin-top:4px; max-height: 180px; overflow-y:auto; z-index: 9;
+}
+.suggest div { padding: 10px 14px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor:pointer; }
+.suggest div:active { background: rgba(99,102,241,0.3); }
+.q-text { font-size: 17px; line-height: 1.7; margin-bottom: 14px; }
+.opt {
+    display:block; width:100%; text-align:left; padding: 13px 15px;
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color:#f1f5f9;
+    font-size: 15px; margin-bottom: 10px; font-weight: 400;
+}
+.opt.picked { border-color:#8b5cf6; background: rgba(139,92,246,0.25); }
+.opt.correct { border-color:#22c55e; background: rgba(34,197,94,0.2); }
+.qstatus { font-size: 13px; color:#94a3b8; text-align:center; }
+.badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px;
+    background: rgba(34,197,94,0.18); color:#4ade80; margin-bottom: 10px; }
+.empty { text-align:center; color:#64748b; font-size: 14px; padding: 26px 0; }
+.footer { text-align:center; font-size: 11px; color:#475569; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h1>📚 神经网络与深度学习</h1>
+    <div class="sub">课堂签到与实时答题</div>
+
+    <div class="card" id="signinCard">
+        <h2>✋ 签到</h2>
+        <input type="text" id="nameInput" placeholder="输入姓名" autocomplete="off">
+        <div class="suggest" id="suggest" style="display:none"></div>
+        <input type="text" id="sidInput" placeholder="学号（选填）">
+        <button id="signinBtn">签 到</button>
+        <div class="msg" id="signMsg"></div>
+    </div>
+
+    <div class="card" id="qCard" style="display:none">
+        <h2>📝 实时答题</h2>
+        <div id="qBody"><div class="empty">暂无进行中的题目，等待老师出题…</div></div>
+    </div>
+
+    <div class="card" id="meCard" style="display:none">
+        <span class="badge" id="meBadge"></span>
+        <div class="qstatus" id="meInfo"></div>
+    </div>
+
+    <div class="footer">沈阳工业大学人工智能学院 · 智慧课程系统</div>
+</div>
+
+<script>
+(function () {
+    const qs = new URLSearchParams(location.search);
+    const cls = qs.get('class') || '默认班级';
+    const api = '/api';
+
+    const nameInput = document.getElementById('nameInput');
+    const sidInput = document.getElementById('sidInput');
+    const signinBtn = document.getElementById('signinBtn');
+    const signMsg = document.getElementById('signMsg');
+    const suggest = document.getElementById('suggest');
+    const qCard = document.getElementById('qCard');
+    const qBody = document.getElementById('qBody');
+    const meCard = document.getElementById('meCard');
+    const meBadge = document.getElementById('meBadge');
+    const meInfo = document.getElementById('meInfo');
+
+    let me = localStorage.getItem('sig_name_' + cls) || '';
+    let roster = [];
+    let myAnswer = null;   // {qid, choice}
+    let curQ = null;
+
+    nameInput.value = me;
+    if (me) {
+        signinBtn.textContent = '重新签到';
+        meCard.style.display = '';
+        meBadge.textContent = '已签到：' + me;
+    }
+
+    // 名单建议
+    fetch(api + '/state?class=' + encodeURIComponent(cls))
+        .then(r => r.json())
+        .then(st => { roster = st.roster || []; })
+        .catch(() => {});
+
+    nameInput.addEventListener('input', () => {
+        const v = nameInput.value.trim();
+        if (!v || !roster.length) { suggest.style.display = 'none'; return; }
+        const hits = roster.filter(n => n.includes(v)).slice(0, 5);
+        if (!hits.length) { suggest.style.display = 'none'; return; }
+        suggest.innerHTML = hits.map(n => '<div data-n="' + n + '">' + n + '</div>').join('');
+        suggest.style.display = '';
+    });
+    suggest.addEventListener('click', e => {
+        if (e.target.dataset.n) {
+            nameInput.value = e.target.dataset.n;
+            suggest.style.display = 'none';
+        }
+    });
+
+    signinBtn.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        if (!name) { signMsg.textContent = '请输入姓名'; signMsg.className = 'msg err'; return; }
+        signinBtn.disabled = true;
+        fetch(api + '/signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ class: cls, name: name, sid: sidInput.value.trim() })
+        })
+        .then(r => r.json())
+        .then(res => {
+            signinBtn.disabled = false;
+            if (res.ok) {
+                me = name;
+                localStorage.setItem('sig_name_' + cls, name);
+                signMsg.textContent = '✓ ' + res.msg;
+                signMsg.className = 'msg ok';
+                signinBtn.textContent = '已签到';
+                meCard.style.display = '';
+                meBadge.textContent = '已签到：' + me;
+                if (res.hasQuestion) pollOnce();
+            } else {
+                signMsg.textContent = res.msg || '签到失败';
+                signMsg.className = 'msg err';
+            }
+        })
+        .catch(() => {
+            signinBtn.disabled = false;
+            signMsg.textContent = '网络错误，请重试';
+            signMsg.className = 'msg err';
+        });
+    });
+
+    // ---------- 实时答题轮询 ----------
+    function renderQuestion() {
+        if (!curQ) {
+            qBody.innerHTML = '<div class="empty">暂无进行中的题目，等待老师出题…</div>';
+            return;
+        }
+        let html = '<div class="q-text">' + curQ.text + '</div>';
+        (curQ.options || []).forEach((opt, i) => {
+            const picked = myAnswer && myAnswer.qid === curQ.id && myAnswer.choice === i;
+            html += '<button class="opt' + (picked ? ' picked' : '') + '" data-i="' + i + '">'
+                + String.fromCharCode(65 + i) + '. ' + opt + '</button>';
+        });
+        html += '<div class="qstatus" id="qStatus">' + (myAnswer && myAnswer.qid === curQ.id ? '✓ 已提交，可修改' : '点击选项提交答案') + '</div>';
+        qBody.innerHTML = html;
+        qBody.querySelectorAll('.opt').forEach(btn => {
+            btn.addEventListener('click', () => submitAnswer(parseInt(btn.dataset.i)));
+        });
+    }
+
+    function submitAnswer(choice) {
+        if (!curQ) return;
+        fetch(api + '/answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ class: cls, name: me, qid: curQ.id, choice: choice })
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.ok) {
+                myAnswer = { qid: curQ.id, choice: choice };
+                const st = document.getElementById('qStatus');
+                if (st) st.textContent = '✓ 已提交';
+                renderQuestion();
+            }
+        })
+        .catch(() => {});
+    }
+
+    function pollOnce() {
+        fetch(api + '/state?class=' + encodeURIComponent(cls))
+            .then(r => r.json())
+            .then(st => {
+                roster = st.roster || roster;
+                const newQ = st.current;
+                if (!newQ) { curQ = null; renderQuestion(); return; }
+                if (!curQ || curQ.id !== newQ.id) {
+                    curQ = newQ;
+                    myAnswer = null;
+                }
+                renderQuestion();
+                qCard.style.display = '';
+            })
+            .catch(() => {});
+    }
+
+    setInterval(pollOnce, 2500);
+    pollOnce();
+})();
+</script>
+</body>
+</html>
