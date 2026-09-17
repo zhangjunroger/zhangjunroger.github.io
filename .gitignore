@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-server
+dist-ghpages
+release
+data/
+.env
+.env.local
+.DS_Store
+*.log
+coverage
+.vite

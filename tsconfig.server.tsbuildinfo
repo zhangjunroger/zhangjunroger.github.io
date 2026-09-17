@@ -1,0 +1,1 @@
+{"root":["./api/index.ts","./api/lib/auth.ts","./api/lib/config.ts","./api/lib/db.ts","./api/lib/error.ts","./api/lib/logger.ts","./api/seeds/seed.ts"],"errors":true,"version":"5.8.3"}

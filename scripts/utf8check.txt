@@ -1,0 +1,5 @@
+title: 第三章 稳定性签到
+roster: ['张三/自动化2401', '李四/自动化2401', '王五/自动化2401']
+checkinCount: 1
+absent: ['李四', '王五']
+unregistered: 0

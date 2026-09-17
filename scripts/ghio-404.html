@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>页面跳转中…</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="background:#0f172a;color:#94a3b8;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+  <script>
+    (function () {
+      var p = location.pathname;
+      // 智慧课程站点的 SPA 深链接：先记录原始路径，再跳到站点根由前端路由接管
+      if (p.indexOf('/zdkzyl/') === 0 && p !== '/zdkzyl/') {
+        try { sessionStorage.setItem('zdkzy.gh404', p + location.search); } catch (e) {}
+      }
+      location.replace('/zdkzyl/');
+    })();
+  </script>
+  <noscript>正在跳转到 <a href="/zdkzyl/" style="color:#22d3ee">/zdkzyl/</a></noscript>
+</body>
+</html>

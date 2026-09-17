@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: '"Noto Sans SC', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgba(6, 182, 212, 0.35);
+    color: #fff;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #1e40af 0%, #06b6d4 100%);
+    border-radius: 10px;
+    border: 2px solid #0f172a;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2563eb 0%, #22d3ee 100%);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-900/55 backdrop-blur-xl border border-white/10 shadow-card;
+  }
+  .glass-card-hover {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-glow hover:border-signal-500/40;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3 rounded-lg font-semibold whitespace-nowrap shrink-0
+           bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600
+           text-slate-950 shadow-lg shadow-amber-500/25
+           hover:shadow-amber-500/45 hover:scale-[1.03] active:scale-[0.97]
+           transition-all duration-300 ease-out;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-7 py-3 rounded-lg font-semibold whitespace-nowrap shrink-0
+           border border-signal-500/50 text-signal-400 bg-signal-500/10
+           hover:bg-signal-500/20 hover:border-signal-400 hover:text-white
+           transition-all duration-300 ease-out;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-medium whitespace-nowrap shrink-0
+           text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-200;
+  }
+  .tag-pill {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-serif font-bold text-white mb-3 tracking-tight;
+  }
+  .section-subtitle {
+    @apply text-slate-400 text-base md:text-lg max-w-2xl;
+  }
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg bg-slate-800/60 border border-white/10
+           text-slate-200 placeholder:text-slate-500
+           focus:outline-none focus:border-signal-500 focus:ring-2 focus:ring-signal-500/20
+           transition-all duration-200;
+  }
+  .progress-bar-track {
+    @apply relative h-2 w-full rounded-full bg-slate-700/60 overflow-hidden;
+  }
+  .progress-bar-fill {
+    @apply absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-brand-500 via-signal-500 to-cyan-400;
+  }
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-brand-200 to-signal-400;
+  }
+  .formula-watermark {
+    @apply absolute font-mono text-white/[0.035] select-none pointer-events-none leading-relaxed;
+  }
+}
+
+@layer utilities {
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  }
+  .mask-fade-r {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  }
+  .text-stroke {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.15);
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .bg-noise {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.2  0 0 0 0 0.4  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .scrollbar-hidden::-webkit-scrollbar { display: none; }
+  .scrollbar-hidden { scrollbar-width: none; }
+
+  /* ===== 实验平台滑块 ===== */
+  .lab-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--accent, #22d3ee) 0%, var(--accent, #22d3ee) var(--pct, 50%), rgba(30,41,59,0.9) var(--pct, 50%), rgba(30,41,59,0.9) 100%);
+    outline: none;
+    cursor: pointer;
+  }
+  .lab-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 2.5px solid var(--accent, #22d3ee);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent, #22d3ee) 60%, transparent);
+    transition: transform .15s ease;
+  }
+  .lab-slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  .lab-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 2.5px solid var(--accent, #22d3ee);
+  }
+  /* 弹幕漂浮动画 */
+  @keyframes danmaku {
+    0%   { transform: translateX(100%); opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { transform: translateX(-110%); opacity: 0; }
+  }
+  .danmaku-item {
+    animation: danmaku linear forwards;
+  }
+  /* 摇号滚动 */
+  @keyframes shake-roll {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+  }
+}
