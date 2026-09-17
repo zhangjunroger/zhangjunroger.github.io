@@ -1,0 +1,14 @@
+# 《自动控制原理》智慧课程 — Docker Compose
+# 用法: cp .env.production.example .env（修改 JWT_SECRET），然后 docker compose up -d --build
+services:
+  zdkzyl:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data          # SQLite 数据库持久化到宿主机
+    restart: unless-stopped

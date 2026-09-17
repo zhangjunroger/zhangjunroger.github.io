@@ -1,0 +1,19 @@
+[Unit]
+Description=ZDKZYL 自动控制原理智慧课程服务 (Express + SQLite)
+After=network.target
+
+[Service]
+Type=simple
+# 改成实际的部署目录
+WorkingDirectory=/opt/zdkzyl
+ExecStart=/usr/bin/node dist-server/api/index.js
+Environment=NODE_ENV=production
+Restart=on-failure
+RestartSec=5
+
+# 安全加固
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

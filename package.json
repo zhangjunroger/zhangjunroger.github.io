@@ -18,7 +18,9 @@
     "deploy:prepare": "npm run build && npm run build:server",
     "build:static": "cross-env VITE_STATIC_MODE=1 vite build --outDir dist-ghpages --emptyOutDir",
     "pack:pages": "node scripts/pack-ghpages.mjs",
-    "deploy:pages": "npm run build:static && npm run pack:pages"
+    "deploy:pages": "npm run build:static && npm run pack:pages",
+    "pack:release": "node scripts/pack-release.mjs",
+    "push:ghio": "node scripts/push-ghio.mjs"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
