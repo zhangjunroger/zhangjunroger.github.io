@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 · 神经网络与深度学习智慧课程</title>
+    <link rel="stylesheet" href="css/theme-pro.css?v=3">
+    <link rel="stylesheet" href="css/admin.css?v=3">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+    <!-- 登录视图 -->
+    <div id="loginView" class="login-wrap" style="display:none;">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="assets/favicon.svg" alt="logo">
+                <div>
+                    <div class="login-title">智慧课程管理平台</div>
+                    <div class="login-sub">NEURAL NETWORKS &amp; DEEP LEARNING · ADMIN CONSOLE</div>
+                </div>
+            </div>
+            <label class="f-label">账号</label>
+            <input id="lgUser" class="mp-input" style="width:100%" placeholder="用户名 / 学号" autocomplete="username">
+            <label class="f-label">密码</label>
+            <input id="lgPass" class="mp-input" style="width:100%" type="password" placeholder="密码" autocomplete="current-password">
+            <button id="lgBtn" class="mp-btn primary" style="width:100%;margin-top:18px;justify-content:center;">登 录</button>
+            <div id="lgMsg" style="color:var(--c-red);font-size:12.5px;margin-top:10px;min-height:18px;text-align:center;"></div>
+            <div style="font-size:12px;color:var(--tx-faint);margin-top:12px;text-align:center;">
+                初始管理员 admin / admin123 · 请登录后及时修改
+            </div>
+            <div style="text-align:center;margin-top:14px;"><a href="index.html" style="color:var(--c-cyan);font-size:13px;">← 返回课程首页</a></div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainView" class="mp-body" style="display:none;">
+        <aside class="mp-side" id="mpSide">
+            <div class="mp-brand">
+                <img src="assets/favicon.svg" alt="logo">
+                <div>
+                    <div class="t1">智慧课程管理</div>
+                    <div class="t2">NN&DL ADMIN</div>
+                </div>
+            </div>
+            <nav class="mp-nav">
+                <div class="grp">驾驶舱</div>
+                <div class="mp-item active" data-page="overview">📊 数据总览</div>
+                <div class="mp-item" data-page="analysis">🎓 学情分析</div>
+                <div class="grp">教学管理</div>
+                <div class="mp-item" data-page="classes">🏫 班级与名册</div>
+                <div class="mp-item" data-page="chapters">📚 课程内容</div>
+                <div class="mp-item" data-page="resources">🔗 学习资源</div>
+                <div class="mp-item" data-page="bank">📝 互动题库</div>
+                <div class="grp">系统</div>
+                <div class="mp-item" data-page="users">👤 账号管理</div>
+                <div class="mp-item" data-page="export">📤 数据导出</div>
+                <div class="mp-item" data-page="settings">⚙️ 系统设置</div>
+            </nav>
+            <div class="mp-side-foot">
+                <div id="meInfo" style="margin-bottom:6px;"></div>
+                <a href="index.html" target="_blank">↗ 课程主页</a> ·
+                <a href="signin.html" target="_blank">↗ 签到页</a> ·
+                <a href="javascript:void(0)" id="logoutBtn">退出登录</a>
+            </div>
+        </aside>
+
+        <main class="mp-main">
+            <div id="toast" class="mp-toast"></div>
+
+            <!-- ============ 数据总览 ============ -->
+            <section class="mp-page active" data-page="overview">
+                <div class="mp-head">
+                    <div><h1>数据总览</h1><div class="sub" id="ovCourseLine">…</div></div>
+                    <div class="f-row" style="margin:0">
+                        <button class="mp-btn" id="ovRefresh">↻ 刷新</button>
+                    </div>
+                </div>
+                <div class="mp-grid cols-4" id="ovKpis"></div>
+                <div class="mp-grid cols-2" style="margin-top:14px;">
+                    <div class="mp-card"><h3>近 30 天签到趋势</h3><div id="ovSignChart" class="chart-box"></div></div>
+                    <div class="mp-card"><h3>近 14 天学习行为分布</h3><div id="ovModChart" class="chart-box"></div></div>
+                </div>
+                <div class="mp-grid cols-2" style="margin-top:14px;">
+                    <div class="mp-card"><h3>近 14 天活跃度</h3><div id="ovTrendChart" class="chart-box"></div></div>
+                    <div class="mp-card"><h3>最新动态</h3><div id="ovFeed"></div></div>
+                </div>
+            </section>
+
+            <!-- ============ 学情分析 ============ -->
+            <section class="mp-page" data-page="analysis">
+                <div class="mp-head">
+                    <div><h1>学情分析</h1><div class="sub">签到、答题、学习行为多维画像</div></div>
+                    <div class="f-row" style="margin:0">
+                        <select id="anClass" class="mp-select"></select>
+                        <button class="mp-btn" id="anRefresh">↻ 刷新</button>
+                    </div>
+                </div>
+                <div class="mp-grid cols-2">
+                    <div class="mp-card"><h3>学生综合表现 TOP</h3><div id="anTopChart" class="chart-box"></div></div>
+                    <div class="mp-card"><h3>正确率分布</h3><div id="anDistChart" class="chart-box"></div></div>
+                </div>
+                <div class="mp-card" style="margin-top:14px;">
+                    <h3>学生学情明细 <span style="font-weight:400;color:var(--tx-faint);font-size:12px;">（点击行查看个人画像）</span></h3>
+                    <div class="mp-table-wrap"><table class="mp-table" id="anTable"></table></div>
+                </div>
+                <div class="mp-card" style="margin-top:14px;display:none;" id="anDetailCard">
+                    <h3 id="anDetailTitle">个人画像</h3>
+                    <div class="mp-grid cols-2">
+                        <div><div id="anChapterChart" class="chart-box" style="height:260px;"></div></div>
+                        <div><div id="anEvChart" class="chart-box" style="height:260px;"></div></div>
+                    </div>
+                    <div class="mp-grid cols-2" style="margin-top:8px;">
+                        <div><h3 style="font-size:13px;">签到记录</h3><div id="anSignList"></div></div>
+                        <div><h3 style="font-size:13px;">最近作答</h3><div id="anAnsList"></div></div>
+                    </div>
+                </div>
+                <div class="mp-card" style="margin-top:14px;">
+                    <h3>课堂互动题目分析</h3>
+                    <div id="anQuizChart" class="chart-box tall"></div>
+                </div>
+            </section>
+
+            <!-- ============ 班级与名册 ============ -->
+            <section class="mp-page" data-page="classes">
+                <div class="mp-head">
+                    <div><h1>班级与名册</h1><div class="sub">教学班管理、学生名单导入、课堂实时状态</div></div>
+                    <div class="f-row" style="margin:0">
+                        <button class="mp-btn primary" id="clsAddBtn">＋ 新建班级</button>
+                        <button class="mp-btn" data-import="classes">⬆ 模板导入</button>
+                    </div>
+                </div>
+                <div class="mp-grid cols-3" id="clsCards"></div>
+                <div class="mp-card" style="margin-top:16px;" id="rosterCard" hidden>
+                    <h3>名册管理 · <span id="rosterClassName" style="color:var(--c-cyan);"></span></h3>
+                    <p style="color:var(--tx-faint);font-size:12.5px;">每行一个学生，支持「姓名,学号」或「姓名 学号」格式。保存后立即同步到课堂大屏与签到页。</p>
+                    <textarea id="rosterText" class="mp-textarea" rows="12" placeholder="张三,20250101&#10;李四,20250102&#10;王五"></textarea>
+                    <div class="f-row" style="margin-top:12px;">
+                        <button class="mp-btn primary" id="rosterSave">💾 保存名册</button>
+                        <button class="mp-btn" id="rosterReload">↻ 重新载入</button>
+                        <button class="mp-btn" data-import="roster">⬆ 模板导入名册</button>
+                        <button class="mp-btn" id="rosterGenAccounts">👤 一键生成学生账号</button>
+                    </div>
+                </div>
+                <div class="mp-card" style="margin-top:16px;">
+                    <h3>课堂实况 <span style="font-weight:400;color:var(--tx-faint);font-size:12px;">（与首页「扫码签到·实时答题」大屏同源）</span></h3>
+                    <div class="f-row">
+                        <select id="lvClass" class="mp-select"></select>
+                        <button class="mp-btn" id="lvRefresh">↻ 刷新</button>
+                        <button class="mp-btn danger" id="lvReset">清课（当前场次归档）</button>
+                    </div>
+                    <div id="lvInfo"></div>
+                </div>
+            </section>
+
+            <!-- ============ 课程内容 ============ -->
+            <section class="mp-page" data-page="chapters">
+                <div class="mp-head">
+                    <div><h1>课程内容</h1><div class="sub">章节元数据管理（用于学情分析与课程档案）</div></div>
+                    <div class="f-row" style="margin:0">
+                        <button class="mp-btn primary" id="chAddBtn">＋ 新增章节</button>
+                        <button class="mp-btn" data-import="chapters">⬆ 模板导入</button>
+                    </div>
+                </div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="chTable"></table></div></div>
+            </section>
+
+            <!-- ============ 学习资源 ============ -->
+            <section class="mp-page" data-page="resources">
+                <div class="mp-head">
+                    <div><h1>学习资源</h1><div class="sub">教材 / 课程 / 工具 / 论文 分类管理</div></div>
+                    <div class="f-row" style="margin:0">
+                        <button class="mp-btn primary" id="resAddBtn">＋ 新增资源</button>
+                        <button class="mp-btn" data-import="resources">⬆ 模板导入</button>
+                    </div>
+                </div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="resTable"></table></div></div>
+            </section>
+
+            <!-- ============ 题库 ============ -->
+            <section class="mp-page" data-page="bank">
+                <div class="mp-head">
+                    <div><h1>互动题库</h1><div class="sub">预置题目，可一键推送到课堂</div></div>
+                    <div class="f-row" style="margin:0">
+                        <select id="bankChapter" class="mp-select"><option value="0">全部章节</option></select>
+                        <button class="mp-btn primary" id="bkAddBtn">＋ 新增题目</button>
+                        <button class="mp-btn" data-import="bank">⬆ 模板导入</button>
+                    </div>
+                </div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="bkTable"></table></div></div>
+            </section>
+
+            <!-- ============ 账号管理 ============ -->
+            <section class="mp-page" data-page="users">
+                <div class="mp-head">
+                    <div><h1>账号管理</h1><div class="sub">管理员 / 教师 / 学生账号体系</div></div>
+                    <div class="f-row" style="margin:0">
+                        <button class="mp-btn primary" id="usAddBtn">＋ 新建账号</button>
+                        <button class="mp-btn" data-import="users">⬆ 模板导入</button>
+                    </div>
+                </div>
+                <div class="f-row">
+                    <select id="usRole" class="mp-select">
+                        <option value="">全部角色</option><option value="admin">管理员</option>
+                        <option value="teacher">教师</option><option value="student">学生</option>
+                    </select>
+                    <input id="usQ" class="mp-input" placeholder="搜索用户名 / 姓名" style="width:220px;">
+                    <select id="usClass" class="mp-select"><option value="">全部班级</option></select>
+                </div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="usTable"></table></div></div>
+            </section>
+
+            <!-- ============ 数据导出 ============ -->
+            <section class="mp-page" data-page="export">
+                <div class="mp-head">
+                    <div><h1>数据导出</h1><div class="sub">CSV 表格 + 可视化图表 PNG</div></div>
+                </div>
+                <div class="f-row"><span class="f-label" style="margin:0;">班级筛选：</span><select id="expClass" class="mp-select"><option value="">全部班级</option></select></div>
+                <div class="mp-grid cols-3" id="expCards"></div>
+                <div class="mp-card" style="margin-top:14px;">
+                    <h3>导出可视化图表</h3>
+                    <p style="color:var(--tx-faint);font-size:12.5px;">将「数据总览 / 学情分析」中已渲染的图表导出为 PNG 图片。</p>
+                    <div class="f-row" id="expCharts"></div>
+                </div>
+            </section>
+
+            <!-- ============ 系统设置 ============ -->
+            <section class="mp-page" data-page="settings">
+                <div class="mp-head"><div><h1>系统设置</h1><div class="sub">课程信息、默认班级、账号安全</div></div></div>
+                <div class="mp-grid cols-2">
+                    <div class="mp-card">
+                        <h3>课程信息</h3>
+                        <label class="f-label">课程名称</label><input id="setCourseName" class="mp-input" style="width:100%">
+                        <label class="f-label">课程编码</label><input id="setCourseCode" class="mp-input" style="width:100%">
+                        <label class="f-label">开课学期</label><input id="setSemester" class="mp-input" style="width:100%">
+                        <label class="f-label">开课单位</label><input id="setSchool" class="mp-input" style="width:100%">
+                        <label class="f-label">默认班级（课堂互动用）</label><input id="setDefaultClass" class="mp-input" style="width:100%">
+                        <div class="f-row" style="margin-top:16px;"><button class="mp-btn primary" id="setSave">保存设置</button></div>
+                    </div>
+                    <div class="mp-card">
+                        <h3>修改我的密码</h3>
+                        <label class="f-label">原密码</label><input id="pwOld" type="password" class="mp-input" style="width:100%">
+                        <label class="f-label">新密码（≥6 位）</label><input id="pwNew" type="password" class="mp-input" style="width:100%">
+                        <label class="f-label">确认新密码</label><input id="pwNew2" type="password" class="mp-input" style="width:100%">
+                        <div class="f-row" style="margin-top:16px;"><button class="mp-btn primary" id="pwSave">修改密码</button></div>
+                        <h3 style="margin-top:26px;">系统信息</h3>
+                        <div id="sysInfo" style="font-size:13px;color:var(--tx-dim);line-height:2;"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 通用弹窗 -->
+    <div class="mp-modal-mask" id="modalMask">
+        <div class="mp-modal" id="modalBox"></div>
+    </div>
+
+    <script src="js/pb.js?v=1"></script>
+<script src="js/vendor/echarts.min.js"></script>
+    <script src="js/admin.js?v=1"></script>
+    <script src="js/import.js?v=1"></script>
+</body>
+</html>

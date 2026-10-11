@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学情中心 · 神经网络与深度学习智慧课程</title>
+    <link rel="stylesheet" href="css/theme-pro.css?v=3">
+    <link rel="stylesheet" href="css/admin.css?v=3">
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+    <!-- 登录视图 -->
+    <div id="loginView" class="login-wrap" style="display:none;">
+        <div class="login-card">
+            <div class="login-logo">
+                <img src="assets/favicon.svg" alt="logo">
+                <div>
+                    <div class="login-title">学生学情中心</div>
+                    <div class="login-sub">NN&DL SMART COURSE · MY LEARNING</div>
+                </div>
+            </div>
+            <label class="f-label">学号 / 用户名</label>
+            <input id="lgUser" class="mp-input" style="width:100%" placeholder="学号（由教师统一开通）" autocomplete="username">
+            <label class="f-label">密码</label>
+            <input id="lgPass" class="mp-input" style="width:100%" type="password" placeholder="教师开通的初始密码或自注册密码" autocomplete="current-password">
+            <button id="lgBtn" class="mp-btn primary" style="width:100%;margin-top:18px;justify-content:center;">进入我的学情</button>
+            <div id="lgMsg" style="color:var(--c-red);font-size:12.5px;margin-top:10px;min-height:18px;text-align:center;"></div>
+            <div style="text-align:center;margin-top:14px;font-size:13px;"><a href="index.html" style="color:var(--c-cyan);">← 返回课程首页</a><span style="color:var(--tx-faint);margin:0 8px;">·</span><a href="index.html" title="在首页右上角「登录 / 注册」中注册新账号" style="color:var(--c-cyan);">没有账号？去首页注册 →</a></div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="mainView" class="mp-body" style="display:none;">
+        <aside class="mp-side" id="mpSide">
+            <div class="mp-brand">
+                <img src="assets/favicon.svg" alt="logo">
+                <div>
+                    <div class="t1">学情中心</div>
+                    <div class="t2">MY LEARNING</div>
+                </div>
+            </div>
+            <nav class="mp-nav">
+                <div class="grp">我的学习</div>
+                <div class="mp-item active" data-page="me">📊 学习画像</div>
+                <div class="mp-item" data-page="answers">✍️ 我的作答</div>
+                <div class="grp">课程</div>
+                <div class="mp-item" data-page="resources">🔗 学习资源</div>
+                <div class="grp">账号</div>
+                <div class="mp-item" data-page="security">🔒 修改密码</div>
+            </nav>
+            <div class="mp-side-foot">
+                <div id="meInfo" style="margin-bottom:6px;"></div>
+                <a href="index.html" target="_blank">↗ 课程主页</a> ·
+                <a href="javascript:void(0)" id="logoutBtn">退出登录</a>
+            </div>
+        </aside>
+
+        <main class="mp-main">
+            <div id="toast" class="mp-toast"></div>
+
+            <section class="mp-page active" data-page="me">
+                <div class="mp-head">
+                    <div><h1 id="hiLine">学习画像</h1><div class="sub" id="hiSub">数据来自签到、课堂答题与学习行为记录</div></div>
+                    <button class="mp-btn" id="meRefresh">↻ 刷新</button>
+                </div>
+                <div class="mp-grid cols-4" id="meKpis"></div>
+                <div class="mp-grid cols-2" style="margin-top:14px;">
+                    <div class="mp-card"><h3>各章作答与正确率</h3><div id="meChChart" class="chart-box"></div></div>
+                    <div class="mp-card"><h3>我的学习活跃趋势</h3><div id="meEvChart" class="chart-box"></div></div>
+                </div>
+                <div class="mp-card" style="margin-top:14px;">
+                    <h3>学习模块分布</h3>
+                    <div id="meModChart" class="chart-box" style="height:260px;"></div>
+                </div>
+            </section>
+
+            <section class="mp-page" data-page="answers">
+                <div class="mp-head"><div><h1>我的作答</h1><div class="sub">课堂实时答题记录</div></div></div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="ansTable"></table></div></div>
+            </section>
+
+            <section class="mp-page" data-page="resources">
+                <div class="mp-head"><div><h1>学习资源</h1><div class="sub">教师推荐的教材 / 课程 / 工具 / 论文</div></div></div>
+                <div class="mp-card"><div class="mp-table-wrap"><table class="mp-table" id="resTable"></table></div></div>
+            </section>
+
+            <section class="mp-page" data-page="security">
+                <div class="mp-head"><div><h1>修改密码</h1><div class="sub">首次登录建议立即修改初始密码</div></div></div>
+                <div class="mp-card" style="max-width:420px;">
+                    <label class="f-label">原密码</label><input id="pwOld" type="password" class="mp-input" style="width:100%">
+                    <label class="f-label">新密码（≥6 位）</label><input id="pwNew" type="password" class="mp-input" style="width:100%">
+                    <label class="f-label">确认新密码</label><input id="pwNew2" type="password" class="mp-input" style="width:100%">
+                    <div class="f-row" style="margin-top:16px;"><button class="mp-btn primary" id="pwSave">修改密码</button></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/pb.js?v=1"></script>
+<script src="js/vendor/echarts.min.js"></script>
+    <script src="js/student.js?v=1"></script>
+</body>
+</html>
