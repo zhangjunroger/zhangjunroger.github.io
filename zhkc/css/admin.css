@@ -245,7 +245,9 @@
     position: fixed; top: 22px; left: 50%; transform: translateX(-50%) translateY(-16px);
     z-index: 3000; padding: 10px 22px; border-radius: 10px;
     background: rgba(15,23,42,.94); border: 1px solid rgba(56,189,248,.4);
-    color: var(--tx); font-size: 13.5px;
+    /* 深色底必须配死亮色字。以前用 var(--tx)，浅色主题把 --tx 定义成了
+       深灰蓝，结果 toast 变成黑底黑字 —— 用户看到"弹了个黑框但没字"。 */
+    color: #f8fafc; font-size: 13.5px;
     box-shadow: var(--shadow-md);
     opacity: 0; pointer-events: none; transition: all .3s;
 }

@@ -291,17 +291,19 @@ async function apiChangePassword(oldPassword, newPassword) {
     if (!ME) return { ok: false, msg: '未登录' };
     if (!newPassword || String(newPassword).length < PWD_MIN) return { ok: false, msg: `新密码至少 ${PWD_MIN} 位` };
     try {
-        // PocketBase 没有"用旧密码验证"接口，只能先试登一次再改
-        const j = await pbFetch('POST', '/api/collections/users/auth-with-password', {
-            identity: mailOf(ME.username), password: oldPassword,
-        });
-        if (!j.token) return { ok: false, msg: '原密码错误' };
+        // PocketBase 改密码必须在 PATCH 里带 oldPassword 让服务端验证。
+        // 实测：只带 password/passwordConfirm 会被 400 拒绝，报
+        // oldPassword validation_required。以前这里用旧密码重新登录一次
+        // 代替验证，PATCH 本身不带 oldPassword —— 结果修改永远失败，
+        // 还被 400 兜底误报成"原密码错误"。
         await pbFetch('PATCH', `/api/collections/users/records/${ME.id}`, {
-            password: newPassword, passwordConfirm: newPassword,
+            oldPassword, password: newPassword, passwordConfirm: newPassword,
         });
         return { ok: true };
     } catch (e) {
-        return { ok: false, msg: e.status === 400 ? '原密码错误' : (e.message || '修改失败') };
+        const bad = e.data && e.data.oldPassword;
+        if (bad) return { ok: false, msg: bad.code === 'validation_required' ? '请填写原密码' : '原密码错误' };
+        return { ok: false, msg: e.message || '修改失败' };
     }
 }
 
@@ -1122,7 +1124,7 @@ const IMPORT_SPECS = {
         label: '账号',
         headers: ['用户名*', '姓名*', '初始密码', '角色', '班级', '备注'],
         sample: [
-            ['teacher2', '王老师', 'teacher123', '教师', '', '备课组'],
+            ['teacher2', '王老师', 'Abcd1234', '教师', '', '备课组'],
             ['20250103', '赵六', '', '学生', '2025级神经网络与深度学习1班', ''],
         ],
         notes: [
