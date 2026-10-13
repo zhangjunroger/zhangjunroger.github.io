@@ -299,8 +299,14 @@ async function apiChangePassword(oldPassword, newPassword) {
         await pbFetch('PATCH', `/api/collections/users/records/${ME.id}`, {
             oldPassword, password: newPassword, passwordConfirm: newPassword,
         });
-        return { ok: true };
+        // PocketBase 在改密成功的那一刻作废当前令牌（实测：带着旧令牌再发
+        // 任何请求都是 404 "The requested resource wasn't found"）。本地会话
+        // 不清掉的话，界面还停在"已登录"，后续操作全部 404 —— 用户会以为
+        // 是改密码把账号弄坏了。清掉并让调用方引导重新登录。
+        saveSession('', null);
+        return { ok: true, relogin: true };
     } catch (e) {
+        if (e.status === 404) return { ok: false, msg: '登录状态已失效，请刷新页面重新登录后再修改密码' };
         const bad = e.data && e.data.oldPassword;
         if (bad) return { ok: false, msg: bad.code === 'validation_required' ? '请填写原密码' : '原密码错误' };
         return { ok: false, msg: e.message || '修改失败' };

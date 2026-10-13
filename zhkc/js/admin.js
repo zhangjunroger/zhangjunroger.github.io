@@ -890,8 +890,14 @@ $('#pwSave').addEventListener('click', async () => {
         method: 'POST',
         body: { oldPassword: $('#pwOld').value, newPassword: $('#pwNew').value }
     });
-    if (r.ok) { toast('密码已修改'); $('#pwOld').value = $('#pwNew').value = $('#pwNew2').value = ''; }
-    else toast(r.msg || '修改失败', true);
+    if (r.ok) {
+        // 改密成功后 PocketBase 已作废本会话（pb.js 侧也清了本地会话），
+        // 必须引导重新登录，否则接下来的每个请求都是 404。
+        toast('密码已修改，请用新密码重新登录');
+        setTimeout(() => location.reload(), 1200);
+        return;
+    }
+    toast(r.msg || '修改失败', true);
 });
 
 /* ---------------- 启动 ---------------- */

@@ -189,8 +189,13 @@ async function renderResources() {
 $('#pwSave').addEventListener('click', async () => {
     if ($('#pwNew').value !== $('#pwNew2').value) return toast('两次新密码不一致', true);
     const r = await api('/api/auth/password', { method: 'POST', body: { oldPassword: $('#pwOld').value, newPassword: $('#pwNew').value } });
-    if (r.ok) { toast('密码已修改'); $('#pwOld').value = $('#pwNew').value = $('#pwNew2').value = ''; }
-    else toast(r.msg || '修改失败', true);
+    if (r.ok) {
+        // 改密成功后旧令牌已作废（pb.js 清了本地会话），引导重新登录
+        toast('密码已修改，请用新密码重新登录');
+        setTimeout(() => location.reload(), 1200);
+        return;
+    }
+    toast(r.msg || '修改失败', true);
 });
 
 boot();

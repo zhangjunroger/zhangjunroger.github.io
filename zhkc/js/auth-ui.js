@@ -171,8 +171,10 @@
             if (!r.ok) { errEl.textContent = r.msg || '修改失败'; return; }
             errEl.textContent = '';
             ev.target.reset();
-            alert('密码修改成功');
+            // 改密成功后旧令牌已作废（pb.js 清了本地会话），刷新回登录态
+            alert('密码修改成功，请使用新密码重新登录');
             closeModal();
+            location.reload();
         });
     }
 
