@@ -282,7 +282,11 @@ async function apiMe() {
         saveSession(TOKEN, u);
         return { ok: true, user: u };
     } catch (e) {
-        if (e.status === 401 || e.status === 403) saveSession('', null);
+        if (e.status === 401 || e.status === 403) {
+            saveSession('', null);
+            // 缓存的会话实际已失效：首页章节卡刚才按旧身份回填过，撤回成"未开始"
+            refreshChapterProgress();
+        }
         return { ok: true, user: ME };
     }
 }
@@ -850,6 +854,12 @@ async function apiStudentMe() {
     const recentEv = ev.slice(0, 20).map(e => ({
         ts: e.ts, module: e.module, action: e.action, extra: e.extra,
     }));
+    // 访问过哪些章节（首页章节卡的真实进度用）：埋点口径是
+    // module=课程章节 / action=访问第N章（track.js）
+    const visitedChapters = [...new Set(ev
+        .filter(e => e.module === '课程章节')
+        .map(e => { const m = String(e.action || '').match(/访问第(\d+)章/); return m ? Number(m[1]) : 0; })
+        .filter(Boolean))];
     return {
         ok: true,
         profile: {
@@ -862,8 +872,41 @@ async function apiStudentMe() {
             answers: total, rightAnswers: right,
             accuracy: total ? Math.round(right / total * 1000) / 10 : null,
         },
-        byChapter, evTrend, modules, recentAns, recentEv,
+        byChapter, visitedChapters, evTrend, modules, recentAns, recentEv,
     };
+}
+
+// ---------- 首页章节卡的真实学习进度 ----------
+// 卡片里原来写死着 75%/50% 的装饰数字，新注册的账号一节课没上
+// 也"已有进度"。现在改成三档真实口径，与学情中心同源：
+//   未开始 0%   —— 该章无任何学习记录
+//   已浏览 50%  —— 本人埋点里有该章访问记录
+//   已作答 100% —— 该章有过课堂作答
+// 未登录一律"未开始"。index.html 每张卡带 data-chapter，这里按序号回填。
+async function refreshChapterProgress() {
+    const cards = document.querySelectorAll('.chapter-progress[data-chapter]');
+    if (!cards.length) return;
+    const set = (el, pct, label) => {
+        const fill = el.querySelector('.progress-fill');
+        const lbl = el.querySelector('.progress-label');
+        if (fill) { fill.dataset.width = pct + '%'; fill.style.width = pct + '%'; }
+        if (lbl) lbl.textContent = label;
+    };
+    let byChapter = [], visited = [];
+    if (ME) {
+        try {
+            const me = await apiStudentMe();
+            if (me.ok) { byChapter = me.byChapter || []; visited = me.visitedChapters || []; }
+        } catch (e) { /* 拉不到就全部显示未开始 */ }
+    }
+    cards.forEach(el => {
+        const ch = Number(el.dataset.chapter) || 0;
+        const answered = byChapter.some(c => c.chapter === ch && c.total > 0);
+        const seen = visited.includes(ch);
+        if (answered) set(el, 100, '已作答');
+        else if (seen) set(el, 50, '已浏览');
+        else set(el, 0, '未开始');
+    });
 }
 
 // ---------- 课程内容 / 资源 / 题库 的通用增删改 ----------
@@ -1605,13 +1648,22 @@ if (typeof window !== 'undefined') {
         // 都从这里取，写库和列名不可能对不上
         importSpecs: IMPORT_SPECS, templates: importTemplates,
         downloadCsv, DIFFICULTIES, PWD_MIN,
+        refreshChapterProgress,
         get user() { return ME; },
         get token() { return TOKEN; },
         session: saveSession,
     };
+    // 首页章节卡的进度也可以直接 window.refreshChapterProgress() 调
+    window.refreshChapterProgress = refreshChapterProgress;
     // 页面里三个文件各自定义了一个同名 api()，加载顺序上 pb.js 在最前，
     // 这里只挂 window.api（auth-ui 的局部 api 是闭包内的，不受影响）
     if (!window.__pbOwnApi) window.api = api;
+
+    // 首页章节卡：脚本在 body 末尾加载，卡片已就位，直接回填一次。
+    // 登录/登出后的刷新由 auth-ui.js 在 afterAuth / doLogout 里调上面这个函数。
+    if (document.querySelector('.chapter-progress[data-chapter]')) {
+        refreshChapterProgress();
+    }
 }
 
 if (typeof module !== 'undefined' && module.exports) {

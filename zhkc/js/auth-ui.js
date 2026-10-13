@@ -187,6 +187,8 @@
         if (window.trackEvent) window.trackEvent('账号', verb + '成功');
         closeModal();
         renderNav();
+        // 登录成功后首页章节卡从"未开始"换成本人真实进度
+        if (window.refreshChapterProgress) window.refreshChapterProgress();
     }
 
     function openModal(tab) {
