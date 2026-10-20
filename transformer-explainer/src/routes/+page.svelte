@@ -70,19 +70,39 @@
 
 	// Fetch model onnx
 	// GitHub Pages 站点体积有约 1GB 上限,约 630MB 的 GPT-2 模型分片通常不随站点发布;
-	// 先探测站点内是否自带模型分片,若没有则从 jsDelivr CDN 加载原版开源仓库的同名分片
-	// (两个来源的文件完全一致)。模型加载失败时,页面仍可用内置示例进行教学演示。
-	const MODEL_CDN_BASE =
-		'https://cdn.jsdelivr.net/gh/poloclub/transformer-explainer@main/static/model-v2';
+	// 先探测站点内是否自带模型分片,若没有则依次探测 jsDelivr 的各 CDN 节点,
+	// 使用首个可访问的节点加载原版开源仓库的同名分片(各来源的文件完全一致)。
+	// 模型加载失败时,页面仍可用内置示例进行教学演示。
+	const MODEL_CDN_BASES = [
+		'https://cdn.jsdelivr.net/gh/poloclub/transformer-explainer@main/static/model-v2',
+		'https://testingcf.jsdelivr.net/gh/poloclub/transformer-explainer@main/static/model-v2',
+		'https://gcore.jsdelivr.net/gh/poloclub/transformer-explainer@main/static/model-v2'
+	];
+
+	const probeUrl = async (url, timeoutMs = 6000) => {
+		try {
+			const controller = new AbortController();
+			const timer = setTimeout(() => controller.abort(), timeoutMs);
+			const response = await fetch(url, { method: 'HEAD', signal: controller.signal });
+			clearTimeout(timer);
+			return response.ok;
+		} catch (e) {
+			return false;
+		}
+	};
 
 	const resolveModelBase = async () => {
-		try {
-			const probe = await fetch(`${base}/model-v2/gpt2.onnx.part0`, { method: 'HEAD' });
-			if (probe.ok) {
-				return `${base}/model-v2`;
+		const localBase = `${base}/model-v2`;
+		if (await probeUrl(`${localBase}/gpt2.onnx.part0`)) {
+			return localBase;
+		}
+		for (const cdnBase of MODEL_CDN_BASES) {
+			if (await probeUrl(`${cdnBase}/gpt2.onnx.part0`)) {
+				return cdnBase;
 			}
-		} catch (e) {}
-		return MODEL_CDN_BASE;
+		}
+		// 全部探测失败时仍返回首选 CDN,让模型加载进入原有失败兜底(内置示例模式)
+		return MODEL_CDN_BASES[0];
 	};
 
 	const fetchModel = async () => {
