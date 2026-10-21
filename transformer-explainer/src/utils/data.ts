@@ -1,5 +1,4 @@
-import { PreTrainedTokenizer } from '@xenova/transformers';
-import * as ort from 'onnxruntime-web';
+import type { PreTrainedTokenizer } from '@xenova/transformers';
 import {
 	modelData,
 	tokens,
@@ -12,6 +11,13 @@ import {
 import { get } from 'svelte/store';
 import { reshapeArray } from './array';
 import { showFlowAnimation } from './animation';
+
+// onnxruntime-web 改为按需注入(由 +page.svelte 在动态加载后调用 setOrt),
+// 避免静态引用把约 4MB 的 ORT 库打进页面首屏主包
+let ort: typeof import('onnxruntime-web') | undefined;
+export const setOrt = (o: typeof import('onnxruntime-web')) => {
+	ort = o;
+};
 
 export const fakeRunWithCachedData = async ({
 	cachedData,
@@ -126,7 +132,7 @@ export const getTokenization = async (tokenizer: PreTrainedTokenizer, input: str
 export const getData = async (token_ids: number[]) => {
 	try {
 		// Convert token_ids to tensor
-		const inputTensor = new ort.Tensor('int64', token_ids, [1, token_ids.length]);
+		const inputTensor = new ort!.Tensor('int64', token_ids, [1, token_ids.length]);
 
 		// Get the session from the store
 		const session = get(modelSession);

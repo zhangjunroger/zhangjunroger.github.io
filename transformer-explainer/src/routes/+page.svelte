@@ -21,7 +21,7 @@
 		isTextbookOpen,
 		userId
 	} from '~/store';
-	import { PreTrainedTokenizer } from '@xenova/transformers';
+	import type { PreTrainedTokenizer } from '@xenova/transformers';
 	import Sankey from '~/components/Sankey.svelte';
 	import Attention from '~/components/Attention.svelte';
 	import SubsequentBlocks from '~/components/SubsequentBlocks.svelte';
@@ -32,36 +32,44 @@
 	import { onMount } from 'svelte';
 	import classNames from 'classnames';
 	import { base } from '$app/paths';
-	import * as ort from 'onnxruntime-web';
 
-	import { adjustTemperature, runModel, fakeRunWithCachedData } from '~/utils/data';
+	import { adjustTemperature, runModel, fakeRunWithCachedData, setOrt } from '~/utils/data';
 	import { fetchAndMergeChunks } from '~/utils/fetchChunks';
 	import WeightPopovers from '~/components/WeightPopovers.svelte';
 	import { fade } from 'svelte/transition';
-	import { AutoTokenizer, env as transformersEnv } from '@xenova/transformers';
 	import { ex0, ex1, ex2, ex3, ex4 } from '~/constants/examples';
 	import BlockTransition from '~/components/BlockTransition.svelte';
 	import QKV from '~/components/QKV.svelte';
 	import Textbook from '~/components/textbook/Textbook.svelte';
 
-	// GPT-2 分词器与 ONNX 运行时资源全部由本站自身提供(static/hf 与 static/ort),
-	// 不依赖 HuggingFace、jsdelivr 等外部 CDN,确保受限网络/机房环境下页面也能正常加载。
-	transformersEnv.allowLocalModels = false;
-	transformersEnv.remoteHost = `${base}/hf/`;
-	ort.env.wasm.wasmPaths = `${base}/ort/`;
-	ort.env.logLevel = 'error';
+	// onnxruntime-web(约 4MB)与 transformers.js 按需动态导入:
+	// 首屏主包由此缩小到约 2MB,示例可视化在慢速网络下也能尽快显示;
+	// 两个库在页面渲染后于后台异步加载,再开始下载模型。
+	let ort: typeof import('onnxruntime-web') | undefined;
 
 	let active = false;
 	let appStartTime = Date.now();
 
 	// fetch model
 	onMount(async () => {
+		// transformers.js 按需加载;GPT-2 分词器资源由本站提供(static/hf),
+		// 不依赖 HuggingFace 等外部 CDN
+		const { AutoTokenizer, env: transformersEnv } = await import('@xenova/transformers');
+		transformersEnv.allowLocalModels = false;
+		transformersEnv.remoteHost = `${base}/hf/`;
+
 		const gpt2Tokenizer = await AutoTokenizer.from_pretrained('Xenova/gpt2');
 		active = true;
 
 		const unsubscribe = subscribeInputs(gpt2Tokenizer);
 
 		if (!$isMobile) {
+			// ONNX 运行时同样按需加载;wasm 文件由本站 static/ort 提供
+			ort = await import('onnxruntime-web');
+			ort.env.wasm.wasmPaths = `${base}/ort/`;
+			ort.env.logLevel = 'error';
+			setOrt(ort);
+
 			await fetchModel();
 		}
 
@@ -122,7 +130,7 @@
 		const url = URL.createObjectURL(blob);
 
 		// Create ONNX session using the Blob URL
-		const session = await ort.InferenceSession.create(url, {
+		const session = await ort!.InferenceSession.create(url, {
 			// logSeverityLevel: 0
 		});
 

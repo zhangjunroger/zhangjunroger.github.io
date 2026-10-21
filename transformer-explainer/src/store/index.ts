@@ -1,5 +1,6 @@
 import { writable, derived, readable } from 'svelte/store';
-import * as ort from 'onnxruntime-web';
+// 仅类型引用:避免把约 4MB 的 onnxruntime-web 打进首屏主包
+import type { InferenceSession } from 'onnxruntime-web';
 import tailwindConfig from '../../tailwind.config';
 import resolveConfig from 'tailwindcss/resolveConfig';
 import { ex0 } from '~/constants/examples';
@@ -38,7 +39,7 @@ export const inputTextExample = [
 const initialExIdx = 0;
 export const selectedExampleIdx = writable<number>(initialExIdx);
 
-export const modelSession = writable<ort.InferenceSession>();
+export const modelSession = writable<InferenceSession>();
 
 // transformer model output
 export const modelData = writable<ModelData>(ex0);
