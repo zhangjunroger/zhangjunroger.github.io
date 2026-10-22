@@ -195,6 +195,7 @@ function initRollCall() {
     const noRepeat  = document.getElementById('rcNoRepeat');
     const sampleBtn = document.getElementById('rcLoadSample');
     const resetBtn  = document.getElementById('rcResetHist');
+    const syncBtn   = document.getElementById('rcRefresh');
     if (!slotEl) return;
 
     const SAMPLE = ['王子涵','李思远','张雨欣','陈嘉豪','刘一诺','赵梓萱','孙浩然','周诗琪',
@@ -218,10 +219,37 @@ function initRollCall() {
     }
 
     function loadClass() {
+        dirty = false;
         const data = toolsLS(clsKey());
         rosterTa.value = data && data.roster ? data.roster.join('\n') : SAMPLE.join('\n');
         refreshCount();
         renderHistory();
+        fetchServerRoster(false);
+    }
+
+    // ---------- 服务器优先：管理端「班级与名册」是唯一权威数据源 ----------
+    // 以前这里只读 localStorage（或内置示例名单），管理端加了学生
+    // 课堂工具永远看不到。现在打开工具/换班级时直接拉服务器名册；
+    // localStorage 和示例名单只在服务器没有该班数据时兜底（离线演示）。
+    let dirty = false;   // 老师正在手动编辑名单时，自动刷新不覆盖
+    function applyRoster(list) {
+        rosterTa.value = list.join('\n');
+        dirty = false;
+        refreshCount();
+        countEl.textContent += ' · 已同步管理端名册';
+        setTimeout(refreshCount, 2200);
+    }
+    function fetchServerRoster(force) {
+        if (!window.PB || !location.protocol.startsWith('http')) return;
+        const cls = clsInput.value.trim() || '默认班级';
+        window.PB.api('/api/state?class=' + encodeURIComponent(cls))
+            .then(st => {
+                if (!st || !st.ok || !st.roster || !st.roster.length) return;
+                if (clsInput.value.trim() !== cls) return;    // 等待期间切了班，丢弃过期响应
+                if (dirty && !force) return;                  // 正在编辑，别覆盖
+                applyRoster(st.roster);
+            })
+            .catch(() => { /* 服务器不可达：维持本地兜底 */ });
     }
 
     function getHistory() { return toolsLS(clsKey() + '_hist') || []; }
@@ -340,7 +368,8 @@ function initRollCall() {
     });
 
     clsInput.addEventListener('change', loadClass);
-    rosterTa.addEventListener('input', refreshCount);
+    rosterTa.addEventListener('input', () => { dirty = true; refreshCount(); });
+    if (syncBtn) syncBtn.addEventListener('click', () => fetchServerRoster(true));
     loadClass();
 }
 

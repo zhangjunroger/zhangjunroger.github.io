@@ -261,6 +261,17 @@ function initLiveRoom() {
     syncBtn.addEventListener('click', async () => {
         if (!online) { syncBtn.textContent = '演示模式无需同步'; setTimeout(() => syncBtn.textContent = '② 同步点名名单到服务器', 1500); return; }
         const roster = toolsGetRoster();
+        // 防误删：同步是"删光重建"的整表替换，而管理端「班级与名册」才是
+        // 权威数据源。以前这里无确认直接覆盖 —— 智能点名的旧缓存（甚至是
+        // 示例名单）一按就把管理端新加的学生抹掉了，表现为"名册永远不更新"。
+        // 现在把会被删掉的学生摆出来，让老师自己决定。
+        const serverRoster = (state && state.roster) || [];
+        const removing = serverRoster.filter(n => !roster.includes(n));
+        if (removing.length && !confirm(
+            '同步会【整表覆盖】管理端「班级与名册」。\n\n'
+            + '当前名单比服务器名册少 ' + removing.length + ' 人，以下学生将被删除：\n'
+            + removing.slice(0, 8).join('、') + (removing.length > 8 ? ' 等' : '')
+            + '\n\n如只是想让课堂工具显示最新名单，请点「智能点名 → ↻ 从管理端刷新」。\n\n确定覆盖吗？')) return;
         const res = await window.PB.api('/api/roster', {
             method: 'POST', body: { class: clsName(), roster }
         });

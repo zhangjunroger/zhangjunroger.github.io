@@ -1437,7 +1437,8 @@
                         <input type="text" id="rcClassName" class="tool-input" placeholder="班级名称" value="示例班级">
                         <textarea id="rcRoster" class="tool-textarea" rows="10" placeholder="每行一个学生姓名"></textarea>
                         <div class="tool-row">
-                            <button id="rcSave" class="tool-btn primary">保存名单</button>
+                            <button id="rcRefresh" class="tool-btn ghost" title="从管理端「班级与名册」拉取最新名单">↻ 从管理端刷新</button>
+                            <button id="rcSave" class="tool-btn primary" title="仅存到本机缓存作离线备份，不影响管理端名册">保存名单</button>
                             <span class="tool-hint" id="rcCount"></span>
                         </div>
                         <label class="tool-check"><input type="checkbox" id="rcNoRepeat" checked> 不重复点名（抽完全员后自动重新开始）</label>
@@ -1884,8 +1885,8 @@
     <script src="js/lab-guide.js?v=1"></script>
     <script src="js/analytics.js?v=202609132"></script>
     <script src="js/qrcode.min.js?v=202609132"></script>
-    <script src="js/live.js?v=202609132"></script>
-    <script src="js/tools.js?v=202609132"></script>
+    <script src="js/live.js?v=202610111"></script>
+    <script src="js/tools.js?v=202610111"></script>
     <script src="js/track.js?v=1"></script>
     <script src="js/auth-ui.js?v=3"></script>
 </body>
