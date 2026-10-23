@@ -232,24 +232,72 @@ function initRollCall() {
     // 课堂工具永远看不到。现在打开工具/换班级时直接拉服务器名册；
     // localStorage 和示例名单只在服务器没有该班数据时兜底（离线演示）。
     let dirty = false;   // 老师正在手动编辑名单时，自动刷新不覆盖
-    function applyRoster(list) {
+    function applyRoster(list, emptyNote) {
         rosterTa.value = list.join('\n');
         dirty = false;
         refreshCount();
-        countEl.textContent += ' · 已同步管理端名册';
-        setTimeout(refreshCount, 2200);
+        if (list.length) {
+            countEl.textContent += ' · 已同步管理端名册';
+            setTimeout(refreshCount, 2200);
+        } else if (emptyNote) {
+            countEl.textContent = emptyNote;
+        }
     }
-    function fetchServerRoster(force) {
+    async function fetchServerRoster(force) {
         if (!window.PB || !location.protocol.startsWith('http')) return;
         const cls = clsInput.value.trim() || '默认班级';
-        window.PB.api('/api/state?class=' + encodeURIComponent(cls))
-            .then(st => {
-                if (!st || !st.ok || !st.roster || !st.roster.length) return;
-                if (clsInput.value.trim() !== cls) return;    // 等待期间切了班，丢弃过期响应
-                if (dirty && !force) return;                  // 正在编辑，别覆盖
+        try {
+            const [st, names] = await Promise.all([
+                window.PB.api('/api/state?class=' + encodeURIComponent(cls)),
+                window.PB.loadClassNames ? window.PB.loadClassNames() : [],
+            ]);
+            if (clsInput.value.trim() !== cls) return;   // 等待期间切了班，丢弃过期响应
+            if (!st || !st.ok) return;
+            if (st.roster && st.roster.length) {
+                if (dirty && !force) return;            // 正在编辑，别覆盖
                 applyRoster(st.roster);
-            })
-            .catch(() => { /* 服务器不可达：维持本地兜底 */ });
+            } else if (names.includes(cls)) {
+                // 班级真实存在但名册为空：显示诚实的空名单，而不是示例名单
+                if (dirty && !force) return;
+                applyRoster([], '「' + cls + '」名册为空 —— 请在管理端「班级与名册」里添加学生');
+            } else {
+                countEl.textContent = '「' + cls + '」不在管理端班级列表中'
+                    + (names.length ? '（可选：' + names.slice(0, 4).join('、') + (names.length > 4 ? '…' : '') + '）' : '');
+                setTimeout(refreshCount, 3200);
+            }
+        } catch (e) { /* 服务器不可达：维持本地兜底 */ }
+    }
+
+    // ---------- 班级选择跟随管理端 ----------
+    // 以前输入框默认值写死"示例班级"：老师删了示例班级、新建了真实班级后，
+    // 工具打开还是对着孤儿班级点名，怎么刷新都"没反应"。现在：
+    //   · 输入框挂 datalist（选项=管理端班级，按创建时间新→旧）
+    //   · 记住老师上次用的班级（localStorage，与大屏共用一个键）
+    //   · 上次的班级/默认班级在管理端已不存在 → 自动切到最新建的班级
+    const CLS_KEY = 'zhkc_tool_class';
+    function saveClassChoice() {
+        try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
+    }
+    async function bootstrapClassChoice() {
+        if (!window.PB || !location.protocol.startsWith('http')) { loadClass(); return; }
+        let names = [];
+        try { names = await window.PB.loadClassNames() || []; } catch (e) {}
+        const dl = document.getElementById('classListDL');
+        if (names.length && dl) {
+            // 用 DOM API 填充，班级名里的引号/尖括号无需转义
+            dl.innerHTML = '';
+            names.forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                dl.appendChild(opt);
+            });
+        }
+        let saved = '';
+        try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
+        const wanted = saved || clsInput.value.trim();
+        if (names.length && !names.includes(wanted)) clsInput.value = names[0];
+        else if (saved) clsInput.value = saved;
+        loadClass();
     }
 
     function getHistory() { return toolsLS(clsKey() + '_hist') || []; }
@@ -367,10 +415,10 @@ function initRollCall() {
         resultEl.textContent = '';
     });
 
-    clsInput.addEventListener('change', loadClass);
+    clsInput.addEventListener('change', () => { saveClassChoice(); loadClass(); });
     rosterTa.addEventListener('input', () => { dirty = true; refreshCount(); });
     if (syncBtn) syncBtn.addEventListener('click', () => fetchServerRoster(true));
-    loadClass();
+    bootstrapClassChoice();
 }
 
 // ============================================================

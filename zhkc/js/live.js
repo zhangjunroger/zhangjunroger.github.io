@@ -327,7 +327,35 @@ function initLiveRoom() {
         }
     });
 
-    clsInput.addEventListener('change', () => { probe(); poll(); });
+    clsInput.addEventListener('change', () => { saveClassChoice(); probe(); poll(); });
+
+    // ---------- 班级选择跟随管理端 ----------
+    // 输入框默认值写死"示例班级"，老师删掉示例班、新建真实班级后，
+    // 大屏会一直对着不存在的班级出二维码。这里与智能点名共用记忆：
+    // 上次用的班级优先；不存在时自动切到管理端最新建的班级，并填充可选下拉。
+    const CLS_KEY = 'zhkc_tool_class';
+    function saveClassChoice() {
+        try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
+    }
+    async function bootstrapClassChoice() {
+        if (!window.PB || !location.protocol.startsWith('http')) return;
+        let names = [];
+        try { names = await window.PB.loadClassNames() || []; } catch (e) { return; }
+        const dl = document.getElementById('classListDL');
+        if (names.length && dl) {
+            dl.innerHTML = '';
+            names.forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n;
+                dl.appendChild(opt);
+            });
+        }
+        let saved = '';
+        try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
+        const wanted = saved || clsInput.value.trim();
+        if (names.length && !names.includes(wanted)) clsInput.value = names[0];
+        else if (saved) clsInput.value = saved;
+    }
 
     // ---------- 演示模拟 ----------
     demoBtn.addEventListener('click', () => {
@@ -358,7 +386,7 @@ function initLiveRoom() {
     });
 
     // ---------- 启动 ----------
-    probe();
+    bootstrapClassChoice().then(() => { probe(); poll(); });
     renderAll();
     clearInterval(pollId);
     pollId = setInterval(poll, 2000);

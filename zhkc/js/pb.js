@@ -876,6 +876,17 @@ async function apiStudentMe() {
     };
 }
 
+// ---------- 课堂工具用：管理端班级名列表 ----------
+// classes 集合匿名可读（签到页/课堂大屏要在未登录时渲染班级）。
+// 按创建时间倒序：课堂工具"当前班级不存在时自动切换"要选老师最近建的班。
+async function loadClassNames() {
+    if (typeof location !== 'undefined' && !location.protocol.startsWith('http')) return [];
+    try {
+        const rows = await listAll('classes', { sort: '-created', fields: 'name' });
+        return rows.map(r => r.name).filter(Boolean);
+    } catch (e) { return []; }
+}
+
 // ---------- 首页章节卡的真实学习进度 ----------
 // 卡片里原来写死着 75%/50% 的装饰数字，新注册的账号一节课没上
 // 也"已有进度"。现在改成三档真实口径，与学情中心同源：
@@ -1648,7 +1659,7 @@ if (typeof window !== 'undefined') {
         // 都从这里取，写库和列名不可能对不上
         importSpecs: IMPORT_SPECS, templates: importTemplates,
         downloadCsv, DIFFICULTIES, PWD_MIN,
-        refreshChapterProgress,
+        refreshChapterProgress, loadClassNames,
         get user() { return ME; },
         get token() { return TOKEN; },
         session: saveSession,
