@@ -330,31 +330,25 @@ function initLiveRoom() {
     clsInput.addEventListener('change', () => { saveClassChoice(); probe(); poll(); });
 
     // ---------- 班级选择跟随管理端 ----------
-    // 输入框默认值写死"示例班级"，老师删掉示例班、新建真实班级后，
-    // 大屏会一直对着不存在的班级出二维码。这里与智能点名共用记忆：
-    // 上次用的班级优先；不存在时自动切到管理端最新建的班级，并填充可选下拉。
+    // 与智能点名共用记忆：<select> 选项 = 管理端班级（新→旧）。
+    // 上次用的班级优先；已不存在时自动切到最新建的班级。
     const CLS_KEY = 'zhkc_tool_class';
     function saveClassChoice() {
         try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
     }
     async function bootstrapClassChoice() {
-        if (!window.PB || !location.protocol.startsWith('http')) return;
         let names = [];
-        try { names = await window.PB.loadClassNames() || []; } catch (e) { return; }
-        const dl = document.getElementById('classListDL');
-        if (names.length && dl) {
-            dl.innerHTML = '';
-            names.forEach(n => {
-                const opt = document.createElement('option');
-                opt.value = n;
-                dl.appendChild(opt);
-            });
+        if (window.PB && location.protocol.startsWith('http')) {
+            try { names = await window.PB.loadClassNames() || []; } catch (e) {}
         }
+        if (!names.length) names = ['示例班级'];
+        clsInput.innerHTML = '';
+        names.forEach(n => clsInput.appendChild(new Option(n, n)));
         let saved = '';
         try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
-        const wanted = saved || clsInput.value.trim();
-        if (names.length && !names.includes(wanted)) clsInput.value = names[0];
-        else if (saved) clsInput.value = saved;
+        let wanted = saved || '示例班级';
+        if (!names.includes(wanted)) wanted = names[0];
+        clsInput.value = wanted;
     }
 
     // ---------- 演示模拟 ----------

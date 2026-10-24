@@ -528,10 +528,16 @@ async function apiRoster(body) {
     const clsName = String(body.className || body.class || '').trim();
     if (!clsName) return { ok: false, msg: '缺少班级名' };
     const list = Array.isArray(body.roster || body.students) ? (body.roster || body.students) : [];
-    const rows = list.map(it => typeof it === 'string'
-        ? { name: it.trim() }
-        : { name: String(it.name || '').trim(), sid: String(it.sid || '').trim() }
-    ).filter(s => s.name);
+    const rows = list.map(it => {
+        let name, sid;
+        if (typeof it === 'string') { name = it.trim(); sid = ''; }
+        else { name = String(it.name || '').trim(); sid = String(it.sid || '').trim(); }
+        // 防"学号,姓名"写反：姓名一栏是纯数字（学号的长相）而学号一栏
+        // 是文字，就是写反了 —— 自动换回来。以前没有这道判断，老师把
+        // 名册整批存反后，课堂点名/签到满屏学号。
+        if (/^\d{4,}$/.test(name) && sid && !/^\d+$/.test(sid)) { const t = name; name = sid; sid = t; }
+        return { name, sid };
+    }).filter(s => s.name);
     const old = await listAll('roster', { filter: `className = ${q(clsName)}` });
     for (const r of old) await remove('roster', r.id);
     for (const r of rows) await create('roster', { className: clsName, name: r.name, sid: r.sid || '' });
@@ -1056,10 +1062,12 @@ const IMPORT_SPECS = {
         ],
         async apply(row, mode, ctx) {
             const clsName = String(row[0] || '').trim();
-            const name = String(row[1] || '').trim();
-            const sid = String(row[2] || '').trim();
+            let name = String(row[1] || '').trim();
+            let sid = String(row[2] || '').trim();
             if (!clsName) return { err: '班级名称不能为空' };
             if (!name) return { err: '姓名不能为空' };
+            // 防"学号,姓名"两列写反：姓名列是纯数字、学号列是文字时自动换回
+            if (/^\d{4,}$/.test(name) && sid && !/^\d+$/.test(sid)) { const t = name; name = sid; sid = t; }
 
             // 名册引用的班级顺手建出来，否则这批学生挂不到任何班级上，
             // 后面扫码签到按班级匹配时会对不上。

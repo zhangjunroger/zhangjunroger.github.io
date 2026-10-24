@@ -270,33 +270,29 @@ function initRollCall() {
 
     // ---------- 班级选择跟随管理端 ----------
     // 以前输入框默认值写死"示例班级"：老师删了示例班级、新建了真实班级后，
-    // 工具打开还是对着孤儿班级点名，怎么刷新都"没反应"。现在：
-    //   · 输入框挂 datalist（选项=管理端班级，按创建时间新→旧）
+    // 工具打开还是对着孤儿班级点名，怎么刷新都"没反应"。现在班级框是
+    // 真 <select>（datalist 会按已输入文字过滤，永远只显示当前那一个，
+    // 看起来像"只有一个班级"），选项 = 管理端班级（创建时间新→旧）：
     //   · 记住老师上次用的班级（localStorage，与大屏共用一个键）
-    //   · 上次的班级/默认班级在管理端已不存在 → 自动切到最新建的班级
+    //   · 上次的班级在管理端已不存在 → 自动切到最新建的班级
+    //   · 离线/无班级时保留"示例班级"一个选项（演示模式）
     const CLS_KEY = 'zhkc_tool_class';
     function saveClassChoice() {
         try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
     }
     async function bootstrapClassChoice() {
-        if (!window.PB || !location.protocol.startsWith('http')) { loadClass(); return; }
         let names = [];
-        try { names = await window.PB.loadClassNames() || []; } catch (e) {}
-        const dl = document.getElementById('classListDL');
-        if (names.length && dl) {
-            // 用 DOM API 填充，班级名里的引号/尖括号无需转义
-            dl.innerHTML = '';
-            names.forEach(n => {
-                const opt = document.createElement('option');
-                opt.value = n;
-                dl.appendChild(opt);
-            });
+        if (window.PB && location.protocol.startsWith('http')) {
+            try { names = await window.PB.loadClassNames() || []; } catch (e) {}
         }
+        if (!names.length) names = ['示例班级'];
+        clsInput.innerHTML = '';
+        names.forEach(n => clsInput.appendChild(new Option(n, n)));
         let saved = '';
         try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
-        const wanted = saved || clsInput.value.trim();
-        if (names.length && !names.includes(wanted)) clsInput.value = names[0];
-        else if (saved) clsInput.value = saved;
+        let wanted = saved || '示例班级';
+        if (!names.includes(wanted)) wanted = names[0];
+        clsInput.value = wanted;
         loadClass();
     }
 

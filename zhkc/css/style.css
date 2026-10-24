@@ -2783,3 +2783,7 @@ mjx-assistive-mml {
 }
 
 .archive-card b { color: #b45309; font-weight: 600; white-space: nowrap; }
+
+/* 课堂工具的班级下拉（原为 text input + datalist；datalist 会按已输入文字过滤，
+   永远只显示当前那一个，老师以为"只有一个班级"） */
+select.tool-input { cursor: pointer; }

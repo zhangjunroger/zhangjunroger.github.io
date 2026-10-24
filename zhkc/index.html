@@ -1429,15 +1429,12 @@
                 <button class="tool-tab" data-tool="notes">📒 学习笔记</button>
             </div>
 
-            <!-- 课堂工具班级选择：选项由 js/tools.js 与 js/live.js 从管理端班级列表填充 -->
-            <datalist id="classListDL"></datalist>
-
             <!-- ========== 智能点名 ========== -->
             <div class="tool-panel active" id="tool-rollcall">
                 <div class="tool-grid tool-grid-3">
                     <div class="tool-card">
                         <h4>📋 名单管理</h4>
-                        <input type="text" id="rcClassName" class="tool-input" placeholder="班级名称" value="示例班级" list="classListDL">
+                        <select id="rcClassName" class="tool-input" title="班级（选项来自管理端，最新班级在前）"></select>
                         <textarea id="rcRoster" class="tool-textarea" rows="10" placeholder="每行一个学生姓名"></textarea>
                         <div class="tool-row">
                             <button id="rcRefresh" class="tool-btn ghost" title="从管理端「班级与名册」拉取最新名单">↻ 从管理端刷新</button>
@@ -1637,7 +1634,7 @@
                     <div class="tool-card lv-left">
                         <h4>📲 学生扫码入口</h4>
                         <div class="tool-row">
-                            <input type="text" id="lvClass" class="tool-input" style="margin-bottom:0" value="示例班级" title="班级名称" list="classListDL">
+                            <select id="lvClass" class="tool-input" style="margin-bottom:0" title="班级（选项来自管理端，最新班级在前）"></select>
                             <span class="tool-hint" id="lvStatus">正在检测服务器…</span>
                         </div>
                         <div class="lv-qr-row">
@@ -1882,14 +1879,14 @@
         </div>
     </footer>
 
-    <script src="js/pb.js?v=5"></script>
+    <script src="js/pb.js?v=6"></script>
 <script src="js/script.js?v=202610111"></script>
     <script src="js/labs2.js?v=202609132"></script>
     <script src="js/lab-guide.js?v=1"></script>
     <script src="js/analytics.js?v=202609132"></script>
     <script src="js/qrcode.min.js?v=202609132"></script>
-    <script src="js/live.js?v=202610112"></script>
-    <script src="js/tools.js?v=202610112"></script>
+    <script src="js/live.js?v=202610113"></script>
+    <script src="js/tools.js?v=202610113"></script>
     <script src="js/track.js?v=1"></script>
     <script src="js/auth-ui.js?v=3"></script>
 </body>

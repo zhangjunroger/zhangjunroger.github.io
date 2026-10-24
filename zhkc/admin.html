@@ -132,7 +132,7 @@
                 <div class="mp-grid cols-3" id="clsCards"></div>
                 <div class="mp-card" style="margin-top:16px;" id="rosterCard" hidden>
                     <h3>名册管理 · <span id="rosterClassName" style="color:var(--c-cyan);"></span></h3>
-                    <p style="color:var(--tx-faint);font-size:12.5px;">每行一个学生，支持「姓名,学号」或「姓名 学号」格式。保存后立即同步到课堂大屏与签到页。</p>
+                    <p style="color:var(--tx-faint);font-size:12.5px;">每行一个学生，支持「姓名,学号」或「姓名 学号」格式（两列写反会自动纠正）。保存后立即同步到课堂大屏与签到页。</p>
                     <textarea id="rosterText" class="mp-textarea" rows="12" placeholder="张三,20250101&#10;李四,20250102&#10;王五"></textarea>
                     <div class="f-row" style="margin-top:12px;">
                         <button class="mp-btn primary" id="rosterSave">💾 保存名册</button>
@@ -255,7 +255,7 @@
         <div class="mp-modal" id="modalBox"></div>
     </div>
 
-    <script src="js/pb.js?v=5"></script>
+    <script src="js/pb.js?v=6"></script>
 <script src="js/vendor/echarts.min.js"></script>
     <script src="js/admin.js?v=3"></script>
     <script src="js/import.js?v=1"></script>
