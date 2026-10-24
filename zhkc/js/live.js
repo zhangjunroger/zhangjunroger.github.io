@@ -93,7 +93,7 @@ function initLiveRoom() {
     const qrBox     = $('lvQRBox');
     const linkEl    = $('lvLink');
     const copyBtn   = $('lvCopyLink');
-    const syncBtn   = $('lvSyncRoster');
+    // 「同步点名名单到服务器」按钮已按需求移除（管理端是唯一名册数据源）
     const resetBtn  = $('lvReset');
     const wallEl    = $('lvSignedWall');
     const signedCountEl = $('lvSignedCount');
@@ -258,27 +258,9 @@ function initLiveRoom() {
     }
 
     // ---------- 操作 ----------
-    syncBtn.addEventListener('click', async () => {
-        if (!online) { syncBtn.textContent = '演示模式无需同步'; setTimeout(() => syncBtn.textContent = '② 同步点名名单到服务器', 1500); return; }
-        const roster = toolsGetRoster();
-        // 防误删：同步是"删光重建"的整表替换，而管理端「班级与名册」才是
-        // 权威数据源。以前这里无确认直接覆盖 —— 智能点名的旧缓存（甚至是
-        // 示例名单）一按就把管理端新加的学生抹掉了，表现为"名册永远不更新"。
-        // 现在把会被删掉的学生摆出来，让老师自己决定。
-        const serverRoster = (state && state.roster) || [];
-        const removing = serverRoster.filter(n => !roster.includes(n));
-        if (removing.length && !confirm(
-            '同步会【整表覆盖】管理端「班级与名册」。\n\n'
-            + '当前名单比服务器名册少 ' + removing.length + ' 人，以下学生将被删除：\n'
-            + removing.slice(0, 8).join('、') + (removing.length > 8 ? ' 等' : '')
-            + '\n\n如只是想让课堂工具显示最新名单，请点「智能点名 → ↻ 从管理端刷新」。\n\n确定覆盖吗？')) return;
-        const res = await window.PB.api('/api/roster', {
-            method: 'POST', body: { class: clsName(), roster }
-        });
-        syncBtn.textContent = res.ok ? '✓ 已同步 ' + res.count + ' 人' : '✗ ' + (res.msg || '同步失败');
-        setTimeout(() => syncBtn.textContent = '② 同步点名名单到服务器', 2000);
-        poll();
-    });
+    // 「同步点名名单到服务器」按钮已移除：管理端「班级与名册」是唯一数据源，
+    // 课堂工具只读。以前这个按钮把本地缓存整表覆盖到服务器，是名册反复
+    // "丢人"的元凶；真要批量改名册请用管理端（支持模板导入）。
 
     pushBtn.addEventListener('click', async () => {
         const ch = parseInt(pushSel.value);
@@ -327,29 +309,8 @@ function initLiveRoom() {
         }
     });
 
-    clsInput.addEventListener('change', () => { saveClassChoice(); probe(); poll(); });
-
-    // ---------- 班级选择跟随管理端 ----------
-    // 与智能点名共用记忆：<select> 选项 = 管理端班级（新→旧）。
-    // 上次用的班级优先；已不存在时自动切到最新建的班级。
-    const CLS_KEY = 'zhkc_tool_class';
-    function saveClassChoice() {
-        try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
-    }
-    async function bootstrapClassChoice() {
-        let names = [];
-        if (window.PB && location.protocol.startsWith('http')) {
-            try { names = await window.PB.loadClassNames() || []; } catch (e) {}
-        }
-        if (!names.length) names = ['示例班级'];
-        clsInput.innerHTML = '';
-        names.forEach(n => clsInput.appendChild(new Option(n, n)));
-        let saved = '';
-        try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
-        let wanted = saved || '示例班级';
-        if (!names.includes(wanted)) wanted = names[0];
-        clsInput.value = wanted;
-    }
+    // ---------- 班级选择：共用 PB.setupClassSelect（选项=管理端班级、
+    // 粘性记忆、已删班级自动切换，与其他课堂工具一份实现、一个记忆键） ----------
 
     // ---------- 演示模拟 ----------
     demoBtn.addEventListener('click', () => {
@@ -380,7 +341,13 @@ function initLiveRoom() {
     });
 
     // ---------- 启动 ----------
-    bootstrapClassChoice().then(() => { probe(); poll(); });
+    // 班级下拉填充好之后再探测/轮询，二维码和签到数据用的才是选中的班级
+    if (window.PB && window.PB.setupClassSelect) {
+        window.PB.setupClassSelect(clsInput, () => { probe(); poll(); })
+            .then(() => { probe(); poll(); });
+    } else {
+        probe(); poll();
+    }
     renderAll();
     clearInterval(pollId);
     pollId = setInterval(poll, 2000);

@@ -1443,8 +1443,7 @@
                         </div>
                         <label class="tool-check"><input type="checkbox" id="rcNoRepeat" checked> 不重复点名（抽完全员后自动重新开始）</label>
                         <div class="tool-row">
-                            <button id="rcLoadSample" class="tool-btn ghost">载入示例名单</button>
-                            <button id="rcResetHist" class="tool-btn ghost">清空记录</button>
+                            <button id="rcResetHist" class="tool-btn ghost">清空点名记录</button>
                         </div>
                     </div>
                     <div class="tool-card rc-stage">
@@ -1606,7 +1605,8 @@
                 <div class="tool-grid tool-grid-2">
                     <div class="tool-card">
                         <h4>👥 分组设置</h4>
-                        <textarea id="gRoster" class="tool-textarea" rows="9" placeholder="每行一个学生姓名（留空则使用点名名单）"></textarea>
+                        <select id="gClassName" class="tool-input" title="班级（选项来自管理端，最新班级在前）"></select>
+                        <textarea id="gRoster" class="tool-textarea" rows="9" placeholder="选择班级后自动载入名册；也可手动粘贴/增删后再分组"></textarea>
                         <div class="tool-row wrap">
                             <div><label class="tool-label">分组方式</label>
                                 <select id="gMode" class="tool-input">
@@ -1642,7 +1642,6 @@
                             <div class="lv-qr-side">
                                 <div class="lv-link" id="lvLink"></div>
                                 <button id="lvCopyLink" class="tool-btn ghost small">复制链接</button>
-                                <button id="lvSyncRoster" class="tool-btn small">② 同步点名名单到服务器</button>
                                 <button id="lvDemo" class="tool-btn warn small">🎬 演示模式：模拟全班签到答题</button>
                             </div>
                         </div>
@@ -1879,14 +1878,14 @@
         </div>
     </footer>
 
-    <script src="js/pb.js?v=6"></script>
+    <script src="js/pb.js?v=7"></script>
 <script src="js/script.js?v=202610111"></script>
     <script src="js/labs2.js?v=202609132"></script>
     <script src="js/lab-guide.js?v=1"></script>
     <script src="js/analytics.js?v=202609132"></script>
     <script src="js/qrcode.min.js?v=202609132"></script>
-    <script src="js/live.js?v=202610113"></script>
-    <script src="js/tools.js?v=202610113"></script>
+    <script src="js/live.js?v=202610114"></script>
+    <script src="js/tools.js?v=202610114"></script>
     <script src="js/track.js?v=1"></script>
     <script src="js/auth-ui.js?v=3"></script>
 </body>

@@ -893,6 +893,31 @@ async function loadClassNames() {
     } catch (e) { return []; }
 }
 
+// ---------- 课堂工具共用的班级选择器 ----------
+// 把一个 <select> 变成"管理端班级选择器"：选项=管理端班级（新→旧），
+// 智能点名/大屏/随机分组共用 zhkc_tool_class 记忆（换工具不换班），
+// 上次班级已被删除时自动切到最新建的班级，change 时自动记住并回调。
+async function setupClassSelect(sel, onChange) {
+    if (!sel) return '';
+    let names = [];
+    if (typeof location !== 'undefined' && location.protocol.startsWith('http')) {
+        try { names = await loadClassNames() || []; } catch (e) {}
+    }
+    if (!names.length) names = ['示例班级'];   // 离线/无班级：保留演示选项
+    sel.innerHTML = '';
+    names.forEach(n => sel.appendChild(new Option(n, n)));
+    let saved = '';
+    try { saved = localStorage.getItem('zhkc_tool_class') || ''; } catch (e) {}
+    let wanted = saved || '示例班级';
+    if (!names.includes(wanted)) wanted = names[0];
+    sel.value = wanted;
+    sel.addEventListener('change', () => {
+        try { localStorage.setItem('zhkc_tool_class', sel.value.trim()); } catch (e) {}
+        onChange && onChange();
+    });
+    return wanted;
+}
+
 // ---------- 首页章节卡的真实学习进度 ----------
 // 卡片里原来写死着 75%/50% 的装饰数字，新注册的账号一节课没上
 // 也"已有进度"。现在改成三档真实口径，与学情中心同源：
@@ -1667,7 +1692,7 @@ if (typeof window !== 'undefined') {
         // 都从这里取，写库和列名不可能对不上
         importSpecs: IMPORT_SPECS, templates: importTemplates,
         downloadCsv, DIFFICULTIES, PWD_MIN,
-        refreshChapterProgress, loadClassNames,
+        refreshChapterProgress, loadClassNames, setupClassSelect,
         get user() { return ME; },
         get token() { return TOKEN; },
         session: saveSession,

@@ -192,8 +192,9 @@ function initRollCall() {
     const resultEl  = document.getElementById('rcResult');
     const histEl    = document.getElementById('rcHistory');
     const statsEl   = document.getElementById('rcStats');
+    // ---------- 班级选择：共用 PB.setupClassSelect（选项=管理端班级） ----------
+    // 记住选择、已删班级自动切换、离线兜底都在公共函数里，三个工具共用一个记忆键。
     const noRepeat  = document.getElementById('rcNoRepeat');
-    const sampleBtn = document.getElementById('rcLoadSample');
     const resetBtn  = document.getElementById('rcResetHist');
     const syncBtn   = document.getElementById('rcRefresh');
     if (!slotEl) return;
@@ -269,32 +270,8 @@ function initRollCall() {
     }
 
     // ---------- 班级选择跟随管理端 ----------
-    // 以前输入框默认值写死"示例班级"：老师删了示例班级、新建了真实班级后，
-    // 工具打开还是对着孤儿班级点名，怎么刷新都"没反应"。现在班级框是
-    // 真 <select>（datalist 会按已输入文字过滤，永远只显示当前那一个，
-    // 看起来像"只有一个班级"），选项 = 管理端班级（创建时间新→旧）：
-    //   · 记住老师上次用的班级（localStorage，与大屏共用一个键）
-    //   · 上次的班级在管理端已不存在 → 自动切到最新建的班级
-    //   · 离线/无班级时保留"示例班级"一个选项（演示模式）
-    const CLS_KEY = 'zhkc_tool_class';
-    function saveClassChoice() {
-        try { localStorage.setItem(CLS_KEY, clsInput.value.trim()); } catch (e) {}
-    }
-    async function bootstrapClassChoice() {
-        let names = [];
-        if (window.PB && location.protocol.startsWith('http')) {
-            try { names = await window.PB.loadClassNames() || []; } catch (e) {}
-        }
-        if (!names.length) names = ['示例班级'];
-        clsInput.innerHTML = '';
-        names.forEach(n => clsInput.appendChild(new Option(n, n)));
-        let saved = '';
-        try { saved = localStorage.getItem(CLS_KEY) || ''; } catch (e) {}
-        let wanted = saved || '示例班级';
-        if (!names.includes(wanted)) wanted = names[0];
-        clsInput.value = wanted;
-        loadClass();
-    }
+    // 选项填充、粘性记忆、已删班级自动切换统一在 PB.setupClassSelect 里
+    // （智能点名 / 大屏 / 随机分组三个工具共用一份实现和一个记忆键）。
 
     function getHistory() { return toolsLS(clsKey() + '_hist') || []; }
 
@@ -398,23 +375,22 @@ function initRollCall() {
         setTimeout(refreshCount, 1500);
     });
 
-    sampleBtn.addEventListener('click', () => {
-        rosterTa.value = SAMPLE.join('\n');
-        refreshCount();
-    });
-
     resetBtn.addEventListener('click', () => {
         toolsLS(clsKey() + '_hist', []);
         renderHistory();
-        slotEl.classList.remove('lucky');
+        slotEl.classList.remove('rolling lucky');
         slotEl.textContent = '准备就绪';
         resultEl.textContent = '';
     });
 
-    clsInput.addEventListener('change', () => { saveClassChoice(); loadClass(); });
     rosterTa.addEventListener('input', () => { dirty = true; refreshCount(); });
     if (syncBtn) syncBtn.addEventListener('click', () => fetchServerRoster(true));
-    bootstrapClassChoice();
+    // 班级选项填充 + 粘性记忆由公共函数负责；change 时重新拉名册
+    if (window.PB && window.PB.setupClassSelect) {
+        window.PB.setupClassSelect(clsInput, loadClass).then(() => loadClass());
+    } else {
+        loadClass();
+    }
 }
 
 // ============================================================
@@ -767,6 +743,7 @@ function initTimer() {
 // ============================================================
 function initGroupSplit() {
     const rosterTa = document.getElementById('gRoster');
+    const clsSel   = document.getElementById('gClassName');
     const modeSel  = document.getElementById('gMode');
     const numEl    = document.getElementById('gNum');
     const goBtn    = document.getElementById('gGo');
@@ -779,6 +756,26 @@ function initGroupSplit() {
         ['rgba(22,163,74,0.12)', '#15803d'], ['rgba(217,119,6,0.12)', '#b45309'],
         ['rgba(37,99,235,0.14)', '#1d4ed8'], ['rgba(79,70,229,0.14)', '#6d28d9']
     ];
+
+    // ---------- 联动管理端：选班级即自动载入该班名册 ----------
+    // 以前这里只能手动粘贴（或借用点名的本地缓存），管理端改了名册
+    // 分组工具毫无感知。现在与其他课堂工具共用班级选择器和记忆。
+    async function loadServerRoster() {
+        if (!window.PB || !location.protocol.startsWith('http') || !clsSel) return;
+        const cls = clsSel.value;
+        if (!cls) return;
+        try {
+            const st = await window.PB.api('/api/state?class=' + encodeURIComponent(cls));
+            if (clsSel.value !== cls) return;               // 等待期间切了班
+            if (st && st.ok && st.roster) {
+                rosterTa.value = st.roster.join('\n');
+                if (!st.roster.length) rosterTa.placeholder = '「' + cls + '」名册为空 —— 请先在管理端「班级与名册」添加学生';
+            }
+        } catch (e) { /* 服务器不可达：保留手动粘贴用法 */ }
+    }
+    if (clsSel && window.PB && window.PB.setupClassSelect) {
+        window.PB.setupClassSelect(clsSel, loadServerRoster).then(loadServerRoster);
+    }
 
     function rosterPool() {
         let names = rosterTa.value.split('\n').map(s => s.trim()).filter(Boolean);
